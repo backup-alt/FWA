@@ -1,0 +1,413 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background: #f4f6f9;
+  color: #2d3436;
+}
+
+/* ---------- Login ---------- */
+.login-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.login-box {
+  background: #fff;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  width: 320px;
+}
+
+.login-box h2 {
+  margin-bottom: 20px;
+  text-align: center;
+  color: #2c3e50;
+}
+
+.login-box input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border: 1px solid #dfe6e9;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.login-box button {
+  width: 100%;
+  padding: 10px;
+  background: #2c3e50;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.login-box button:hover {
+  background: #1a242f;
+}
+
+.error-msg {
+  color: #e74c3c;
+  font-size: 13px;
+  margin-bottom: 10px;
+  min-height: 16px;
+}
+
+/* ---------- Layout ---------- */
+.topbar {
+  background: #2c3e50;
+  color: #fff;
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.topbar h1 {
+  font-size: 18px;
+}
+
+.topbar .actions button {
+  background: #e74c3c;
+  border: none;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.topbar .actions a,
+.topbar .actions button {
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ---------- Tabs / Filters ---------- */
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tabs button {
+  padding: 8px 18px;
+  border: 1px solid #dfe6e9;
+  background: #fff;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.tabs button.active {
+  background: #2c3e50;
+  color: #fff;
+  border-color: #2c3e50;
+}
+
+/* ---------- Cards ---------- */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid #2c3e50;
+}
+
+.card.loan { border-left-color: #2980b9; }
+.card.due { border-left-color: #e67e22; }
+.card.interest { border-left-color: #8e44ad; }
+.card.period { border-left-color: #16a085; }
+
+.card .label {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #7f8c8d;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.card .value {
+  font-size: 22px;
+  font-weight: 600;
+  color: #2d3436;
+}
+
+.card .sub {
+  font-size: 12px;
+  color: #95a5a6;
+  margin-top: 4px;
+}
+
+.card input.editable-period {
+  width: 70px;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 4px;
+  border: 1px solid #dfe6e9;
+  border-radius: 4px;
+}
+
+/* ---------- Status badges ---------- */
+.badge {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge.active { background: #eafaf1; color: #27ae60; }
+.badge.completed { background: #eaf2f8; color: #2980b9; }
+.badge.pending { background: #fef9e7; color: #f39c12; }
+.badge.overdue { background: #fdedec; color: #e74c3c; }
+.badge.paid { background: #eafaf1; color: #27ae60; }
+.badge.partial { background: #fef5e7; color: #d35400; }
+
+/* ---------- Table ---------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+th, td {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 13px;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+th {
+  background: #f8f9fa;
+  color: #7f8c8d;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+tr:hover {
+  background: #fafbfc;
+}
+
+td input {
+  width: 90px;
+  padding: 5px;
+  border: 1px solid #dfe6e9;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+td input[type="date"] {
+  width: 130px;
+}
+
+.save-btn {
+  background: #27ae60;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.save-btn:hover {
+  background: #1e8449;
+}
+
+/* ---------- Client List ---------- */
+.client-list {
+  display: grid;
+  gap: 12px;
+}
+
+.client-row {
+  background: #fff;
+  border-radius: 8px;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.client-row:hover {
+  transform: translateY(-2px);
+}
+
+.client-row .info h3 {
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.client-row .info p {
+  font-size: 12px;
+  color: #7f8c8d;
+}
+
+.client-row .meta {
+  text-align: right;
+  font-size: 13px;
+}
+
+/* ---------- Pending Dues ---------- */
+.pending-list {
+  display: grid;
+  gap: 10px;
+}
+
+.pending-item {
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 4px solid #e74c3c;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.pending-item .left h4 {
+  font-size: 14px;
+  margin-bottom: 3px;
+}
+
+.pending-item .left p {
+  font-size: 12px;
+  color: #7f8c8d;
+}
+
+.pending-item .right {
+  text-align: right;
+}
+
+.pending-item .right .amt {
+  font-size: 16px;
+  font-weight: 700;
+  color: #e74c3c;
+}
+
+/* ---------- Forms ---------- */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  background: #fff;
+  padding: 24px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.form-grid.full { grid-template-columns: 1fr; }
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 12px;
+  color: #7f8c8d;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 9px;
+  border: 1px solid #dfe6e9;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.form-section-title {
+  grid-column: 1 / -1;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-top: 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.submit-bar {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-primary { background: #2c3e50; color: #fff; }
+.btn-primary:hover { background: #1a242f; }
+
+.btn-secondary { background: #dfe6e9; color: #2d3436; }
+.btn-secondary:hover { background: #b2bec3; }
+
+.fab {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: #2c3e50;
+  color: #fff;
+  border: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  font-size: 26px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.fab:hover { background: #1a242f; }
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 24px 0 12px;
+  color: #2c3e50;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #95a5a6;
+}

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Client - Vehicle Finance</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <h1>New Client / Loan</h1>
+    <div class="actions">
+      <a href="/pages/dashboard.html" style="color:#fff;">← Back</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="error-msg" id="errorMsg"></div>
+    <form id="clientForm" class="form-grid">
+
+      <div class="form-section-title">Vehicle Details</div>
+
+      <div class="form-group">
+        <label>Vehicle Type *</label>
+        <select id="vehicleType" required>
+          <option value="">Select</option>
+          <option value="Bike">Bike</option>
+          <option value="Car">Car</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Make</label>
+        <input type="text" id="make" placeholder="e.g. Honda" />
+      </div>
+      <div class="form-group">
+        <label>Model</label>
+        <input type="text" id="model" placeholder="e.g. Activa" />
+      </div>
+      <div class="form-group">
+        <label>Registration No.</label>
+        <input type="text" id="regNo" placeholder="e.g. TN09AB1234" />
+      </div>
+
+      <div class="form-section-title">Finance Details</div>
+
+      <div class="form-group">
+        <label>Loan Amount (L.AMT) *</label>
+        <input type="number" id="loanAmount" required />
+      </div>
+      <div class="form-group">
+        <label>Finance Amount (F.AMT) *</label>
+        <input type="number" id="financeAmount" required />
+      </div>
+      <div class="form-group">
+        <label>Interest Rate (% annual) *</label>
+        <input type="number" id="interestRate" step="0.01" required />
+      </div>
+      <div class="form-group">
+        <label>Installment Period (months) *</label>
+        <input type="number" id="installmentPeriod" required />
+      </div>
+      <div class="form-group">
+        <label>Loan Start Date *</label>
+        <input type="date" id="loanStartDate" required />
+      </div>
+
+      <div class="form-section-title">RC / Documentation</div>
+
+      <div class="form-group">
+        <label>RC Status / Note</label>
+        <input type="text" id="rcStatus" placeholder="e.g. Amt paid through cheque" />
+      </div>
+      <div class="form-group">
+        <label>RC Paid Through (Payee Name)</label>
+        <input type="text" id="rcPaidThrough" placeholder="e.g. RAM AUTO CONSULTING" />
+      </div>
+      <div class="form-group">
+        <label>RC Cheque Number</label>
+        <input type="text" id="rcChequeNumber" />
+      </div>
+      <div class="form-group">
+        <label>RC Amount</label>
+        <input type="number" id="rcAmount" />
+      </div>
+      <div class="form-group">
+        <label>NOC</label>
+        <input type="text" id="noc" />
+      </div>
+      <div class="form-group">
+        <label>Insurance</label>
+        <input type="text" id="insurance" />
+      </div>
+      <div class="form-group">
+        <label>ID Proof</label>
+        <input type="text" id="idProof" />
+      </div>
+      <div class="form-group">
+        <label>Key Status</label>
+        <input type="text" id="keyStatus" />
+      </div>
+      <div class="form-group">
+        <label>Sales Done By</label>
+        <input type="text" id="salesDoneBy" />
+      </div>
+
+      <div class="form-section-title">Customer Details</div>
+
+      <div class="form-group">
+        <label>Customer Name *</label>
+        <input type="text" id="customerName" required />
+      </div>
+      <div class="form-group" style="grid-column: span 2;">
+        <label>Address</label>
+        <input type="text" id="address" />
+      </div>
+      <div class="form-group">
+        <label>Cell Number 1</label>
+        <input type="text" id="cell1Number" />
+      </div>
+      <div class="form-group">
+        <label>Cell 1 Label (optional)</label>
+        <input type="text" id="cell1Label" placeholder="e.g. Self" />
+      </div>
+      <div class="form-group">
+        <label>Cell Number 2</label>
+        <input type="text" id="cell2Number" />
+      </div>
+      <div class="form-group">
+        <label>Cell 2 Label (optional)</label>
+        <input type="text" id="cell2Label" placeholder="e.g. Amma Shanthi" />
+      </div>
+
+      <div class="form-section-title">Guarantor</div>
+
+      <div class="form-group">
+        <label>Guarantor Name</label>
+        <input type="text" id="guarantorName" />
+      </div>
+      <div class="form-group" style="grid-column: span 2;">
+        <label>Guarantor Address</label>
+        <input type="text" id="guarantorAddress" />
+      </div>
+
+      <div class="form-section-title">Cheques Received</div>
+
+      <div class="form-group">
+        <label>Cheque 1 Number</label>
+        <input type="text" id="cheque1Number" />
+      </div>
+      <div class="form-group">
+        <label>Cheque 1 Bank</label>
+        <input type="text" id="cheque1Bank" />
+      </div>
+      <div class="form-group">
+        <label>Cheque 1 Amount</label>
+        <input type="number" id="cheque1Amount" />
+      </div>
+      <div class="form-group">
+        <label>Cheque 2 Number</label>
+        <input type="text" id="cheque2Number" />
+      </div>
+      <div class="form-group">
+        <label>Cheque 2 Bank</label>
+        <input type="text" id="cheque2Bank" />
+      </div>
+      <div class="form-group">
+        <label>Cheque 2 Amount</label>
+        <input type="number" id="cheque2Amount" />
+      </div>
+
+      <div class="submit-bar" style="grid-column: 1 / -1;">
+        <a href="/pages/dashboard.html" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Create Loan & Generate Schedule</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    requireAuth();
+
+    const form = document.getElementById('clientForm');
+    const errorMsg = document.getElementById('errorMsg');
+
+    // Default loan start date to today
+    document.getElementById('loanStartDate').value = new Date().toISOString().split('T')[0];
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorMsg.textContent = '';
+
+      const cellNumbers = [];
+      const c1 = document.getElementById('cell1Number').value.trim();
+      const c2 = document.getElementById('cell2Number').value.trim();
+      if (c1) cellNumbers.push({ number: c1, label: document.getElementById('cell1Label').value.trim() });
+      if (c2) cellNumbers.push({ number: c2, label: document.getElementById('cell2Label').value.trim() });
+
+      const chequesReceived = [];
+      const ch1 = document.getElementById('cheque1Number').value.trim();
+      const ch2 = document.getElementById('cheque2Number').value.trim();
+      if (ch1) {
+        chequesReceived.push({
+          chequeNumber: ch1,
+          bank: document.getElementById('cheque1Bank').value.trim(),
+          amount: +document.getElementById('cheque1Amount').value || 0,
+        });
+      }
+      if (ch2) {
+        chequesReceived.push({
+          chequeNumber: ch2,
+          bank: document.getElementById('cheque2Bank').value.trim(),
+          amount: +document.getElementById('cheque2Amount').value || 0,
+        });
+      }
+
+      const payload = {
+        vehicleType: document.getElementById('vehicleType').value,
+        make: document.getElementById('make').value.trim(),
+        model: document.getElementById('model').value.trim(),
+        regNo: document.getElementById('regNo').value.trim(),
+        loanAmount: +document.getElementById('loanAmount').value,
+        financeAmount: +document.getElementById('financeAmount').value,
+        interestRate: +document.getElementById('interestRate').value,
+        installmentPeriod: +document.getElementById('installmentPeriod').value,
+        loanStartDate: document.getElementById('loanStartDate').value,
+        rcDetails: {
+          status: document.getElementById('rcStatus').value.trim(),
+          paidThrough: document.getElementById('rcPaidThrough').value.trim(),
+          chequeNumber: document.getElementById('rcChequeNumber').value.trim(),
+          amount: +document.getElementById('rcAmount').value || 0,
+        },
+        noc: document.getElementById('noc').value.trim(),
+        insurance: document.getElementById('insurance').value.trim(),
+        idProof: document.getElementById('idProof').value.trim(),
+        keyStatus: document.getElementById('keyStatus').value.trim(),
+        salesDoneBy: document.getElementById('salesDoneBy').value.trim(),
+        customerName: document.getElementById('customerName').value.trim(),
+        address: document.getElementById('address').value.trim(),
+        cellNumbers,
+        guarantor: {
+          name: document.getElementById('guarantorName').value.trim(),
+          address: document.getElementById('guarantorAddress').value.trim(),
+        },
+        chequesReceived,
+      };
+
+      try {
+        const loan = await Loans.create(payload);
+        window.location.href = `/pages/client-detail.html?id=${loan._id}`;
+      } catch (err) {
+        errorMsg.textContent = err.message || 'Failed to create loan.';
+      }
+    });
+  </script>
+</body>
+</html>

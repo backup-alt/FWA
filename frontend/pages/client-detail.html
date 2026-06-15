@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Client Detail - Vehicle Finance</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <h1 id="clientTitle">Client Detail</h1>
+    <div class="actions">
+      <a href="/pages/dashboard.html" style="color:#fff;">← Dashboard</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="errorMsg" class="error-msg"></div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards" id="summaryCards"></div>
+
+    <!-- Client Info -->
+    <div class="section-title">Client & Vehicle Info</div>
+    <div id="clientInfo" class="form-grid"></div>
+
+    <!-- Installment Table -->
+    <div class="section-title">Repayment Schedule</div>
+    <table id="installmentTable">
+      <thead>
+        <tr>
+          <th>S.No</th>
+          <th>Due Date</th>
+          <th>Due Amount</th>
+          <th>Amount Received</th>
+          <th>Date Received</th>
+          <th>Sign / Collector</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="installmentBody"></tbody>
+    </table>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    requireAuth();
+
+    const params = new URLSearchParams(window.location.search);
+    const loanId = params.get('id');
+    const errorMsg = document.getElementById('errorMsg');
+
+    if (!loanId) {
+      errorMsg.textContent = 'No loan ID specified.';
+    }
+
+    let currentLoan = null;
+
+    async function loadLoan() {
+      try {
+        currentLoan = await Loans.get(loanId);
+        renderAll();
+      } catch (err) {
+        errorMsg.textContent = err.message || 'Failed to load loan.';
+      }
+    }
+
+    function renderAll() {
+      document.getElementById('clientTitle').textContent =
+        `${currentLoan.customerName} - ${currentLoan.vehicleType} (${currentLoan.status})`;
+      renderSummaryCards();
+      renderClientInfo();
+      renderInstallments();
+    }
+
+    function renderSummaryCards() {
+      const container = document.getElementById('summaryCards');
+
+      // Determine which installment is "current" (next pending/overdue)
+      const nextDue = currentLoan.installments.find(
+        (i) => i.status === 'Pending' || i.status === 'Overdue' || i.status === 'Partial'
+      );
+
+      container.innerHTML = `
+        <div class="card loan">
+          <div class="label">Loan Amount</div>
+          <div class="value">${formatCurrency(currentLoan.financeAmount)}</div>
+          <div class="sub">Outstanding: ${formatCurrency(currentLoan.outstandingPrincipal)}</div>
+        </div>
+
+        <div class="card due">
+          <div class="label">Monthly Due (EMI)</div>
+          <div class="value">${formatCurrency(currentLoan.emiAmount)}</div>
+          <div class="sub">${nextDue ? 'Next due: ' + formatDate(nextDue.dueDate) : 'No pending installments'}</div>
+        </div>
+
+        <div class="card interest">
+          <div class="label">Interest Amount</div>
+          <div class="value">${formatCurrency(currentLoan.interestAmount)}</div>
+          <div class="sub">${currentLoan.interestRate}% annual (flat rate)</div>
+        </div>
+
+        <div class="card period">
+          <div class="label">Installment Period</div>
+          <div class="value">
+            <input type="number" class="editable-period" id="periodInput"
+              value="${currentLoan.installmentPeriod}" ${currentLoan.status === 'Completed' ? 'disabled' : ''} />
+            months
+          </div>
+          <div class="sub">
+            <button class="save-btn" id="savePeriodBtn" ${currentLoan.status === 'Completed' ? 'disabled' : ''}>
+              Update Period
+            </button>
+          </div>
+        </div>
+      `;
+
+      const saveBtn = document.getElementById('savePeriodBtn');
+      if (saveBtn) {
+        saveBtn.addEventListener('click', updateInstallmentPeriod);
+      }
+    }
+
+    async function updateInstallmentPeriod() {
+      const newPeriod = +document.getElementById('periodInput').value;
+      if (!newPeriod || newPeriod <= 0) {
+        alert('Please enter a valid installment period.');
+        return;
+      }
+      if (newPeriod === currentLoan.installmentPeriod) return;
+
+      try {
+        currentLoan = await Loans.update(loanId, { installmentPeriod: newPeriod });
+        renderAll();
+      } catch (err) {
+        alert(err.message || 'Failed to update installment period.');
+      }
+    }
+
+    function renderClientInfo() {
+      const c = currentLoan;
+      const container = document.getElementById('clientInfo');
+
+      const cells = (c.cellNumbers || [])
+        .map((cn) => `${cn.number}${cn.label ? ' (' + cn.label + ')' : ''}`)
+        .join(', ') || '-';
+
+      const cheques = (c.chequesReceived || [])
+        .map((ch) => `${ch.chequeNumber}${ch.bank ? ' - ' + ch.bank : ''} (${formatCurrency(ch.amount)})`)
+        .join(', ') || '-';
+
+      container.innerHTML = `
+        <div class="form-group"><label>Vehicle</label><div>${c.vehicleType} - ${c.make || '-'} ${c.model || ''}</div></div>
+        <div class="form-group"><label>Reg No</label><div>${c.regNo || '-'}</div></div>
+        <div class="form-group"><label>Loan Amount (L.AMT)</label><div>${formatCurrency(c.loanAmount)}</div></div>
+        <div class="form-group"><label>Finance Amount (F.AMT)</label><div>${formatCurrency(c.financeAmount)}</div></div>
+        <div class="form-group"><label>Loan Start Date</label><div>${formatDate(c.loanStartDate)}</div></div>
+        <div class="form-group"><label>Total Paid</label><div>${formatCurrency(c.totalPaid)}</div></div>
+        <div class="form-group"><label>Address</label><div>${c.address || '-'}</div></div>
+        <div class="form-group"><label>Cell Numbers</label><div>${cells}</div></div>
+        <div class="form-group"><label>Guarantor</label><div>${c.guarantor?.name || '-'} ${c.guarantor?.address ? '- ' + c.guarantor.address : ''}</div></div>
+        <div class="form-group"><label>RC Status</label><div>${c.rcDetails?.status || '-'} ${c.rcDetails?.paidThrough ? 'via ' + c.rcDetails.paidThrough : ''}</div></div>
+        <div class="form-group"><label>NOC</label><div>${c.noc || '-'}</div></div>
+        <div class="form-group"><label>Insurance</label><div>${c.insurance || '-'}</div></div>
+        <div class="form-group"><label>ID Proof</label><div>${c.idProof || '-'}</div></div>
+        <div class="form-group"><label>Key Status</label><div>${c.keyStatus || '-'}</div></div>
+        <div class="form-group"><label>Sales Done By</label><div>${c.salesDoneBy || '-'}</div></div>
+        <div class="form-group"><label>Cheques Received</label><div>${cheques}</div></div>
+      `;
+    }
+
+    function renderInstallments() {
+      const tbody = document.getElementById('installmentBody');
+      tbody.innerHTML = '';
+
+      currentLoan.installments.forEach((inst) => {
+        const tr = document.createElement('tr');
+        const isLocked = currentLoan.status === 'Completed';
+
+        const badgeClass = inst.status.toLowerCase();
+
+        tr.innerHTML = `
+          <td>${inst.sNo}</td>
+          <td>${formatDate(inst.dueDate)}</td>
+          <td>${formatCurrency(inst.dueAmount)}${inst.adjustment ? `<div class="sub" style="font-size:11px;color:${inst.adjustment > 0 ? '#e74c3c' : '#27ae60'}">${inst.adjustment > 0 ? '+' : ''}${formatCurrency(inst.adjustment)} adj.</div>` : ''}</td>
+          <td><input type="number" class="amountInput" data-sno="${inst.sNo}" value="${inst.amountReceived || ''}" ${isLocked ? 'disabled' : ''} /></td>
+          <td><input type="date" class="dateInput" data-sno="${inst.sNo}" value="${formatDateInput(inst.dateReceived)}" ${isLocked ? 'disabled' : ''} /></td>
+          <td><input type="text" class="signInput" data-sno="${inst.sNo}" value="${inst.sign || ''}" placeholder="Collector name" ${isLocked ? 'disabled' : ''} /></td>
+          <td><span class="badge ${badgeClass}">${inst.status}</span></td>
+          <td>
+            <button class="save-btn" data-sno="${inst.sNo}" ${isLocked ? 'disabled' : ''}>Save</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Attach save handlers
+      tbody.querySelectorAll('.save-btn').forEach((btn) => {
+        btn.addEventListener('click', () => savePayment(btn.dataset.sno));
+      });
+    }
+
+    async function savePayment(sNo) {
+      const amountInput = document.querySelector(`.amountInput[data-sno="${sNo}"]`);
+      const dateInput = document.querySelector(`.dateInput[data-sno="${sNo}"]`);
+      const signInput = document.querySelector(`.signInput[data-sno="${sNo}"]`);
+
+      const amountReceived = +amountInput.value || 0;
+      const dateReceived = dateInput.value || new Date().toISOString().split('T')[0];
+      const sign = signInput.value.trim();
+
+      try {
+        currentLoan = await Loans.recordPayment(loanId, sNo, {
+          amountReceived,
+          dateReceived,
+          sign,
+        });
+        renderAll();
+
+        if (currentLoan.status === 'Completed') {
+          alert('🎉 This loan has been fully paid and marked as Completed!');
+        }
+      } catch (err) {
+        alert(err.message || 'Failed to save payment.');
+      }
+    }
+
+    loadLoan();
+  </script>
+</body>
+</html>

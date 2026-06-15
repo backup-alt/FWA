@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Vehicle Finance</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <h1>Vehicle Finance Manager</h1>
+    <div class="actions">
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn active" data-type="">All</button>
+      <button class="tab-btn" data-type="Bike">Bikes</button>
+      <button class="tab-btn" data-type="Car">Cars</button>
+      <button class="tab-btn" data-type="__pending">Pending Dues</button>
+    </div>
+
+    <!-- Pending Dues View -->
+    <div id="pendingView" style="display:none;">
+      <div class="section-title">Outstanding Dues</div>
+      <div class="pending-list" id="pendingList"></div>
+    </div>
+
+    <!-- Client List View -->
+    <div id="clientView">
+      <div class="section-title">Clients</div>
+      <div class="client-list" id="clientList"></div>
+    </div>
+  </div>
+
+  <button class="fab" id="addClientFab" title="Add new client">+</button>
+
+  <script src="/js/api.js"></script>
+  <script>
+    requireAuth();
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try { await Auth.logout(); } catch (e) {}
+      clearToken();
+      window.location.href = '/pages/login.html';
+    });
+
+    document.getElementById('addClientFab').addEventListener('click', () => {
+      window.location.href = '/pages/add-client.html';
+    });
+
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const clientView = document.getElementById('clientView');
+    const pendingView = document.getElementById('pendingView');
+    const clientList = document.getElementById('clientList');
+    const pendingList = document.getElementById('pendingList');
+
+    let currentFilter = '';
+
+    tabBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.type;
+
+        if (currentFilter === '__pending') {
+          clientView.style.display = 'none';
+          pendingView.style.display = 'block';
+          loadPendingDues();
+        } else {
+          pendingView.style.display = 'none';
+          clientView.style.display = 'block';
+          loadClients(currentFilter);
+        }
+      });
+    });
+
+    async function loadClients(vehicleType) {
+      clientList.innerHTML = '<div class="empty-state">Loading...</div>';
+      try {
+        const params = vehicleType ? { vehicleType } : {};
+        const loans = await Loans.list(params);
+
+        if (!loans.length) {
+          clientList.innerHTML = '<div class="empty-state">No clients found. Click + to add one.</div>';
+          return;
+        }
+
+        clientList.innerHTML = '';
+        loans.forEach((loan) => {
+          const row = document.createElement('div');
+          row.className = 'client-row';
+          row.innerHTML = `
+            <div class="info">
+              <h3>${loan.customerName}</h3>
+              <p>${loan.vehicleType} - ${loan.make || ''} ${loan.model || ''} ${loan.regNo ? '(' + loan.regNo + ')' : ''}</p>
+            </div>
+            <div class="meta">
+              <div>${formatCurrency(loan.outstandingPrincipal)} outstanding</div>
+              <span class="badge ${loan.status.toLowerCase()}">${loan.status}</span>
+            </div>
+          `;
+          row.addEventListener('click', () => {
+            window.location.href = `/pages/client-detail.html?id=${loan._id}`;
+          });
+          clientList.appendChild(row);
+        });
+      } catch (err) {
+        clientList.innerHTML = `<div class="empty-state">Error: ${err.message}</div>`;
+      }
+    }
+
+    async function loadPendingDues() {
+      pendingList.innerHTML = '<div class="empty-state">Loading...</div>';
+      try {
+        const dues = await Loans.pendingDues();
+
+        if (!dues.length) {
+          pendingList.innerHTML = '<div class="empty-state">No pending dues. All clients are up to date.</div>';
+          return;
+        }
+
+        pendingList.innerHTML = '';
+        dues.forEach((due) => {
+          const item = document.createElement('div');
+          item.className = 'pending-item';
+          item.innerHTML = `
+            <div class="left">
+              <h4>${due.customerName}</h4>
+              <p>${due.vehicleType} - ${due.make || ''} ${due.model || ''} ${due.regNo ? '(' + due.regNo + ')' : ''} | Installment #${due.sNo} | Due: ${formatDate(due.dueDate)}</p>
+            </div>
+            <div class="right">
+              <div class="amt">${formatCurrency(due.outstandingForThisInstallment)}</div>
+              <div><span class="badge overdue">${due.daysOverdue} days overdue</span></div>
+            </div>
+          `;
+          item.addEventListener('click', () => {
+            window.location.href = `/pages/client-detail.html?id=${due.loanId}`;
+          });
+          pendingList.appendChild(item);
+        });
+      } catch (err) {
+        pendingList.innerHTML = `<div class="empty-state">Error: ${err.message}</div>`;
+      }
+    }
+
+    // Initial load
+    loadClients('');
+  </script>
+</body>
+</html>

@@ -1,4 +1,6 @@
-const API_BASE = import.meta.env.PROD ? 'http://localhost:5000/api' : '/api';
+const API_BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : '/api';
 
 function getToken() {
   return localStorage.getItem('token');
@@ -31,7 +33,7 @@ async function apiRequest(endpoint, options = {}) {
 
   if (res.status === 401) {
     clearToken();
-    window.location.href = `${import.meta.env.BASE_URL}login`;
+    window.location.href = `${import.meta.env.BASE_URL}#/login`;
     return null;
   }
 

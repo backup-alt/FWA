@@ -10,22 +10,22 @@ const systemRoutes = require('./routes/system');
 
 const app = express();
 
-// Connect to MongoDB
+
 connectDB();
 
-// Middleware
+
 app.use(cors());
 app.use(express.json());
 
-// Serve frontend static files (built by Vite)
+
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API routes
+
 app.use('/api/auth', authRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/system', systemRoutes);
 
-// SPA fallback - serve index.html for non-API routes
+
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) {
     return next();

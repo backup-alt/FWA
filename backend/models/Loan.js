@@ -1,32 +1,29 @@
 const mongoose = require('mongoose');
 
-/**
- * Installment Record Schema (Page 117 fields)
- * Embedded inside Loan document as an array
- */
+
 const installmentSchema = new mongoose.Schema(
   {
     sNo: { type: Number, required: true },
-    dueAmount: { type: Number, required: true }, // EMI due for this period
+    dueAmount: { type: Number, required: true },
     dueDate: { type: Date, required: true },
     amountReceived: { type: Number, default: 0 },
     dateReceived: { type: Date, default: null },
-    sign: { type: String, default: '' }, // collector name/signature
+    sign: { type: String, default: '' },
     status: {
       type: String,
       enum: ['Pending', 'Paid', 'Partial', 'Overdue'],
       default: 'Pending',
     },
-    // Tracks how much this installment's due was adjusted due to
-    // previous over/underpayment (positive = extra owed, negative = credit)
+
+
     adjustment: { type: Number, default: 0 },
   },
   { _id: false }
 );
 
-/**
- * Cheque received sub-schema
- */
+
+
+
 const chequeSchema = new mongoose.Schema(
   {
     chequeNumber: { type: String, required: true },
@@ -36,12 +33,12 @@ const chequeSchema = new mongoose.Schema(
   { _id: false }
 );
 
-/**
- * Loan / Client Schema (Page 116 fields + auto-generated schedule)
- */
+
+
+
 const loanSchema = new mongoose.Schema(
   {
-    // --- Vehicle Info ---
+
     vehicleType: {
       type: String,
       enum: ['Bike', 'Car'],
@@ -51,14 +48,14 @@ const loanSchema = new mongoose.Schema(
     model: { type: String, default: '' },
     regNo: { type: String, default: '' },
 
-    // --- Loan/Finance Info ---
-    loanAmount: { type: Number, required: true }, // L. AMT
-    financeAmount: { type: Number, required: true }, // F. AMT (principal financed)
 
-    // RC details
+    loanAmount: { type: Number, required: true },
+    financeAmount: { type: Number, required: true },
+
+
     rcDetails: {
-      status: { type: String, default: '' }, // e.g. "Paid through cheque"
-      paidThrough: { type: String, default: '' }, // e.g. "RAM AUTO CONSULTING"
+      status: { type: String, default: '' },
+      paidThrough: { type: String, default: '' },
       chequeNumber: { type: String, default: '' },
       amount: { type: Number, default: 0 },
     },
@@ -69,13 +66,13 @@ const loanSchema = new mongoose.Schema(
     keyStatus: { type: String, default: '' },
     salesDoneBy: { type: String, default: '' },
 
-    // --- Customer Info ---
+
     customerName: { type: String, required: true },
     address: { type: String, default: '' },
     cellNumbers: [
       {
         number: { type: String, required: true },
-        label: { type: String, default: '' }, // e.g. "Amma Shanthi"
+        label: { type: String, default: '' },
       },
     ],
     guarantor: {
@@ -84,19 +81,19 @@ const loanSchema = new mongoose.Schema(
     },
     chequesReceived: [chequeSchema],
 
-    // --- EMI / Schedule Info ---
-    loanStartDate: { type: Date, required: true },
-    installmentPeriod: { type: Number, required: true }, // in months, user-customizable
-    interestRate: { type: Number, required: true }, // annual %, used for EMI calc
-    interestAmount: { type: Number, default: 0 }, // total interest over the loan
-    emiAmount: { type: Number, default: 0 }, // current EMI (recalculated dynamically)
 
-    // --- Repayment tracking ---
+    loanStartDate: { type: Date, required: true },
+    installmentPeriod: { type: Number, required: true },
+    interestRate: { type: Number, required: true },
+    interestAmount: { type: Number, default: 0 },
+    emiAmount: { type: Number, default: 0 },
+
+
     installments: [installmentSchema],
-    outstandingPrincipal: { type: Number, default: 0 }, // recalculated on each payment
+    outstandingPrincipal: { type: Number, default: 0 },
     totalPaid: { type: Number, default: 0 },
 
-    // --- Status ---
+
     status: {
       type: String,
       enum: ['Active', 'Completed'],

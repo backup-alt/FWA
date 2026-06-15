@@ -1,7 +1,7 @@
-/**
- * api.js
- * Centralized fetch wrapper - attaches JWT token, handles base URL & errors.
- */
+
+
+
+
 
 const API_BASE = '/api';
 
@@ -23,11 +23,11 @@ function requireAuth() {
   }
 }
 
-/**
- * Generic API request helper.
- * @param {string} endpoint - e.g. '/loans'
- * @param {object} options - fetch options (method, body, etc.)
- */
+
+
+
+
+
 async function apiRequest(endpoint, options = {}) {
   const headers = {
     'Content-Type': 'application/json',
@@ -60,7 +60,7 @@ async function apiRequest(endpoint, options = {}) {
   return data;
 }
 
-// --- Auth ---
+
 const Auth = {
   login: (username, password) =>
     apiRequest('/auth/login', { method: 'POST', body: { username, password } }),
@@ -69,7 +69,7 @@ const Auth = {
   logout: () => apiRequest('/auth/logout', { method: 'POST' }),
 };
 
-// --- Loans ---
+
 const Loans = {
   list: (params = {}) => {
     const query = new URLSearchParams(params).toString();
@@ -84,7 +84,7 @@ const Loans = {
   pendingDues: () => apiRequest('/loans/pending-dues'),
 };
 
-// --- Formatting helpers ---
+
 function formatCurrency(amount) {
   return `₹${Number(amount || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 }

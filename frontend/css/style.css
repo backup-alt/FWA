@@ -10,7 +10,7 @@ body {
   color: #2d3436;
 }
 
-/* ---------- Login ---------- */
+
 .login-wrapper {
   display: flex;
   align-items: center;
@@ -63,7 +63,7 @@ body {
   min-height: 16px;
 }
 
-/* ---------- Layout ---------- */
+
 .topbar {
   background: #2c3e50;
   color: #fff;
@@ -99,7 +99,7 @@ body {
   margin: 0 auto;
 }
 
-/* ---------- Tabs / Filters ---------- */
+
 .tabs {
   display: flex;
   gap: 10px;
@@ -121,7 +121,7 @@ body {
   border-color: #2c3e50;
 }
 
-/* ---------- Cards ---------- */
+
 .summary-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -171,7 +171,7 @@ body {
   border-radius: 4px;
 }
 
-/* ---------- Status badges ---------- */
+
 .badge {
   padding: 3px 10px;
   border-radius: 12px;
@@ -187,7 +187,7 @@ body {
 .badge.paid { background: #eafaf1; color: #27ae60; }
 .badge.partial { background: #fef5e7; color: #d35400; }
 
-/* ---------- Table ---------- */
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -242,7 +242,7 @@ td input[type="date"] {
   background: #1e8449;
 }
 
-/* ---------- Client List ---------- */
+
 .client-list {
   display: grid;
   gap: 12px;
@@ -279,7 +279,7 @@ td input[type="date"] {
   font-size: 13px;
 }
 
-/* ---------- Pending Dues ---------- */
+
 .pending-list {
   display: grid;
   gap: 10px;
@@ -316,7 +316,7 @@ td input[type="date"] {
   color: #e74c3c;
 }
 
-/* ---------- Forms ---------- */
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

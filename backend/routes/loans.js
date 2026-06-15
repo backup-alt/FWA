@@ -32,14 +32,14 @@ function refreshLoanTotals(loan) {
   }
 }
 
-// All routes below require authentication
+
 router.use(authMiddleware);
 
-/**
- * POST /api/loans
- * Create a new client/loan record (Page 116 fields).
- * Automatically generates the installment schedule (Page 117).
- */
+
+
+
+
+
 router.post('/', async (req, res) => {
   try {
     const {
@@ -116,10 +116,10 @@ router.post('/', async (req, res) => {
   }
 });
 
-/**
- * GET /api/loans
- * List all loans. Optional query params: ?vehicleType=Bike|Car&status=Active|Completed
- */
+
+
+
+
 router.get('/', async (req, res) => {
   try {
     const filter = {};
@@ -134,11 +134,11 @@ router.get('/', async (req, res) => {
   }
 });
 
-/**
- * GET /api/loans/pending-dues
- * Owner dashboard: list all overdue/unpaid installments across all active loans.
- * NOTE: placed before /:id to avoid route collision.
- */
+
+
+
+
+
 router.get('/pending-dues', async (req, res) => {
   try {
     const loans = await Loan.find({ status: 'Active' });
@@ -150,10 +150,10 @@ router.get('/pending-dues', async (req, res) => {
   }
 });
 
-/**
- * GET /api/loans/:id
- * Get a single loan/client with full installment schedule.
- */
+
+
+
+
 router.get('/:id', async (req, res) => {
   try {
     const loan = await Loan.findById(req.params.id);
@@ -165,16 +165,16 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-/**
- * PUT /api/loans/:id
- * Update top-level client/loan fields (Page 116 details).
- * Does NOT touch the installment schedule directly - use the
- * /:id/installments/:sNo endpoint for payments.
- *
- * If installmentPeriod or interestRate is changed on an Active loan,
- * the remaining schedule is regenerated based on the current
- * outstanding principal.
- */
+
+
+
+
+
+
+
+
+
+
 router.put('/:id', async (req, res) => {
   try {
     const loan = await Loan.findById(req.params.id);
@@ -204,7 +204,7 @@ router.put('/:id', async (req, res) => {
       }
     });
 
-    // Handle installment period / interest rate change (re-amortize remaining balance)
+    
     const periodChanged =
       req.body.installmentPeriod !== undefined &&
       req.body.installmentPeriod !== loan.installmentPeriod;
@@ -215,7 +215,7 @@ router.put('/:id', async (req, res) => {
       const newPeriod = req.body.installmentPeriod || loan.installmentPeriod;
       const newRate = req.body.interestRate || loan.interestRate;
 
-      // Find how many installments are already fully paid
+      
       const paidInstallments = loan.installments.filter((i) => i.status === 'Paid');
       const remainingCount = newPeriod - paidInstallments.length;
 
@@ -238,7 +238,7 @@ router.put('/:id', async (req, res) => {
         loanStartDate: lastPaidDate,
       });
 
-      // Re-number sNo to continue from paid installments
+      
       newInstallments.forEach((inst, idx) => {
         inst.sNo = paidInstallments.length + idx + 1;
       });
@@ -257,14 +257,14 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-/**
- * PUT /api/loans/:id/installments/:sNo
- * Record/update a payment for a specific installment.
- * Triggers the recalculation logic for over/underpayment.
- *
- * Body may include:
- * { sNo, dueAmount, dueDate, amountReceived, dateReceived, sign, completed }
- */
+
+
+
+
+
+
+
+
 router.put('/:id/installments/:sNo', async (req, res) => {
   try {
     const loan = await Loan.findById(req.params.id);
@@ -346,7 +346,7 @@ router.put('/:id/installments/:sNo', async (req, res) => {
       amountReceived !== undefined;
 
     if (financialFieldsChanged) {
-      // Run the recalculation engine
+      
       recalculateSchedule(loan, nextSNo);
     } else if (installment.status !== 'Paid') {
       installment.status = new Date(installment.dueDate) < new Date() ? 'Overdue' : 'Pending';
@@ -360,10 +360,10 @@ router.put('/:id/installments/:sNo', async (req, res) => {
   }
 });
 
-/**
- * DELETE /api/loans/:id
- * Delete a loan/client record entirely.
- */
+
+
+
+
 router.delete('/:id', async (req, res) => {
   try {
     const loan = await Loan.findByIdAndDelete(req.params.id);

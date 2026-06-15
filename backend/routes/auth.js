@@ -5,11 +5,11 @@ const User = require('../models/User');
 
 const router = express.Router();
 
-/**
- * POST /api/auth/register
- * Creates a new user. In production, you'd lock this down or run it once
- * to create the owner account, then remove/protect this route.
- */
+
+
+
+
+
 router.post('/register', async (req, res) => {
   try {
     const { username, password, role } = req.body;
@@ -40,10 +40,10 @@ router.post('/register', async (req, res) => {
   }
 });
 
-/**
- * POST /api/auth/login
- * Validates credentials, issues a JWT, and stores it on the user document.
- */
+
+
+
+
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -68,7 +68,7 @@ router.post('/login', async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
 
-    // Store token on user doc (allows revocation/logout tracking)
+    
     user.tokens.push({ token });
     await user.save();
 
@@ -82,10 +82,10 @@ router.post('/login', async (req, res) => {
   }
 });
 
-/**
- * POST /api/auth/logout
- * Removes the current token from the user's token list.
- */
+
+
+
+
 router.post('/logout', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;

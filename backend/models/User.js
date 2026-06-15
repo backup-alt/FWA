@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    // Active session tokens (optional - useful if you want to support logout/revoke)
+    
     tokens: [
       {
         token: { type: String, required: true },

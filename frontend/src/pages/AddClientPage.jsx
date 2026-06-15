@@ -115,7 +115,7 @@ export function AddClientPage() {
   const onSubmit = async (data) => {
     setSubmitting(true);
     try {
-      // Clean empty arrays/objects
+      
       const payload = {
         ...data,
         cellNumbers: data.cellNumbers?.filter(c => c.number) || [],

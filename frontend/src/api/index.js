@@ -1,4 +1,4 @@
-const API_BASE = '/api';
+const API_BASE = import.meta.env.PROD ? 'http://localhost:5000/api' : '/api';
 
 function getToken() {
   return localStorage.getItem('token');
@@ -31,7 +31,7 @@ async function apiRequest(endpoint, options = {}) {
 
   if (res.status === 401) {
     clearToken();
-    window.location.href = '/login';
+    window.location.href = `${import.meta.env.BASE_URL}login`;
     return null;
   }
 

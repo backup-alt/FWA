@@ -23,7 +23,7 @@ export function AuthProvider({ children }) {
     } finally {
       clearToken();
       setUser(null);
-      window.location.href = '/login';
+      window.location.href = `${import.meta.env.BASE_URL}login`;
     }
   }, []);
 

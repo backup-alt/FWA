@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
+  base: '/FWA/',
   plugins: [react()],
   resolve: {
     alias: {
@@ -19,7 +20,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: '../backend/public',
+    outDir: 'dist',
     emptyOutDir: true,
   },
 })

@@ -196,9 +196,9 @@ export function ClientDetailPage() {
         />
         <CardContent className="p-5">
           <div className="mb-6 rounded-lg border border-gray-200 p-4 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-            <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-5 mb-4">
+            <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-3 lg:grid-cols-6 mb-4">
               <div>
-                <p className="text-gray-500 dark:text-gray-400">Principal Amount</p>
+                <p className="text-gray-500 dark:text-gray-400">Given Amount (Principal)</p>
                 <p className="mt-1 text-lg font-semibold text-gray-950 dark:text-white">{formatCurrency(loan.financeAmount)}</p>
               </div>
               <div>
@@ -206,15 +206,19 @@ export function ClientDetailPage() {
                 <p className="mt-1 text-lg font-semibold text-gray-950 dark:text-white">{formatCurrency(loan.interestAmount)}</p>
               </div>
               <div>
+                <p className="text-gray-500 dark:text-gray-400">Total Payable</p>
+                <p className="mt-1 text-lg font-semibold text-primary-600 dark:text-primary-400">{formatCurrency(loan.financeAmount + loan.interestAmount)}</p>
+              </div>
+              <div>
                 <p className="text-gray-500 dark:text-gray-400">Total Paid</p>
                 <p className="mt-1 text-lg font-semibold text-green-600 dark:text-green-400">{formatCurrency(loan.totalPaid)}</p>
               </div>
               <div>
-                <p className="text-gray-500 dark:text-gray-400">Outstanding</p>
+                <p className="text-gray-500 dark:text-gray-400">Outstanding Balance</p>
                 <p className="mt-1 text-lg font-semibold text-red-600 dark:text-red-400">{formatCurrency(loan.outstandingPrincipal)}</p>
               </div>
               <div>
-                <p className="text-gray-500 dark:text-gray-400">Monthly Due</p>
+                <p className="text-gray-500 dark:text-gray-400">Installment Amount</p>
                 <p className="mt-1 text-lg font-semibold text-gray-950 dark:text-white">{formatCurrency(loan.emiAmount)}</p>
               </div>
             </div>

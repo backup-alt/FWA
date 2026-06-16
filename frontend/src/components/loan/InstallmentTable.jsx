@@ -22,7 +22,7 @@ function normalizeInstallments(installments = []) {
   const normalized = installments
     .map((inst) => ({
       ...inst,
-      dueAmount: roundMoney(Number(inst.dueAmount || 0) - Number(inst.adjustment || 0)),
+      dueAmount: roundMoney(Number(inst.dueAmount || 0)),
       adjustment: 0,
       pendingAmount: 0,
       shortfallAmount: 0,
@@ -31,37 +31,45 @@ function normalizeInstallments(installments = []) {
     .sort((a, b) => a.sNo - b.sNo);
 
   let carry = 0;
-  let carriedDisplayPlaced = false;
+  let pendingPlaced = false;
+  const now = new Date();
 
   normalized.forEach((inst) => {
     const dueAmount = roundMoney(inst.dueAmount);
     const received = roundMoney(inst.amountReceived);
+    const acted = hasActivity(inst);
+    const isPastDue = new Date(inst.dueDate) < now;
 
-    if (hasActivity(inst)) {
-      const requiredAmount = roundMoney(dueAmount + Math.max(carry, 0) - Math.max(-carry, 0));
-      const nextCarry = roundMoney(Math.max(requiredAmount, 0) - received);
-      const credit = roundMoney(received - Math.max(requiredAmount, 0));
-
-      inst.shortfallAmount = received < dueAmount && nextCarry > 0 ? nextCarry : 0;
-      inst.extraAmount = credit > 0 ? credit : 0;
-      carry = nextCarry > 0 ? nextCarry : credit > 0 ? -credit : 0;
-      carriedDisplayPlaced = false;
-      return;
-    }
-
-    if (carry > 0 && !carriedDisplayPlaced) {
-      inst.pendingAmount = carry;
-      carriedDisplayPlaced = true;
-    } else if (carry < 0 && !carriedDisplayPlaced) {
-      inst.extraAmount = Math.abs(carry);
-      carriedDisplayPlaced = true;
+    if (acted) {
+      if (received <= 0) {
+        carry = roundMoney(carry + dueAmount);
+      } else {
+        carry = roundMoney(carry + dueAmount - received);
+        if (received < dueAmount) {
+          inst.shortfallAmount = roundMoney(dueAmount - received);
+        }
+        if (carry < 0) {
+          inst.extraAmount = Math.abs(carry);
+        }
+      }
+      pendingPlaced = false;
+    } else {
+      if (!pendingPlaced) {
+        if (carry > 0) inst.pendingAmount = carry;
+        else if (carry < 0) inst.extraAmount = Math.abs(carry);
+        pendingPlaced = true;
+      }
+      if (isPastDue) {
+        carry = roundMoney(carry + dueAmount);
+        pendingPlaced = false;
+      }
     }
   });
 
-  if (carry > 0 && !carriedDisplayPlaced && normalized.length > 0) {
-    normalized[normalized.length - 1].pendingAmount = carry;
-  } else if (carry < 0 && !carriedDisplayPlaced && normalized.length > 0) {
-    normalized[normalized.length - 1].extraAmount = Math.abs(carry);
+  if (!pendingPlaced && normalized.length > 0) {
+    const last = normalized[normalized.length - 1];
+    if (carry > 0) last.pendingAmount = carry;
+    else if (carry < 0) last.extraAmount = Math.abs(carry);
   }
 
   return normalized;

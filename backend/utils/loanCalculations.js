@@ -79,13 +79,6 @@ function hasInstallmentActivity(inst) {
   );
 }
 
-function restoreBaseDue(inst) {
-  if (Number(inst.adjustment || 0) !== 0) {
-    inst.dueAmount = roundMoney((inst.dueAmount || 0) - (inst.adjustment || 0));
-  }
-  inst.adjustment = 0;
-}
-
 function markOpenStatus(inst, now = new Date()) {
   inst.status = new Date(inst.dueDate) < now ? 'Overdue' : 'Pending';
 }
@@ -93,60 +86,96 @@ function markOpenStatus(inst, now = new Date()) {
 function recalculateSchedule(loan) {
   const installments = (loan.installments || []).sort((a, b) => a.sNo - b.sNo);
   const now = new Date();
+  const period = installments.length;
+  if (period === 0) return loan;
 
-  installments.forEach((inst) => {
-    restoreBaseDue(inst);
+  // ── Step 1: Force every dueAmount to the uniform EMI ──
+  const { totalPayable, emi } = calculateFlatEMI(
+    loan.financeAmount,
+    loan.interestRate,
+    period,
+    loan.installmentPeriodUnit || 'Months'
+  );
+
+  installments.forEach((inst, idx) => {
+    if (idx === period - 1) {
+      // Last installment absorbs any rounding remainder
+      const sumSoFar = roundMoney(emi * (period - 1));
+      inst.dueAmount = roundMoney(totalPayable - sumSoFar);
+    } else {
+      inst.dueAmount = emi;
+    }
+    inst.adjustment = 0;
     inst.pendingAmount = 0;
     inst.shortfallAmount = 0;
     inst.extraAmount = 0;
   });
 
-  let carry = 0; // positive = pending amount, negative = credit
-  let carriedDisplayPlaced = false;
+  // ── Step 2: Running carry balance ──
+  // carry > 0 → customer still owes from prior shortfalls
+  // carry < 0 → customer has credit from prior overpayments
+  let carry = 0;
+  let pendingPlaced = false;
 
   installments.forEach((inst) => {
     const dueAmount = roundMoney(inst.dueAmount);
     const received = roundMoney(inst.amountReceived);
     const acted = hasInstallmentActivity(inst);
+    const isPastDue = new Date(inst.dueDate) < now;
 
     if (acted) {
-      const requiredAmount = roundMoney(dueAmount + Math.max(carry, 0) - Math.max(-carry, 0));
-      const nextCarry = roundMoney(Math.max(requiredAmount, 0) - received);
-      const credit = roundMoney(received - Math.max(requiredAmount, 0));
-
-      inst.shortfallAmount = received < dueAmount && nextCarry > 0 ? nextCarry : 0;
-      inst.extraAmount = credit > 0 ? credit : 0;
-
       if (received <= 0) {
+        // Activity marker exists but nothing received
         markOpenStatus(inst, now);
-      } else if (received >= requiredAmount) {
-        inst.status = 'Paid';
+        carry = roundMoney(carry + dueAmount);
       } else {
-        inst.status = 'Partial';
+        // Update running balance: carry += whatTheyOwe − whatTheyPaid
+        carry = roundMoney(carry + dueAmount - received);
+
+        // Status is based on whether they paid at least the base EMI
+        if (received >= dueAmount) {
+          inst.status = 'Paid';
+        } else {
+          inst.status = 'Partial';
+          inst.shortfallAmount = roundMoney(dueAmount - received);
+        }
+
+        // Show credit only when overall carry is negative
+        if (carry < 0) {
+          inst.extraAmount = Math.abs(carry);
+        }
+      }
+      pendingPlaced = false;
+    } else {
+      // Not acted on — mark Overdue or Pending by date
+      markOpenStatus(inst, now);
+
+      // Show the accumulated carry on the first unacted row
+      if (!pendingPlaced) {
+        if (carry > 0) {
+          inst.pendingAmount = carry;
+        } else if (carry < 0) {
+          inst.extraAmount = Math.abs(carry);
+        }
+        pendingPlaced = true;
       }
 
-      carry = nextCarry > 0 ? nextCarry : credit > 0 ? -credit : 0;
-      carriedDisplayPlaced = false;
-      return;
+      // If past due, this row's due adds to carry and we re-show on next row
+      if (isPastDue) {
+        carry = roundMoney(carry + dueAmount);
+        pendingPlaced = false;
+      }
     }
-
-    if (carry > 0 && !carriedDisplayPlaced) {
-      inst.pendingAmount = carry;
-      carriedDisplayPlaced = true;
-    } else if (carry < 0 && !carriedDisplayPlaced) {
-      inst.extraAmount = Math.abs(carry);
-      carriedDisplayPlaced = true;
-    }
-
-    markOpenStatus(inst, now);
   });
 
-  if (carry > 0 && !carriedDisplayPlaced && installments.length > 0) {
-    installments[installments.length - 1].pendingAmount = carry;
-  } else if (carry < 0 && !carriedDisplayPlaced && installments.length > 0) {
-    installments[installments.length - 1].extraAmount = Math.abs(carry);
+  // Fallback: ensure carry is always displayed somewhere
+  if (!pendingPlaced && installments.length > 0) {
+    const last = installments[installments.length - 1];
+    if (carry > 0) last.pendingAmount = carry;
+    else if (carry < 0) last.extraAmount = Math.abs(carry);
   }
 
+  // ── Step 3: Loan-level aggregates ──
   loan.totalPaid = roundMoney(
     installments.reduce((sum, inst) => sum + Number(inst.amountReceived || 0), 0)
   );
@@ -157,11 +186,11 @@ function recalculateSchedule(loan) {
 
   loan.outstandingPrincipal = Math.max(roundMoney(scheduledTotal - loan.totalPaid), 0);
 
-  const nextOpen = installments.find((inst) => inst.status !== 'Paid' || Number(inst.pendingAmount || 0) > 0);
+  const nextOpen = installments.find((inst) => inst.status !== 'Paid');
   loan.emiAmount = nextOpen ? roundMoney(nextOpen.dueAmount) : 0;
 
-  const hasPendingCarry = installments.some((inst) => Number(inst.pendingAmount || 0) > 0 || Number(inst.shortfallAmount || 0) > 0);
-  if (loan.outstandingPrincipal <= 0 && !hasPendingCarry) {
+  // Loan cannot close while any carry remains
+  if (loan.outstandingPrincipal <= 0 && carry <= 0) {
     loan.status = 'Completed';
     loan.completedAt = loan.completedAt || new Date();
   } else {

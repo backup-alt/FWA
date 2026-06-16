@@ -41,11 +41,20 @@ export function InstallmentRow({
   };
 
   const handleSave = async () => {
+    let submitAmount = +localAmount || 0;
+    const isLastRow = data.sNo === loan.installments.length;
+    const maxAllowed = Number(data.dueAmount || 0) + Number(data.pendingAmount || 0);
+
+    if (isLastRow && submitAmount > maxAllowed) {
+      alert(`Cannot overpay the final installment. The maximum remaining balance is ₹${maxAllowed}`);
+      return;
+    }
+
     await onSave(inst.sNo, {
       sNo: +localSNo || inst.sNo,
       dueAmount: +localDueAmount || 0,
       dueDate: localDueDate,
-      amountReceived: +localAmount || 0,
+      amountReceived: submitAmount,
       dateReceived: localDate || null,
     });
     setEditing(false);

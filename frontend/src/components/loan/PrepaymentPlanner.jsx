@@ -29,10 +29,10 @@ export function PrepaymentPlanner({ loan }) {
   // Mode: Target EMI
   const tEmi = Number(targetEmi);
   let emiExtraNeeded = 0;
-  if (tEmi > 0 && tEmi < currentEmi && currentPeriod > 0) {
+  if (tEmi > 0 && tEmi < currentEmi && currentPeriod > 1) {
     const drop = currentEmi - tEmi;
-    // The drop needs to be distributed over the remaining installments
-    emiExtraNeeded = roundMoney(drop * currentPeriod);
+    // The drop needs to be distributed over the SUBSEQUENT unacted installments
+    emiExtraNeeded = roundMoney(drop * (currentPeriod - 1));
   }
 
   // Mode: Target Period
@@ -55,15 +55,15 @@ export function PrepaymentPlanner({ loan }) {
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         title="Prepayment Planner"
-        size="md"
+        size="lg"
       >
-        <div className="space-y-6 text-gray-900 dark:text-gray-100">
+        <div className="space-y-6 text-gray-900 dark:text-gray-100 p-2">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Calculate how much extra the client needs to pay today to reach a specific goal.
+            Calculate exactly how much extra the client needs to pay today to reach their desired goal.
           </p>
 
           {currentPeriod === 0 ? (
-            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm">
+            <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 text-center text-gray-500">
               This loan has no remaining unacted installments.
             </div>
           ) : (
@@ -105,7 +105,7 @@ export function PrepaymentPlanner({ loan }) {
                         step="0.01"
                         value={targetEmi}
                         onChange={e => setTargetEmi(e.target.value)}
-                        className="block w-full rounded-md border-gray-300 pl-7 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white sm:text-sm"
+                        className="block w-full rounded-lg border-gray-300 py-3 pl-8 text-lg focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
                         placeholder={`Current: ${currentEmi}`}
                       />
                     </div>
@@ -158,7 +158,7 @@ export function PrepaymentPlanner({ loan }) {
                       step="1"
                       value={targetPeriod}
                       onChange={e => setTargetPeriod(e.target.value)}
-                      className="mt-1 block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white sm:text-sm"
+                      className="mt-1 block w-full rounded-lg border-gray-300 py-3 px-4 text-lg focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
                       placeholder={`Current: ${currentPeriod}`}
                     />
                     <p className="mt-1.5 text-xs text-gray-500">

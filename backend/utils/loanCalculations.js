@@ -127,14 +127,14 @@ function recalculateSchedule(loan) {
           const surplus = Math.abs(carry);
           carry = 0;
           
-          const unacted = installments.slice(idx + 1).filter(i => !hasInstallmentActivity(i));
-          const count = unacted.length;
+          const subsequent = installments.slice(idx + 1);
+          const count = subsequent.length;
           
           if (count > 0) {
             const baseShare = roundMoney(surplus / count);
             let distributed = 0;
             
-            unacted.forEach((uInst, uIdx) => {
+            subsequent.forEach((uInst, uIdx) => {
               if (uIdx === count - 1) {
                 uInst.adjustment = roundMoney((uInst.adjustment || 0) + surplus - distributed);
               } else {

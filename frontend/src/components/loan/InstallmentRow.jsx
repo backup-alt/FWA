@@ -123,8 +123,10 @@ export function InstallmentRow({
         {(() => {
           const due = data.dueAmount || 0;
           const received = data.amountReceived || 0;
-          const pendingAmt = Math.max(due - received, 0);
-          if (pendingAmt > 0) return <span className="text-red-500">{formatCurrency(pendingAmt)}</span>;
+          if (received > 0 && received < due) {
+            const pendingAmt = due - received;
+            return <span className="text-red-500">{formatCurrency(pendingAmt)}</span>;
+          }
           return <span className="text-gray-400">-</span>;
         })()}
       </td>

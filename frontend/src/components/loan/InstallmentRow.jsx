@@ -85,11 +85,15 @@ export function InstallmentRow({
             {(() => {
               const carriedPending = Number(data.pendingAmount || 0);
               const shortfall = Number(data.shortfallAmount || 0);
+              const extraAmt = Number(data.extraAmount || 0);
               if (carriedPending > 0) {
                 return <div className="mt-0.5 text-xs text-red-600 dark:text-red-400">+ {formatCurrency(carriedPending)} pending</div>;
               }
               if (shortfall > 0) {
                 return <div className="mt-0.5 text-xs text-red-600 dark:text-red-400">{formatCurrency(shortfall)} short paid</div>;
+              }
+              if (extraAmt > 0) {
+                return <div className="mt-0.5 text-xs text-green-600 dark:text-green-400">- {formatCurrency(extraAmt)} extra</div>;
               }
               return null;
             })()}
@@ -125,16 +129,7 @@ export function InstallmentRow({
           </span>
         )}
       </td>
-      <td className="px-4 py-3 text-sm font-medium">
-        <span className="text-gray-400">-</span>
-      </td>
-      <td className="px-4 py-3 text-sm font-medium">
-        {(() => {
-          const extraAmt = Number(data.extraAmount || 0);
-          if (extraAmt > 0) return <span className="text-green-500">{formatCurrency(extraAmt)}</span>;
-          return <span className="text-gray-400">-</span>;
-        })()}
-      </td>
+
       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
         {editing ? (
           <DatePicker

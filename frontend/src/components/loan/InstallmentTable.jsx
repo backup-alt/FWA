@@ -134,8 +134,6 @@ export function InstallmentTable({ loan, onRecordPayment, saving }) {
               <TableHead>Due Amount</TableHead>
               <TableHead>Due Date</TableHead>
               <TableHead>Amount Received</TableHead>
-              <TableHead>Pending</TableHead>
-              <TableHead>Extra</TableHead>
               <TableHead>Date Received</TableHead>
               <TableHead>Completed</TableHead>
               <TableHead className="w-28">Actions</TableHead>

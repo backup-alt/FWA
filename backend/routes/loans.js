@@ -106,10 +106,16 @@ router.get('/', async (req, res) => {
     if (req.query.customerId) filter.customerId = req.query.customerId;
 
     const loans = await Loan.find(filter).sort({ createdAt: -1 });
-    await Promise.all(loans.map((loan) => {
-      recalculateSchedule(loan);
-      return loan.save();
-    }));
+    // Recalculate schedule in-memory, save best-effort
+    for (const loan of loans) {
+      try {
+        recalculateSchedule(loan);
+        await loan.save();
+      } catch (saveErr) {
+        // Don't let one bad loan crash the entire list
+        console.warn(`Could not save recalculated loan ${loan._id}:`, saveErr.message);
+      }
+    }
     res.json(loans);
   } catch (err) {
     console.error(err);
@@ -135,7 +141,11 @@ router.get('/:id', async (req, res) => {
     const loan = await Loan.findById(req.params.id);
     if (!loan) return res.status(404).json({ message: 'Loan not found.' });
     recalculateSchedule(loan);
-    await loan.save();
+    try {
+      await loan.save();
+    } catch (saveErr) {
+      console.warn(`Could not save recalculated loan ${loan._id}:`, saveErr.message);
+    }
     res.json(loan);
   } catch (err) {
     console.error(err);

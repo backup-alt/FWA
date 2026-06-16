@@ -54,7 +54,7 @@ const loanSchema = new mongoose.Schema(
     customerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Customer',
-      required: true,
+      default: null,
     },
 
     // Keep customerName for backward compat & quick access

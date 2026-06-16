@@ -55,7 +55,7 @@ export function PortfolioSummary({ loans = [] }) {
     { label: 'Total Collected', value: formatCurrency(totalCollected), color: 'success', icon: BanknotesIcon },
     { label: 'Active Loans', value: activeLoans.length, color: 'info', icon: ClipboardDocumentListIcon },
     { label: 'Completed Loans', value: completedLoans.length, color: 'success', icon: CheckCircleIcon },
-    { label: 'Total Clients', value: loans.length, color: 'gray', icon: UserGroupIcon },
+    { label: 'Total Customers', value: new Set(loans.map(l => l.customerId || l.customerName).filter(Boolean)).size || loans.length, color: 'gray', icon: UserGroupIcon },
   ];
 
   return (

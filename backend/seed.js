@@ -1,5 +1,5 @@
 /**
- * Seed script: creates 8 demo customers with 1-2 loans each.
+ * Seed script: creates 5 demo customers with 1-2 loans each.
  * Run: node backend/seed.js
  */
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
@@ -11,102 +11,64 @@ const { generateInstallmentSchedule, recalculateSchedule } = require('./utils/lo
 
 const customers = [
   {
-    name: 'Rajesh Kumar',
-    address: '12, MG Road, Coimbatore, Tamil Nadu 641001',
-    monthlySalary: 35000,
-    cellNumbers: [{ number: '9876543210' }],
-    guarantor: { name: 'Suresh Kumar', address: '14, MG Road, Coimbatore' },
-    idProofType: 'Aadhaar',
-    idProofNumber: '1234 5678 9012',
-    loans: [
-      { vehicleType: 'Car', make: 'Maruti', model: 'Swift', regNo: 'TN-38-AB-1234', loanAmount: 500000, financeAmount: 400000, interestRate: 12, installmentPeriod: 12, salesDoneBy: 'Arun' },
-      { vehicleType: 'Bike', make: 'Honda', model: 'Activa 6G', regNo: 'TN-38-CD-5678', loanAmount: 85000, financeAmount: 70000, interestRate: 10, installmentPeriod: 10, salesDoneBy: 'Arun' },
-    ],
-  },
-  {
-    name: 'Priya Sharma',
-    address: '45, Anna Nagar, Chennai, Tamil Nadu 600040',
-    monthlySalary: 50000,
-    cellNumbers: [{ number: '9988776655' }],
-    guarantor: { name: 'Vikram Sharma', address: '47, Anna Nagar, Chennai' },
-    idProofType: 'PAN',
-    idProofNumber: 'ABCPS1234K',
-    loans: [
-      { vehicleType: 'Car', make: 'Hyundai', model: 'i20', regNo: 'TN-09-EF-9012', loanAmount: 800000, financeAmount: 650000, interestRate: 11, installmentPeriod: 24, salesDoneBy: 'Karthik' },
-    ],
-  },
-  {
-    name: 'Mohammed Irfan',
-    address: '78, Kamarajar Salai, Madurai, Tamil Nadu 625001',
-    monthlySalary: 28000,
-    cellNumbers: [{ number: '9123456789' }, { number: '9234567890' }],
-    guarantor: { name: 'Ali Khan', address: '80, Kamarajar Salai, Madurai' },
-    idProofType: 'Aadhaar',
-    idProofNumber: '9876 5432 1098',
-    loans: [
-      { vehicleType: 'Bike', make: 'TVS', model: 'Apache RTR 160', regNo: 'TN-58-GH-3456', loanAmount: 130000, financeAmount: 110000, interestRate: 10, installmentPeriod: 12, salesDoneBy: 'Arun' },
-      { vehicleType: 'Bike', make: 'Royal Enfield', model: 'Classic 350', regNo: 'TN-58-IJ-7890', loanAmount: 210000, financeAmount: 180000, interestRate: 11, installmentPeriod: 18, salesDoneBy: 'Karthik' },
-    ],
-  },
-  {
-    name: 'Lakshmi Devi',
-    address: '23, Gandhi Nagar, Trichy, Tamil Nadu 620018',
-    monthlySalary: 22000,
-    cellNumbers: [{ number: '9345678901' }],
-    guarantor: { name: 'Murugan S', address: '25, Gandhi Nagar, Trichy' },
-    idProofType: 'Voter ID',
-    idProofNumber: 'XYZ1234567',
-    loans: [
-      { vehicleType: 'Bike', make: 'Hero', model: 'Splendor Plus', regNo: 'TN-45-KL-1122', loanAmount: 75000, financeAmount: 60000, interestRate: 10, installmentPeriod: 10, salesDoneBy: 'Arun' },
-    ],
-  },
-  {
-    name: 'Aravind Swamy',
-    address: '56, Race Course Road, Salem, Tamil Nadu 636007',
-    monthlySalary: 60000,
-    cellNumbers: [{ number: '9456789012' }],
-    guarantor: { name: 'Ganesh R', address: '58, Race Course Road, Salem' },
-    idProofType: 'Driving License',
-    idProofNumber: 'TN-3820160012345',
-    loans: [
-      { vehicleType: 'Car', make: 'Tata', model: 'Nexon', regNo: 'TN-30-MN-3344', loanAmount: 1000000, financeAmount: 800000, interestRate: 12, installmentPeriod: 36, salesDoneBy: 'Karthik' },
-    ],
-  },
-  {
-    name: 'Deepa Menon',
-    address: '91, Sarojini Street, Erode, Tamil Nadu 638001',
-    monthlySalary: 30000,
-    cellNumbers: [{ number: '9567890123' }],
-    guarantor: { name: 'Ramesh Menon', address: '93, Sarojini Street, Erode' },
-    idProofType: 'Aadhaar',
-    idProofNumber: '5555 6666 7777',
-    loans: [
-      { vehicleType: 'Bike', make: 'Yamaha', model: 'FZ-S V3', regNo: 'TN-33-OP-5566', loanAmount: 120000, financeAmount: 100000, interestRate: 10, installmentPeriod: 12, salesDoneBy: 'Arun' },
-      { vehicleType: 'Car', make: 'Renault', model: 'Kwid', regNo: 'TN-33-QR-7788', loanAmount: 450000, financeAmount: 380000, interestRate: 12, installmentPeriod: 18, salesDoneBy: 'Karthik' },
-    ],
-  },
-  {
-    name: 'Karthikeyan P',
-    address: '34, Nehru Street, Tirunelveli, Tamil Nadu 627001',
-    monthlySalary: 40000,
-    cellNumbers: [{ number: '9678901234' }],
-    guarantor: { name: 'Prakash P', address: '36, Nehru Street, Tirunelveli' },
-    idProofType: 'PAN',
-    idProofNumber: 'DMNPK5678L',
-    loans: [
-      { vehicleType: 'Car', make: 'Mahindra', model: 'XUV300', regNo: 'TN-72-ST-9900', loanAmount: 950000, financeAmount: 750000, interestRate: 11.5, installmentPeriod: 24, salesDoneBy: 'Arun' },
-    ],
-  },
-  {
-    name: 'Sangeetha Bala',
-    address: '67, Temple Road, Thanjavur, Tamil Nadu 613001',
+    name: 'Arjun Kumar',
+    address: '42, Cross Cut Road, Coimbatore',
     monthlySalary: 25000,
-    cellNumbers: [{ number: '9789012345' }],
-    guarantor: { name: 'Bala K', address: '69, Temple Road, Thanjavur' },
+    cellNumbers: [{ number: '9876543210' }],
+    guarantor: { name: 'Suresh Kumar', address: '44, Cross Cut Road, Coimbatore' },
     idProofType: 'Aadhaar',
-    idProofNumber: '3333 4444 5555',
+    idProofNumber: '9999 8888 7777',
     loans: [
-      { vehicleType: 'Bike', make: 'Bajaj', model: 'Pulsar 150', regNo: 'TN-43-UV-1234', loanAmount: 100000, financeAmount: 80000, interestRate: 10, installmentPeriod: 10, salesDoneBy: 'Karthik' },
+      { vehicleType: 'Bike', make: 'Honda', model: 'Activa 6G', regNo: 'TN-38-BZ-1001', loanAmount: 85000, financeAmount: 70000, interestRate: 10, installmentPeriod: 12, salesDoneBy: 'Ravi' },
+    ],
+  },
+  {
+    name: 'Meera Krishnan',
+    address: '108, Race Course, Coimbatore',
+    monthlySalary: 85000,
+    cellNumbers: [{ number: '9123456789' }],
+    guarantor: { name: 'Krishnan V', address: '108, Race Course, Coimbatore' },
+    idProofType: 'PAN',
+    idProofNumber: 'ABCDM1234K',
+    loans: [
+      { vehicleType: 'Car', make: 'Tata', model: 'Safari', regNo: 'TN-38-CQ-5555', loanAmount: 1800000, financeAmount: 1500000, interestRate: 11.5, installmentPeriod: 36, salesDoneBy: 'Karthik' },
+    ],
+  },
+  {
+    name: 'S. Karthik',
+    address: '15, RS Puram, Coimbatore',
+    monthlySalary: 45000,
+    cellNumbers: [{ number: '9988776655' }],
+    guarantor: { name: 'Srinivasan', address: '17, RS Puram, Coimbatore' },
+    idProofType: 'Driving License',
+    idProofNumber: 'TN-38202000123',
+    loans: [
+      { vehicleType: 'Car', make: 'Maruti', model: 'Swift', regNo: 'TN-38-DF-2022', loanAmount: 600000, financeAmount: 450000, interestRate: 12, installmentPeriod: 24, salesDoneBy: 'Ravi' },
+      { vehicleType: 'Bike', make: 'Royal Enfield', model: 'Classic 350', regNo: 'TN-38-EF-9090', loanAmount: 220000, financeAmount: 180000, interestRate: 11, installmentPeriod: 18, salesDoneBy: 'Ravi' },
+    ],
+  },
+  {
+    name: 'Ramesh Transports',
+    address: '55, Pollachi Main Road, Coimbatore',
+    monthlySalary: 60000,
+    cellNumbers: [{ number: '9444455555' }],
+    guarantor: { name: 'Rajesh', address: '57, Pollachi Main Road, Coimbatore' },
+    idProofType: 'Aadhaar',
+    idProofNumber: '1111 2222 3333',
+    loans: [
+      { vehicleType: 'Car', make: 'Mahindra', model: 'Bolero', regNo: 'TN-41-AA-7777', loanAmount: 950000, financeAmount: 800000, interestRate: 12.5, installmentPeriod: 36, salesDoneBy: 'Karthik' },
+    ],
+  },
+  {
+    name: 'Divya S.',
+    address: '7, Vadavalli, Coimbatore',
+    monthlySalary: 18000,
+    cellNumbers: [{ number: '9666677777' }],
+    guarantor: { name: 'Selvam', address: '9, Vadavalli, Coimbatore' },
+    idProofType: 'Voter ID',
+    idProofNumber: 'XYZ9876543',
+    loans: [
+      { vehicleType: 'Bike', make: 'TVS', model: 'Jupiter', regNo: 'TN-38-GH-1234', loanAmount: 75000, financeAmount: 50000, interestRate: 10, installmentPeriod: 6, salesDoneBy: 'Ravi' },
     ],
   },
 ];
@@ -132,7 +94,7 @@ async function seed() {
 
       for (const lDef of loanDefs) {
         const loanStartDate = new Date();
-        loanStartDate.setMonth(loanStartDate.getMonth() - 2); // Started 2 months ago
+        loanStartDate.setMonth(loanStartDate.getMonth() - 1); // Started 1 month ago
 
         const { installments, emiAmount, interestAmount } = generateInstallmentSchedule({
           financeAmount: lDef.financeAmount,

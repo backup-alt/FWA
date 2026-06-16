@@ -99,8 +99,13 @@ export function formatDate(dateStr) {
 
 export function formatDateInput(dateStr) {
   if (!dateStr) return '';
-  const d = new Date(dateStr);
-  return d.toISOString().split('T')[0];
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    return d.toISOString().split('T')[0];
+  } catch (err) {
+    return '';
+  }
 }
 
 export { getToken, setToken, clearToken, apiRequest };

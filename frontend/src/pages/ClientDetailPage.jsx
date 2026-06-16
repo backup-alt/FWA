@@ -175,26 +175,6 @@ export function ClientDetailPage() {
               </div>
             ))}
           </dl>
-
-          <div className="mt-5 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
-              <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
-                <div>
-                  <p className="text-gray-500 dark:text-gray-400">Monthly due</p>
-                  <p className="mt-1 text-lg font-semibold text-gray-950 dark:text-white">{formatCurrency(loan.emiAmount)}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500 dark:text-gray-400">Outstanding</p>
-                  <p className="mt-1 text-lg font-semibold text-gray-950 dark:text-white">{formatCurrency(loan.outstandingPrincipal)}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500 dark:text-gray-400">Total paid</p>
-                  <p className="mt-1 text-lg font-semibold text-gray-950 dark:text-white">{formatCurrency(loan.totalPaid)}</p>
-                </div>
-              </div>
-              <PeriodEditor loan={loan} onUpdate={handlePeriodUpdate} updating={updateLoan.isPending} />
-            </div>
-          </div>
         </CardContent>
       </Card>
       ) : (
@@ -215,6 +195,34 @@ export function ClientDetailPage() {
           }
         />
         <CardContent className="p-5">
+          <div className="mb-6 rounded-lg border border-gray-200 p-4 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+            <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-5 mb-4">
+              <div>
+                <p className="text-gray-500 dark:text-gray-400">Principal Amount</p>
+                <p className="mt-1 text-lg font-semibold text-gray-950 dark:text-white">{formatCurrency(loan.financeAmount)}</p>
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-gray-400">Total Interest</p>
+                <p className="mt-1 text-lg font-semibold text-gray-950 dark:text-white">{formatCurrency(loan.interestAmount)}</p>
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-gray-400">Total Paid</p>
+                <p className="mt-1 text-lg font-semibold text-green-600 dark:text-green-400">{formatCurrency(loan.totalPaid)}</p>
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-gray-400">Outstanding</p>
+                <p className="mt-1 text-lg font-semibold text-red-600 dark:text-red-400">{formatCurrency(loan.outstandingPrincipal)}</p>
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-gray-400">Monthly Due</p>
+                <p className="mt-1 text-lg font-semibold text-gray-950 dark:text-white">{formatCurrency(loan.emiAmount)}</p>
+              </div>
+            </div>
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+              <PeriodEditor loan={loan} onUpdate={handlePeriodUpdate} updating={updateLoan.isPending} />
+            </div>
+          </div>
+
           {installments.length === 0 ? (
             <div className="rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
               This client does not have an installment schedule yet.

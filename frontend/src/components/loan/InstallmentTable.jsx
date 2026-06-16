@@ -88,11 +88,6 @@ export function InstallmentTable({ loan, onRecordPayment, saving }) {
           </TableBody>
         </Table>
 
-        <div className="mt-4 flex flex-col gap-2 text-sm text-gray-600 dark:text-gray-400 sm:flex-row sm:items-center sm:justify-between">
-          <span>EMI: {formatCurrency(loan.emiAmount)}</span>
-          <span>Total Paid: {formatCurrency(loan.totalPaid)}</span>
-          <span className="font-medium">Outstanding: {formatCurrency(loan.outstandingPrincipal)}</span>
-        </div>
       </div>
 
       <Modal

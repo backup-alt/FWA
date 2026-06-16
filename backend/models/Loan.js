@@ -17,6 +17,9 @@ const installmentSchema = new mongoose.Schema(
 
 
     adjustment: { type: Number, default: 0 },
+    pendingAmount: { type: Number, default: 0 },
+    shortfallAmount: { type: Number, default: 0 },
+    extraAmount: { type: Number, default: 0 },
   },
   { _id: false }
 );

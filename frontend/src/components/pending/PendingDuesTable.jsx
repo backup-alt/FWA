@@ -48,13 +48,14 @@ export function PendingDuesTable({ dues, sortConfig, onSort, filter }) {
             <SortableHeader sortKey="sNo">Installment</SortableHeader>
             <SortableHeader sortKey="dueDate">Due Date</SortableHeader>
             <SortableHeader sortKey="daysOverdue">Days Overdue</SortableHeader>
+            <SortableHeader sortKey="pendingAmount">Carried Pending</SortableHeader>
             <SortableHeader sortKey="outstandingForThisInstallment">Outstanding</SortableHeader>
           </TableRow>
         </TableHeader>
         <TableBody>
           {sortedDues.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-8 text-gray-500 dark:text-gray-400">
+              <TableCell colSpan={7} className="text-center py-8 text-gray-500 dark:text-gray-400">
                 {dues.length === 0 ? 'No pending dues found' : 'No dues match current filters'}
               </TableCell>
             </TableRow>
@@ -77,6 +78,9 @@ export function PendingDuesTable({ dues, sortConfig, onSort, filter }) {
                   <Badge variant={due.daysOverdue > 30 ? 'danger' : due.daysOverdue > 7 ? 'warning' : 'info'}>
                     {due.daysOverdue} days
                   </Badge>
+                </TableCell>
+                <TableCell className="font-medium text-orange-600 dark:text-orange-400">
+                  {Number(due.pendingAmount || 0) > 0 ? formatCurrency(due.pendingAmount) : '-'}
                 </TableCell>
                 <TableCell className="font-semibold text-red-600 dark:text-red-400">
                   {formatCurrency(due.outstandingForThisInstallment)}

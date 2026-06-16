@@ -121,20 +121,30 @@ export function InstallmentRow({
       </td>
       <td className="px-4 py-3 text-sm font-medium">
         {(() => {
-          const due = data.dueAmount || 0;
-          const received = data.amountReceived || 0;
-          if (received > 0 && received < due) {
-            const pendingAmt = due - received;
-            return <span className="text-red-500">{formatCurrency(pendingAmt)}</span>;
+          const carriedPending = Number(data.pendingAmount || 0);
+          const shortfall = Number(data.shortfallAmount || 0);
+          if (carriedPending > 0) {
+            return (
+              <div>
+                <span className="text-red-600 dark:text-red-400">{formatCurrency(carriedPending)}</span>
+                <div className="mt-0.5 text-xs font-normal text-gray-500 dark:text-gray-400">Carried forward</div>
+              </div>
+            );
+          }
+          if (shortfall > 0) {
+            return (
+              <div>
+                <span className="text-red-600 dark:text-red-400">{formatCurrency(shortfall)}</span>
+                <div className="mt-0.5 text-xs font-normal text-gray-500 dark:text-gray-400">Short paid</div>
+              </div>
+            );
           }
           return <span className="text-gray-400">-</span>;
         })()}
       </td>
       <td className="px-4 py-3 text-sm font-medium">
         {(() => {
-          const due = data.dueAmount || 0;
-          const received = data.amountReceived || 0;
-          const extraAmt = Math.max(received - due, 0);
+          const extraAmt = Number(data.extraAmount || 0);
           if (extraAmt > 0) return <span className="text-green-500">{formatCurrency(extraAmt)}</span>;
           return <span className="text-gray-400">-</span>;
         })()}

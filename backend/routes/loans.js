@@ -9,29 +9,6 @@ const {
 
 const router = express.Router();
 
-function refreshLoanTotals(loan) {
-  const installments = loan.installments || [];
-
-  loan.totalPaid = +installments
-    .reduce((sum, inst) => sum + (inst.amountReceived || 0), 0)
-    .toFixed(2);
-
-  loan.outstandingPrincipal = +installments
-    .reduce((sum, inst) => sum + Math.max((inst.dueAmount || 0) - (inst.amountReceived || 0), 0), 0)
-    .toFixed(2);
-
-  const nextUnpaid = installments.find((inst) => inst.status !== 'Paid');
-  loan.emiAmount = nextUnpaid ? nextUnpaid.dueAmount : 0;
-
-  if (installments.length > 0 && installments.every((inst) => inst.status === 'Paid')) {
-    loan.status = 'Completed';
-    loan.completedAt = loan.completedAt || new Date();
-  } else {
-    loan.status = 'Active';
-    loan.completedAt = null;
-  }
-}
-
 
 router.use(authMiddleware);
 
@@ -66,7 +43,7 @@ router.post('/', async (req, res) => {
       interestRate,
     } = req.body;
 
-    if (!vehicleType || !financeAmount || !installmentPeriod || !interestRate || !customerName || !loanStartDate) {
+    if (!vehicleType || !financeAmount || !installmentPeriod || interestRate === undefined || !customerName || !loanStartDate) {
       return res.status(400).json({
         message:
           'vehicleType, customerName, financeAmount, installmentPeriod, interestRate, and loanStartDate are required.',
@@ -130,6 +107,7 @@ router.get('/', async (req, res) => {
     if (req.query.status) filter.status = req.query.status;
 
     const loans = await Loan.find(filter).sort({ createdAt: -1 });
+    loans.forEach((loan) => recalculateSchedule(loan));
     res.json(loans);
   } catch (err) {
     console.error(err);
@@ -161,6 +139,8 @@ router.get('/:id', async (req, res) => {
   try {
     const loan = await Loan.findById(req.params.id);
     if (!loan) return res.status(404).json({ message: 'Loan not found.' });
+    recalculateSchedule(loan);
+    await loan.save();
     res.json(loan);
   } catch (err) {
     console.error(err);
@@ -336,7 +316,10 @@ router.put('/:id/installments/:sNo', async (req, res) => {
 
     if (completed !== undefined) {
       if (completed) {
-        installment.amountReceived = installment.dueAmount;
+        installment.amountReceived = Math.max(
+          Number(installment.amountReceived || 0),
+          Number(installment.dueAmount || 0)
+        );
         installment.dateReceived = installment.dateReceived || new Date();
         installment.status = 'Paid';
       } else {
@@ -344,19 +327,15 @@ router.put('/:id/installments/:sNo', async (req, res) => {
         installment.dateReceived = null;
         installment.status = new Date(installment.dueDate) < new Date() ? 'Overdue' : 'Pending';
       }
-
-      refreshLoanTotals(loan);
-      await loan.save();
-      return res.json(loan);
     }
 
     const financialFieldsChanged =
       nextSNo !== sNo ||
       nextDueAmount !== undefined ||
-      amountReceived !== undefined;
+      amountReceived !== undefined ||
+      completed !== undefined;
 
     if (financialFieldsChanged) {
-      
       recalculateSchedule(loan, nextSNo);
     } else if (installment.status !== 'Paid') {
       installment.status = new Date(installment.dueDate) < new Date() ? 'Overdue' : 'Pending';

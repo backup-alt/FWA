@@ -1,19 +1,6 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+function roundMoney(value) {
+  return +Number(value || 0).toFixed(2);
+}
 
 function calculateFlatEMI(principal, annualRatePercent, period, unit = 'Months') {
   let years;
@@ -21,21 +8,11 @@ function calculateFlatEMI(principal, annualRatePercent, period, unit = 'Months')
   else if (unit === 'Days') years = period / 365;
   else years = period / 12;
 
-  const totalInterest = +(principal * (annualRatePercent / 100) * years).toFixed(2);
-  const totalPayable = +(principal + totalInterest).toFixed(2);
-  const emi = +(totalPayable / period).toFixed(2);
+  const totalInterest = roundMoney(principal * (annualRatePercent / 100) * years);
+  const totalPayable = roundMoney(principal + totalInterest);
+  const emi = roundMoney(totalPayable / period);
   return { totalInterest, totalPayable, emi };
 }
-
-
-
-
-
-
-
-
-
-
 
 function generateInstallmentSchedule({
   financeAmount,
@@ -54,8 +31,6 @@ function generateInstallmentSchedule({
   const startDate = new Date(loanStartDate);
   const installments = [];
 
-  let runningPayable = totalPayable;
-
   for (let i = 1; i <= installmentPeriod; i++) {
     const dueDate = new Date(startDate);
     if (installmentPeriodUnit === 'Weeks') {
@@ -66,11 +41,10 @@ function generateInstallmentSchedule({
       dueDate.setMonth(dueDate.getMonth() + i);
     }
 
-    
     let dueAmount = emi;
     if (i === installmentPeriod) {
-      const sumSoFar = +(emi * (installmentPeriod - 1)).toFixed(2);
-      dueAmount = +(totalPayable - sumSoFar).toFixed(2);
+      const sumSoFar = roundMoney(emi * (installmentPeriod - 1));
+      dueAmount = roundMoney(totalPayable - sumSoFar);
     }
 
     installments.push({
@@ -82,6 +56,9 @@ function generateInstallmentSchedule({
       sign: '',
       status: 'Pending',
       adjustment: 0,
+      pendingAmount: 0,
+      shortfallAmount: 0,
+      extraAmount: 0,
     });
   }
 
@@ -93,121 +70,107 @@ function generateInstallmentSchedule({
   };
 }
 
+function hasInstallmentActivity(inst) {
+  return (
+    Number(inst.amountReceived || 0) > 0 ||
+    Boolean(inst.dateReceived) ||
+    inst.status === 'Paid' ||
+    inst.status === 'Partial'
+  );
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function recalculateSchedule(loan, paidSNo) {
-  const installments = loan.installments;
-  const idx = installments.findIndex((i) => i.sNo === paidSNo);
-  if (idx === -1) {
-    throw new Error(`Installment with sNo ${paidSNo} not found`);
+function restoreBaseDue(inst) {
+  if (Number(inst.adjustment || 0) !== 0) {
+    inst.dueAmount = roundMoney((inst.dueAmount || 0) - (inst.adjustment || 0));
   }
+  inst.adjustment = 0;
+}
 
-  const current = installments[idx];
-  const dueAmount = current.dueAmount;
-  const received = current.amountReceived || 0;
+function markOpenStatus(inst, now = new Date()) {
+  inst.status = new Date(inst.dueDate) < now ? 'Overdue' : 'Pending';
+}
 
-  const diff = +(received - dueAmount).toFixed(2);
+function recalculateSchedule(loan) {
+  const installments = (loan.installments || []).sort((a, b) => a.sNo - b.sNo);
+  const now = new Date();
 
-  if (received <= 0) {
-    current.status = 'Pending';
-  } else if (received < dueAmount) {
-    current.status = 'Partial';
-  } else {
-    current.status = 'Paid';
-  }
-
-  const remainingInstallments = installments.slice(idx + 1);
-
-  // Restore remaining installments to their base
-  remainingInstallments.forEach(inst => {
-    inst.dueAmount = +(inst.dueAmount - (inst.adjustment || 0)).toFixed(2);
-    inst.adjustment = 0;
+  installments.forEach((inst) => {
+    restoreBaseDue(inst);
+    inst.pendingAmount = 0;
+    inst.shortfallAmount = 0;
+    inst.extraAmount = 0;
   });
 
-  const baseSum = remainingInstallments.reduce((sum, inst) => sum + inst.dueAmount, 0);
-  const newOutstanding = +(baseSum - diff).toFixed(2);
+  let carry = 0; // positive = pending amount, negative = credit
+  let carriedDisplayPlaced = false;
 
-  loan.outstandingPrincipal = Math.max(newOutstanding, 0);
-  loan.totalPaid = +installments
-    .reduce((sum, inst) => sum + (inst.amountReceived || 0), 0)
-    .toFixed(2);
+  installments.forEach((inst) => {
+    const dueAmount = roundMoney(inst.dueAmount);
+    const received = roundMoney(inst.amountReceived);
+    const acted = hasInstallmentActivity(inst);
 
-  if (newOutstanding <= 0 && remainingInstallments.length > 0) {
-    remainingInstallments.forEach((inst) => {
-      inst.dueAmount = 0;
-      inst.adjustment = 0;
-      inst.status = 'Paid';
-    });
-    loan.status = 'Completed';
-    loan.completedAt = new Date();
-    loan.emiAmount = 0;
-    return loan;
-  }
+    if (acted) {
+      const requiredAmount = roundMoney(dueAmount + Math.max(carry, 0) - Math.max(-carry, 0));
+      const nextCarry = roundMoney(Math.max(requiredAmount, 0) - received);
+      const credit = roundMoney(received - Math.max(requiredAmount, 0));
 
-  if (remainingInstallments.length === 0) {
-    if (newOutstanding > 0) {
-      current.adjustment = +(diff).toFixed(2);
-      current.status = 'Partial';
-    } else {
-      loan.status = 'Completed';
-      loan.completedAt = new Date();
-      loan.emiAmount = 0;
-    }
-    return loan;
-  }
+      inst.shortfallAmount = received < dueAmount && nextCarry > 0 ? nextCarry : 0;
+      inst.extraAmount = credit > 0 ? credit : 0;
 
-  let cascade = +(newOutstanding - baseSum).toFixed(2);
-
-  remainingInstallments.forEach((inst) => {
-    if (cascade !== 0) {
-      let targetDue = +(inst.dueAmount + cascade).toFixed(2);
-      if (targetDue < 0) {
-        inst.adjustment = -inst.dueAmount;
-        inst.dueAmount = 0;
-        cascade = targetDue;
+      if (received <= 0) {
+        markOpenStatus(inst, now);
+      } else if (received >= dueAmount) {
+        inst.status = 'Paid';
       } else {
-        inst.adjustment = cascade;
-        inst.dueAmount = targetDue;
-        cascade = 0;
+        inst.status = 'Partial';
       }
+
+      carry = nextCarry > 0 ? nextCarry : credit > 0 ? -credit : 0;
+      carriedDisplayPlaced = false;
+      return;
     }
 
-    if (inst.status === 'Pending' && new Date(inst.dueDate) < new Date()) {
-      inst.status = 'Overdue';
+    if (carry > 0 && !carriedDisplayPlaced) {
+      inst.pendingAmount = carry;
+      carriedDisplayPlaced = true;
+    } else if (carry < 0 && !carriedDisplayPlaced) {
+      inst.extraAmount = Math.abs(carry);
+      carriedDisplayPlaced = true;
     }
+
+    markOpenStatus(inst, now);
   });
 
-  const nextPending = installments.find(
-      (i) => i.status === 'Pending' || i.status === 'Overdue' || i.status === 'Partial'
-    );
-    loan.emiAmount = nextPending ? nextPending.dueAmount : 0;
+  if (carry > 0 && !carriedDisplayPlaced && installments.length > 0) {
+    installments[installments.length - 1].pendingAmount = carry;
+  } else if (carry < 0 && !carriedDisplayPlaced && installments.length > 0) {
+    installments[installments.length - 1].extraAmount = Math.abs(carry);
+  }
+
+  loan.totalPaid = roundMoney(
+    installments.reduce((sum, inst) => sum + Number(inst.amountReceived || 0), 0)
+  );
+
+  const scheduledTotal = roundMoney(
+    installments.reduce((sum, inst) => sum + Number(inst.dueAmount || 0), 0)
+  );
+
+  loan.outstandingPrincipal = Math.max(roundMoney(scheduledTotal - loan.totalPaid), 0);
+
+  const nextOpen = installments.find((inst) => inst.status !== 'Paid' || Number(inst.pendingAmount || 0) > 0);
+  loan.emiAmount = nextOpen ? roundMoney(nextOpen.dueAmount) : 0;
+
+  const hasPendingCarry = installments.some((inst) => Number(inst.pendingAmount || 0) > 0 || Number(inst.shortfallAmount || 0) > 0);
+  if (loan.outstandingPrincipal <= 0 && !hasPendingCarry) {
+    loan.status = 'Completed';
+    loan.completedAt = loan.completedAt || new Date();
+  } else {
+    loan.status = 'Active';
+    loan.completedAt = null;
   }
 
   return loan;
 }
-
-
-
-
-
-
 
 function getPendingDues(loans) {
   const now = new Date();
@@ -216,13 +179,20 @@ function getPendingDues(loans) {
   loans.forEach((loan) => {
     if (loan.status === 'Completed') return;
 
-    loan.installments.forEach((inst) => {
-      const isUnpaid = inst.status !== 'Paid';
-      const isPastDue = new Date(inst.dueDate) < now;
+    recalculateSchedule(loan);
 
-      if (isUnpaid && isPastDue) {
-        const daysOverdue = Math.floor(
-          (now - new Date(inst.dueDate)) / (1000 * 60 * 60 * 24)
+    loan.installments.forEach((inst) => {
+      const isPastDue = new Date(inst.dueDate) < now;
+      const dueShortfall = isPastDue && inst.status !== 'Paid' && Number(inst.shortfallAmount || 0) === 0
+        ? Math.max(roundMoney((inst.dueAmount || 0) - (inst.amountReceived || 0)), 0)
+        : 0;
+      const carriedPending = Number(inst.pendingAmount || 0);
+      const outstanding = roundMoney(dueShortfall + carriedPending);
+
+      if (outstanding > 0) {
+        const daysOverdue = Math.max(
+          0,
+          Math.floor((now - new Date(inst.dueDate)) / (1000 * 60 * 60 * 24))
         );
         pending.push({
           loanId: loan._id,
@@ -235,7 +205,9 @@ function getPendingDues(loans) {
           dueAmount: inst.dueAmount,
           dueDate: inst.dueDate,
           amountReceived: inst.amountReceived,
-          outstandingForThisInstallment: +(inst.dueAmount - (inst.amountReceived || 0)).toFixed(2),
+          pendingAmount: carriedPending,
+          shortfallAmount: Number(inst.shortfallAmount || 0),
+          outstandingForThisInstallment: outstanding,
           daysOverdue,
           status: inst.status,
         });
@@ -243,8 +215,7 @@ function getPendingDues(loans) {
     });
   });
 
-  
-  pending.sort((a, b) => b.daysOverdue - a.daysOverdue);
+  pending.sort((a, b) => b.daysOverdue - a.daysOverdue || a.sNo - b.sNo);
   return pending;
 }
 

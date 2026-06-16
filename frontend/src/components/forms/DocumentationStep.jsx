@@ -1,5 +1,5 @@
 import { Input, Select } from '@/components/ui';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 
 const ID_PROOF_OPTIONS = [
   { value: '', label: 'Select ID Proof' },

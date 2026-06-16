@@ -63,7 +63,7 @@ export function VehicleDetailsStep({ form }) {
         />
         
         <Input
-          label="Interest Rate (% annual) *"
+          label="Interest Rate (%) *"
           type="number"
           step="0.01"
           placeholder="12"

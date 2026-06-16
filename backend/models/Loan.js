@@ -62,17 +62,18 @@ const loanSchema = new mongoose.Schema(
 
     noc: { type: String, default: '' },
     insurance: { type: String, default: '' },
-    idProof: { type: String, default: '' },
+    idProofType: { type: String, default: '' },
+    idProofNumber: { type: String, default: '' },
     keyStatus: { type: String, default: '' },
     salesDoneBy: { type: String, default: '' },
 
 
     customerName: { type: String, required: true },
     address: { type: String, default: '' },
+    monthlySalary: { type: Number, default: 0 },
     cellNumbers: [
       {
         number: { type: String, required: true },
-        label: { type: String, default: '' },
       },
     ],
     guarantor: {

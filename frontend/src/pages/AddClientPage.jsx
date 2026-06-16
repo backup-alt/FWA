@@ -42,14 +42,15 @@ const schema = z.object({
   }).optional(),
   noc: z.string().optional(),
   insurance: z.string().optional(),
-  idProof: z.string().optional(),
+  idProofType: z.string().optional(),
+  idProofNumber: z.string().optional(),
   keyStatus: z.string().optional(),
   salesDoneBy: z.string().optional(),
   customerName: z.string().min(1, 'Customer name is required'),
   address: z.string().optional(),
+  monthlySalary: z.coerce.number().optional(),
   cellNumbers: z.array(z.object({
     number: z.string().optional(),
-    label: z.string().optional(),
   })).optional(),
   guarantor: z.object({
     name: z.string().optional(),
@@ -80,7 +81,7 @@ export function AddClientPage() {
     resolver: zodResolver(schema),
     defaultValues: {
       loanStartDate: new Date().toISOString().split('T')[0],
-      cellNumbers: [{ number: '', label: '' }],
+      cellNumbers: [{ number: '' }],
       guarantor: { name: '', address: '' },
       chequesReceived: [{ chequeNumber: '', bank: '', amount: 0 }],
       rcDetails: { status: '', paidThrough: '', chequeNumber: '', amount: 0 },

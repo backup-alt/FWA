@@ -28,6 +28,13 @@ export function CustomerStep({ form, control }) {
         {...register('address')}
       />
 
+      <Input
+        label="Monthly Salary"
+        type="number"
+        placeholder="0"
+        {...register('monthlySalary')}
+      />
+
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Contact Numbers
@@ -49,19 +56,6 @@ export function CustomerStep({ form, control }) {
                   )}
                 />
               </div>
-              <div className="w-48">
-                <Controller
-                  control={control}
-                  name={`cellNumbers.${index}.label`}
-                  render={({ field }) => (
-                    <input
-                      {...field}
-                      placeholder="Label (e.g. Self)"
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                    />
-                  )}
-                />
-              </div>
               {cellFields.length > 1 && (
                 <button
                   type="button"
@@ -77,7 +71,7 @@ export function CustomerStep({ form, control }) {
           {cellFields.length < 3 && (
             <button
               type="button"
-              onClick={() => addCell({ number: '', label: '' })}
+              onClick={() => addCell({ number: '' })}
               className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1"
             >
               <PlusIcon className="h-5 w-5" />

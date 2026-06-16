@@ -80,7 +80,14 @@ export function InstallmentRow({
             disabled={isLocked}
           />
         ) : (
-          formatCurrency(data.dueAmount)
+          <>
+            {formatCurrency(data.dueAmount)}
+            {Number(data.adjustment || 0) !== 0 && (
+              <div className="mt-0.5 text-xs" style={{ color: data.adjustment > 0 ? '#ef4444' : '#22c55e' }}>
+                {data.adjustment > 0 ? '+' : ''}{formatCurrency(data.adjustment)} adj.
+              </div>
+            )}
+          </>
         )}
       </td>
       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
@@ -113,11 +120,22 @@ export function InstallmentRow({
         )}
       </td>
       <td className="px-4 py-3 text-sm font-medium">
-        {(data.carryForward || 0) > 0 ? (
-          <span className="text-red-500 font-semibold">+{formatCurrency(data.carryForward)}</span>
-        ) : (
-          <span className="text-gray-400">-</span>
-        )}
+        {(() => {
+          const due = data.dueAmount || 0;
+          const received = data.amountReceived || 0;
+          const pendingAmt = Math.max(due - received, 0);
+          if (pendingAmt > 0) return <span className="text-red-500">{formatCurrency(pendingAmt)}</span>;
+          return <span className="text-gray-400">-</span>;
+        })()}
+      </td>
+      <td className="px-4 py-3 text-sm font-medium">
+        {(() => {
+          const due = data.dueAmount || 0;
+          const received = data.amountReceived || 0;
+          const extraAmt = Math.max(received - due, 0);
+          if (extraAmt > 0) return <span className="text-green-500">{formatCurrency(extraAmt)}</span>;
+          return <span className="text-gray-400">-</span>;
+        })()}
       </td>
       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
         {editing ? (

@@ -336,9 +336,7 @@ router.put('/:id/installments/:sNo', async (req, res) => {
 
     if (completed !== undefined) {
       if (completed) {
-        // When marking complete, pay the due + any carry-forward
-        const carry = installment.carryForward || 0;
-        installment.amountReceived = +(installment.dueAmount + carry).toFixed(2);
+        installment.amountReceived = installment.dueAmount;
         installment.dateReceived = installment.dateReceived || new Date();
         installment.status = 'Paid';
       } else {
@@ -347,7 +345,7 @@ router.put('/:id/installments/:sNo', async (req, res) => {
         installment.status = new Date(installment.dueDate) < new Date() ? 'Overdue' : 'Pending';
       }
 
-      recalculateSchedule(loan);
+      refreshLoanTotals(loan);
       await loan.save();
       return res.json(loan);
     }
@@ -358,7 +356,8 @@ router.put('/:id/installments/:sNo', async (req, res) => {
       amountReceived !== undefined;
 
     if (financialFieldsChanged) {
-      recalculateSchedule(loan);
+      
+      recalculateSchedule(loan, nextSNo);
     } else if (installment.status !== 'Paid') {
       installment.status = new Date(installment.dueDate) < new Date() ? 'Overdue' : 'Pending';
     }

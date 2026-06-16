@@ -80,14 +80,7 @@ export function InstallmentRow({
             disabled={isLocked}
           />
         ) : (
-          <>
-            {formatCurrency(data.dueAmount)}
-            {Number(data.adjustment || 0) !== 0 && (
-              <div className="mt-0.5 text-xs" style={{ color: data.adjustment > 0 ? '#ef4444' : '#22c55e' }}>
-                {data.adjustment > 0 ? '+' : ''}{formatCurrency(data.adjustment)} adj.
-              </div>
-            )}
-          </>
+          <span className="font-medium">{formatCurrency(data.dueAmount)}</span>
         )}
       </td>
       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">

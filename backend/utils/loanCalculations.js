@@ -122,9 +122,7 @@ function recalculateSchedule(loan, paidSNo) {
   const current = installments[idx];
   const dueAmount = current.dueAmount;
   const received = current.amountReceived || 0;
-  const diff = +(received - dueAmount).toFixed(2); 
 
-  
   if (received <= 0) {
     current.status = 'Pending';
   } else if (received < dueAmount) {
@@ -133,86 +131,40 @@ function recalculateSchedule(loan, paidSNo) {
     current.status = 'Paid';
   }
 
-  
-  
-  const remainingInstallments = installments.slice(idx + 1);
-
-  
-  const currentRemainingTotal = remainingInstallments.reduce(
-    (sum, inst) => sum + inst.dueAmount,
-    0
-  );
-
-  
-  const newOutstanding = +(currentRemainingTotal - diff).toFixed(2);
-
-  loan.outstandingPrincipal = Math.max(newOutstanding, 0);
-  loan.totalPaid = +installments
-    .reduce((sum, inst) => sum + (inst.amountReceived || 0), 0)
-    .toFixed(2);
-
-  
-  if (newOutstanding <= 0 && remainingInstallments.length > 0) {
-    remainingInstallments.forEach((inst) => {
-      inst.dueAmount = 0;
+  // CLEANUP: Restore original due amounts and remove adjustments (fixes old data)
+  installments.forEach((inst) => {
+    if (inst.adjustment && inst.adjustment !== 0) {
+      inst.dueAmount = +(inst.dueAmount - inst.adjustment).toFixed(2);
       inst.adjustment = 0;
-      inst.status = 'Paid';
-    });
-    loan.status = 'Completed';
-    loan.completedAt = new Date();
-    loan.emiAmount = 0;
-    return loan;
-  }
-
-  
-  if (remainingInstallments.length === 0) {
-    if (newOutstanding > 0) {
-      
-      
-      
-      current.adjustment = +(diff).toFixed(2);
-      current.status = 'Partial';
-    } else {
-      loan.status = 'Completed';
-      loan.completedAt = new Date();
-      loan.emiAmount = 0;
     }
-    return loan;
-  }
-
-  // Restore remaining installments to their base
-  remainingInstallments.forEach(inst => {
-    inst.dueAmount = +(inst.dueAmount - (inst.adjustment || 0)).toFixed(2);
-    inst.adjustment = 0;
-  });
-
-  const baseSum = remainingInstallments.reduce((sum, inst) => sum + inst.dueAmount, 0);
-  let cascade = +(newOutstanding - baseSum).toFixed(2);
-
-  remainingInstallments.forEach((inst) => {
-    if (cascade !== 0) {
-      let targetDue = +(inst.dueAmount + cascade).toFixed(2);
-      if (targetDue < 0) {
-        inst.adjustment = -inst.dueAmount;
-        inst.dueAmount = 0;
-        cascade = targetDue;
-      } else {
-        inst.adjustment = cascade;
-        inst.dueAmount = targetDue;
-        cascade = 0;
-      }
-    }
-
+    // Update Overdue status
     if (inst.status === 'Pending' && new Date(inst.dueDate) < new Date()) {
       inst.status = 'Overdue';
     }
   });
 
-  
-  const nextPending = installments.find(
-    (i) => i.status === 'Pending' || i.status === 'Overdue' || i.status === 'Partial'
-  );
-  loan.emiAmount = nextPending ? nextPending.dueAmount : 0;
+  loan.totalPaid = +installments
+    .reduce((sum, inst) => sum + (inst.amountReceived || 0), 0)
+    .toFixed(2);
+
+  const totalExpected = installments.reduce((sum, inst) => sum + (inst.dueAmount || 0), 0);
+  loan.outstandingPrincipal = Math.max(+(totalExpected - loan.totalPaid).toFixed(2), 0);
+
+  if (loan.outstandingPrincipal <= 0) {
+    installments.forEach(inst => {
+      if (inst.status !== 'Paid') inst.status = 'Paid';
+    });
+    loan.status = 'Completed';
+    loan.completedAt = loan.completedAt || new Date();
+    loan.emiAmount = 0;
+  } else {
+    loan.status = 'Active';
+    loan.completedAt = null;
+    const nextPending = installments.find(
+      (i) => i.status === 'Pending' || i.status === 'Overdue' || i.status === 'Partial'
+    );
+    loan.emiAmount = nextPending ? nextPending.dueAmount : 0;
+  }
 
   return loan;
 }

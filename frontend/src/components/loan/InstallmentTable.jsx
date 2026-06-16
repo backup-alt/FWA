@@ -5,6 +5,68 @@ import { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 
+function roundMoney(value) {
+  return +Number(value || 0).toFixed(2);
+}
+
+function hasActivity(inst) {
+  return (
+    Number(inst.amountReceived || 0) > 0 ||
+    Boolean(inst.dateReceived) ||
+    inst.status === 'Paid' ||
+    inst.status === 'Partial'
+  );
+}
+
+function normalizeInstallments(installments = []) {
+  const normalized = installments
+    .map((inst) => ({
+      ...inst,
+      dueAmount: roundMoney(Number(inst.dueAmount || 0) - Number(inst.adjustment || 0)),
+      adjustment: 0,
+      pendingAmount: 0,
+      shortfallAmount: 0,
+      extraAmount: 0,
+    }))
+    .sort((a, b) => a.sNo - b.sNo);
+
+  let carry = 0;
+  let carriedDisplayPlaced = false;
+
+  normalized.forEach((inst) => {
+    const dueAmount = roundMoney(inst.dueAmount);
+    const received = roundMoney(inst.amountReceived);
+
+    if (hasActivity(inst)) {
+      const requiredAmount = roundMoney(dueAmount + Math.max(carry, 0) - Math.max(-carry, 0));
+      const nextCarry = roundMoney(Math.max(requiredAmount, 0) - received);
+      const credit = roundMoney(received - Math.max(requiredAmount, 0));
+
+      inst.shortfallAmount = received < dueAmount && nextCarry > 0 ? nextCarry : 0;
+      inst.extraAmount = credit > 0 ? credit : 0;
+      carry = nextCarry > 0 ? nextCarry : credit > 0 ? -credit : 0;
+      carriedDisplayPlaced = false;
+      return;
+    }
+
+    if (carry > 0 && !carriedDisplayPlaced) {
+      inst.pendingAmount = carry;
+      carriedDisplayPlaced = true;
+    } else if (carry < 0 && !carriedDisplayPlaced) {
+      inst.extraAmount = Math.abs(carry);
+      carriedDisplayPlaced = true;
+    }
+  });
+
+  if (carry > 0 && !carriedDisplayPlaced && normalized.length > 0) {
+    normalized[normalized.length - 1].pendingAmount = carry;
+  } else if (carry < 0 && !carriedDisplayPlaced && normalized.length > 0) {
+    normalized[normalized.length - 1].extraAmount = Math.abs(carry);
+  }
+
+  return normalized;
+}
+
 function todayInputValue() {
   const today = new Date();
   const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -15,6 +77,7 @@ function todayInputValue() {
 export function InstallmentTable({ loan, onRecordPayment, saving }) {
   const [optimisticData, setOptimisticData] = useState({});
   const [confirmation, setConfirmation] = useState(null);
+  const installments = normalizeInstallments(loan.installments);
 
   const handleSave = async (sNo, paymentData) => {
     setOptimisticData(prev => ({ ...prev, [sNo]: paymentData }));
@@ -71,7 +134,7 @@ export function InstallmentTable({ loan, onRecordPayment, saving }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loan.installments.map(inst => (
+            {installments.map(inst => (
               <InstallmentRow
                 key={inst.sNo}
                 inst={inst}

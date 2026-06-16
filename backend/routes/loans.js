@@ -107,7 +107,10 @@ router.get('/', async (req, res) => {
     if (req.query.status) filter.status = req.query.status;
 
     const loans = await Loan.find(filter).sort({ createdAt: -1 });
-    loans.forEach((loan) => recalculateSchedule(loan));
+    await Promise.all(loans.map((loan) => {
+      recalculateSchedule(loan);
+      return loan.save();
+    }));
     res.json(loans);
   } catch (err) {
     console.error(err);

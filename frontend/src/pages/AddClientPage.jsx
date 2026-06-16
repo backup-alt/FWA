@@ -33,6 +33,7 @@ const schema = z.object({
   financeAmount: z.coerce.number().min(1, 'Finance amount is required'),
   interestRate: z.coerce.number().min(0.01, 'Interest rate is required'),
   installmentPeriod: z.coerce.number().min(1, 'Period is required'),
+  installmentPeriodUnit: z.enum(['Months', 'Weeks', 'Days']).optional().default('Months'),
   loanStartDate: z.string().min(1, 'Start date is required'),
   rcDetails: z.object({
     status: z.string().optional(),
@@ -81,6 +82,7 @@ export function AddClientPage() {
     resolver: zodResolver(schema),
     defaultValues: {
       loanStartDate: new Date().toISOString().split('T')[0],
+      installmentPeriodUnit: 'Months',
       cellNumbers: [{ number: '' }],
       guarantor: { name: '', address: '' },
       chequesReceived: [{ chequeNumber: '', bank: '', amount: 0 }],

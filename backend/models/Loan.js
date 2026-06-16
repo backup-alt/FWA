@@ -85,6 +85,11 @@ const loanSchema = new mongoose.Schema(
 
     loanStartDate: { type: Date, required: true },
     installmentPeriod: { type: Number, required: true },
+    installmentPeriodUnit: {
+      type: String,
+      enum: ['Months', 'Weeks', 'Days'],
+      default: 'Months',
+    },
     interestRate: { type: Number, required: true },
     interestAmount: { type: Number, default: 0 },
     emiAmount: { type: Number, default: 0 },

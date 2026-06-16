@@ -71,13 +71,29 @@ export function VehicleDetailsStep({ form }) {
           {...register('interestRate')}
         />
         
-        <Input
-          label="Installment Period (months) *"
-          type="number"
-          placeholder="12"
-          error={errors.installmentPeriod?.message}
-          {...register('installmentPeriod')}
-        />
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <Input
+              label="Installment Period *"
+              type="number"
+              placeholder="12"
+              error={errors.installmentPeriod?.message}
+              {...register('installmentPeriod')}
+            />
+          </div>
+          <div className="w-1/2">
+            <Select
+              label="Unit *"
+              options={[
+                { value: 'Months', label: 'Months' },
+                { value: 'Weeks', label: 'Weeks' },
+                { value: 'Days', label: 'Days' },
+              ]}
+              error={errors.installmentPeriodUnit?.message}
+              {...register('installmentPeriodUnit')}
+            />
+          </div>
+        </div>
         
         <Input
           label="Loan Start Date *"

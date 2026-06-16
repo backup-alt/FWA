@@ -119,6 +119,24 @@ export function InstallmentRow({
           </span>
         )}
       </td>
+      <td className="px-4 py-3 text-sm font-medium">
+        {(() => {
+          const due = data.dueAmount || 0;
+          const received = data.amountReceived || 0;
+          const pendingAmt = Math.max(due - received, 0);
+          if (pendingAmt > 0) return <span className="text-red-500">{formatCurrency(pendingAmt)}</span>;
+          return <span className="text-gray-400">-</span>;
+        })()}
+      </td>
+      <td className="px-4 py-3 text-sm font-medium">
+        {(() => {
+          const due = data.dueAmount || 0;
+          const received = data.amountReceived || 0;
+          const extraAmt = Math.max(received - due, 0);
+          if (extraAmt > 0) return <span className="text-green-500">{formatCurrency(extraAmt)}</span>;
+          return <span className="text-gray-400">-</span>;
+        })()}
+      </td>
       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
         {editing ? (
           <DatePicker

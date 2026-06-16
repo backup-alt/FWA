@@ -15,11 +15,15 @@
 
 
 
-function calculateFlatEMI(principal, annualRatePercent, periodMonths) {
-  const years = periodMonths / 12;
+function calculateFlatEMI(principal, annualRatePercent, period, unit = 'Months') {
+  let years;
+  if (unit === 'Weeks') years = period / 52;
+  else if (unit === 'Days') years = period / 365;
+  else years = period / 12;
+
   const totalInterest = +(principal * (annualRatePercent / 100) * years).toFixed(2);
   const totalPayable = +(principal + totalInterest).toFixed(2);
-  const emi = +(totalPayable / periodMonths).toFixed(2);
+  const emi = +(totalPayable / period).toFixed(2);
   return { totalInterest, totalPayable, emi };
 }
 
@@ -37,12 +41,14 @@ function generateInstallmentSchedule({
   financeAmount,
   interestRate,
   installmentPeriod,
+  installmentPeriodUnit = 'Months',
   loanStartDate,
 }) {
   const { totalInterest, totalPayable, emi } = calculateFlatEMI(
     financeAmount,
     interestRate,
-    installmentPeriod
+    installmentPeriod,
+    installmentPeriodUnit
   );
 
   const startDate = new Date(loanStartDate);
@@ -52,7 +58,13 @@ function generateInstallmentSchedule({
 
   for (let i = 1; i <= installmentPeriod; i++) {
     const dueDate = new Date(startDate);
-    dueDate.setMonth(dueDate.getMonth() + i);
+    if (installmentPeriodUnit === 'Weeks') {
+      dueDate.setDate(dueDate.getDate() + i * 7);
+    } else if (installmentPeriodUnit === 'Days') {
+      dueDate.setDate(dueDate.getDate() + i);
+    } else {
+      dueDate.setMonth(dueDate.getMonth() + i);
+    }
 
     
     let dueAmount = emi;

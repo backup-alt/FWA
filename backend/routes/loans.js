@@ -62,6 +62,7 @@ router.post('/', async (req, res) => {
       chequesReceived,
       loanStartDate,
       installmentPeriod,
+      installmentPeriodUnit,
       interestRate,
     } = req.body;
 
@@ -76,6 +77,7 @@ router.post('/', async (req, res) => {
       financeAmount,
       interestRate,
       installmentPeriod,
+      installmentPeriodUnit,
       loanStartDate,
     });
 
@@ -99,6 +101,7 @@ router.post('/', async (req, res) => {
       chequesReceived,
       loanStartDate,
       installmentPeriod,
+      installmentPeriodUnit,
       interestRate,
       interestAmount,
       emiAmount,
@@ -196,6 +199,7 @@ router.put('/:id', async (req, res) => {
       'cellNumbers',
       'guarantor',
       'chequesReceived',
+      'installmentPeriodUnit',
     ];
 
     updatableFields.forEach((field) => {
@@ -208,11 +212,15 @@ router.put('/:id', async (req, res) => {
     const periodChanged =
       req.body.installmentPeriod !== undefined &&
       req.body.installmentPeriod !== loan.installmentPeriod;
+    const unitChanged =
+      req.body.installmentPeriodUnit !== undefined &&
+      req.body.installmentPeriodUnit !== loan.installmentPeriodUnit;
     const rateChanged =
       req.body.interestRate !== undefined && req.body.interestRate !== loan.interestRate;
 
-    if ((periodChanged || rateChanged) && loan.status === 'Active') {
+    if ((periodChanged || unitChanged || rateChanged) && loan.status === 'Active') {
       const newPeriod = req.body.installmentPeriod || loan.installmentPeriod;
+      const newUnit = req.body.installmentPeriodUnit || loan.installmentPeriodUnit || 'Months';
       const newRate = req.body.interestRate || loan.interestRate;
 
       
@@ -235,6 +243,7 @@ router.put('/:id', async (req, res) => {
         financeAmount: principalRemaining,
         interestRate: newRate,
         installmentPeriod: remainingCount,
+        installmentPeriodUnit: newUnit,
         loanStartDate: lastPaidDate,
       });
 
@@ -245,6 +254,7 @@ router.put('/:id', async (req, res) => {
 
       loan.installments = [...paidInstallments, ...newInstallments];
       loan.installmentPeriod = newPeriod;
+      loan.installmentPeriodUnit = newUnit;
       loan.interestRate = newRate;
       loan.emiAmount = emiAmount;
     }

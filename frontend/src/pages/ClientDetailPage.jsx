@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { clsx } from 'clsx';
 import { useParams, useNavigate, NavLink } from 'react-router-dom';
 import { ArrowLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useLoan, useUpdateLoan, useRecordPayment, useDeleteLoan } from '@/hooks/useLoans';
@@ -27,9 +28,10 @@ export function ClientDetailPage() {
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [savingInstallment, setSavingInstallment] = useState(null);
+  const [activeTab, setActiveTab] = useState('details');
 
-  const handlePeriodUpdate = async (newPeriod) => {
-    await updateLoan.mutateAsync({ id, data: { installmentPeriod: newPeriod } });
+  const handlePeriodUpdate = async (newPeriod, newUnit) => {
+    await updateLoan.mutateAsync({ id, data: { installmentPeriod: newPeriod, installmentPeriodUnit: newUnit } });
     showToast('Installment period updated', 'success');
     refetch();
   };
@@ -134,7 +136,35 @@ export function ClientDetailPage() {
         </Button>
       </div>
 
-      <Card padding="">
+      <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+          <button
+            onClick={() => setActiveTab('details')}
+            className={clsx(
+              activeTab === 'details'
+                ? 'border-primary-500 text-primary-600 dark:border-primary-400 dark:text-primary-400'
+                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300',
+              'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
+            )}
+          >
+            Client Details
+          </button>
+          <button
+            onClick={() => setActiveTab('schedule')}
+            className={clsx(
+              activeTab === 'schedule'
+                ? 'border-primary-500 text-primary-600 dark:border-primary-400 dark:text-primary-400'
+                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300',
+              'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
+            )}
+          >
+            Installment Schedule
+          </button>
+        </nav>
+      </div>
+
+      {activeTab === 'details' ? (
+        <Card padding="">
         <CardHeader className="px-5 pt-5 mb-0" title="Client Details" subtitle="Vehicle, documentation, customer, and loan terms" />
         <CardContent className="p-5">
           <dl className="grid grid-cols-1 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 sm:grid-cols-2">
@@ -167,7 +197,7 @@ export function ClientDetailPage() {
           </div>
         </CardContent>
       </Card>
-
+      ) : (
       <Card padding="">
         <CardHeader
           className="px-5 pt-5 mb-0"
@@ -198,6 +228,7 @@ export function ClientDetailPage() {
           )}
         </CardContent>
       </Card>
+      )}
 
       <Modal
         isOpen={showDeleteConfirm}

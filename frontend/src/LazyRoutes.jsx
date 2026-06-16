@@ -5,8 +5,9 @@ import { useAuth } from '@/context/AuthContext';
 const LoginPage = lazy(() => import('./pages/LoginPage').then(m => ({ default: m.LoginPage })));
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: m.DashboardPage })));
 const AddClientPage = lazy(() => import('./pages/AddClientPage').then(m => ({ default: m.AddClientPage })));
-const ClientsPage = lazy(() => import('./pages/ClientsPage').then(m => ({ default: m.ClientsPage })));
-const ClientDetailPage = lazy(() => import('./pages/ClientDetailPage').then(m => ({ default: m.ClientDetailPage })));
+const CustomersPage = lazy(() => import('./pages/CustomersPage').then(m => ({ default: m.CustomersPage })));
+const CustomerDetailPage = lazy(() => import('./pages/CustomerDetailPage').then(m => ({ default: m.CustomerDetailPage })));
+const LoanDetailPage = lazy(() => import('./pages/LoanDetailPage').then(m => ({ default: m.LoanDetailPage })));
 const PendingDuesPage = lazy(() => import('./pages/PendingDuesPage').then(m => ({ default: m.PendingDuesPage })));
 
 function LoadingFallback() {
@@ -40,12 +41,22 @@ export const LazyRoutes = {
   ),
   ClientsPage: () => (
     <ProtectedRoute>
-      <Suspense fallback={<LoadingFallback />}><ClientsPage /></Suspense>
+      <Suspense fallback={<LoadingFallback />}><CustomersPage /></Suspense>
     </ProtectedRoute>
   ),
-  ClientDetailPage: () => (
+  CustomersPage: () => (
     <ProtectedRoute>
-      <Suspense fallback={<LoadingFallback />}><ClientDetailPage /></Suspense>
+      <Suspense fallback={<LoadingFallback />}><CustomersPage /></Suspense>
+    </ProtectedRoute>
+  ),
+  CustomerDetailPage: () => (
+    <ProtectedRoute>
+      <Suspense fallback={<LoadingFallback />}><CustomerDetailPage /></Suspense>
+    </ProtectedRoute>
+  ),
+  LoanDetailPage: () => (
+    <ProtectedRoute>
+      <Suspense fallback={<LoadingFallback />}><LoanDetailPage /></Suspense>
     </ProtectedRoute>
   ),
   PendingDuesPage: () => (

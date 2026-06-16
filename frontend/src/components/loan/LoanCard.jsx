@@ -11,7 +11,7 @@ export function LoanCard({ loan }) {
 
   return (
     <NavLink
-      to={`/client/${loan._id}`}
+      to={`/loan/${loan._id}`}
       className={clsx(
         'flex border-b border-gray-200 bg-white p-4 transition-colors last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700/50',
         'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'

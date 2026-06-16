@@ -21,6 +21,7 @@ export function InstallmentRow({
   const [localDueDate, setLocalDueDate] = useState(formatDateInput(data.dueDate));
   const [localAmount, setLocalAmount] = useState(data.amountReceived || '');
   const [localDate, setLocalDate] = useState(formatDateInput(data.dateReceived));
+  const [localPaymentType, setLocalPaymentType] = useState(data.paymentType || '');
 
   useEffect(() => {
     if (!editing) {
@@ -29,8 +30,9 @@ export function InstallmentRow({
       setLocalDueDate(formatDateInput(data.dueDate));
       setLocalAmount(data.amountReceived || '');
       setLocalDate(formatDateInput(data.dateReceived));
+      setLocalPaymentType(data.paymentType || '');
     }
-  }, [data.amountReceived, data.dateReceived, data.dueAmount, data.dueDate, data.sNo, editing]);
+  }, [data.amountReceived, data.dateReceived, data.dueAmount, data.dueDate, data.paymentType, data.sNo, editing]);
 
   const resetLocalState = () => {
     setLocalSNo(data.sNo || '');
@@ -38,6 +40,7 @@ export function InstallmentRow({
     setLocalDueDate(formatDateInput(data.dueDate));
     setLocalAmount(data.amountReceived || '');
     setLocalDate(formatDateInput(data.dateReceived));
+    setLocalPaymentType(data.paymentType || '');
   };
 
   const handleSave = async () => {
@@ -56,6 +59,7 @@ export function InstallmentRow({
       dueDate: localDueDate,
       amountReceived: submitAmount,
       dateReceived: localDate || null,
+      paymentType: localPaymentType,
     });
     setEditing(false);
   };
@@ -150,6 +154,25 @@ export function InstallmentRow({
           />
         ) : (
           data.dateReceived ? formatDate(data.dateReceived) : '-'
+        )}
+      </td>
+      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+        {editing ? (
+          <select
+            value={localPaymentType}
+            onChange={(e) => setLocalPaymentType(e.target.value)}
+            disabled={isLocked}
+            className="w-28 rounded border border-gray-300 px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800"
+          >
+            <option value="">None</option>
+            <option value="Cash">Cash</option>
+            <option value="UPI">UPI</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="Cheque">Cheque</option>
+            <option value="Other">Other</option>
+          </select>
+        ) : (
+          data.paymentType || '-'
         )}
       </td>
       <td className="px-4 py-3">

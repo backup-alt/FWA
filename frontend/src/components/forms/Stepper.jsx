@@ -1,14 +1,18 @@
 import { clsx } from 'clsx';
 
-export function Stepper({ steps, currentStep, className = '' }) {
+export function Stepper({ steps, currentStep, onStepClick, className = '' }) {
   return (
     <div className={clsx('flex items-center justify-between mb-8', className)}>
       {steps.map((step, index) => (
         <div key={step.label} className="flex items-center">
           <div className="flex items-center">
-            <div
+            <button
+              type="button"
+              onClick={() => onStepClick && onStepClick(index)}
+              disabled={!onStepClick}
               className={clsx(
-                'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all',
+                'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all focus:outline-none',
+                onStepClick ? 'cursor-pointer hover:ring-2 hover:ring-primary-300 dark:hover:ring-primary-700' : 'cursor-default',
                 index < currentStep
                   ? 'bg-primary-600 text-white'
                   : index === currentStep
@@ -17,7 +21,7 @@ export function Stepper({ steps, currentStep, className = '' }) {
               )}
             >
               {index < currentStep ? '✓' : index + 1}
-            </div>
+            </button>
             {index < steps.length - 1 && (
               <div
                 className={clsx(

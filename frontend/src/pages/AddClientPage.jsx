@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,6 +13,7 @@ import { CustomerStep } from '@/components/forms/CustomerStep';
 import { GuarantorStep } from '@/components/forms/GuarantorStep';
 import { ChequesStep } from '@/components/forms/ChequesStep';
 import { useCreateLoan } from '@/hooks/useLoans';
+import { useCreateCustomer } from '@/hooks/useCustomers';
 import { useToast } from '@/context/ToastContext';
 import { formatCurrency } from '@/api';
 
@@ -29,6 +30,7 @@ const schema = z.object({
   make: z.string().optional(),
   model: z.string().optional(),
   regNo: z.string().optional(),
+  loanAccountNumber: z.string().optional(),
   loanAmount: z.coerce.number().min(1, 'Loan amount is required'),
   financeAmount: z.coerce.number().min(1, 'Finance amount is required'),
   interestRate: z.coerce.number().min(0.01, 'Interest rate is required'),
@@ -50,6 +52,7 @@ const schema = z.object({
   customerName: z.string().min(1, 'Customer name is required'),
   address: z.string().optional(),
   monthlySalary: z.coerce.number().optional(),
+  profileImage: z.string().optional(),
   cellNumbers: z.array(z.object({
     number: z.string().optional(),
   })).optional(),
@@ -66,8 +69,10 @@ const schema = z.object({
 
 export function AddClientPage() {
   const navigate = useNavigate();
+  const { customerId } = useParams(); // if adding loan for existing customer
   const { showToast } = useToast();
   const createLoan = useCreateLoan();
+  const createCustomer = useCreateCustomer();
   const [currentStep, setCurrentStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
@@ -87,6 +92,8 @@ export function AddClientPage() {
       guarantor: { name: '', address: '' },
       chequesReceived: [{ chequeNumber: '', bank: '', amount: 0 }],
       rcDetails: { status: '', paidThrough: '', chequeNumber: '', amount: 0 },
+      profileImage: '',
+      loanAccountNumber: '',
     },
   });
 
@@ -118,18 +125,47 @@ export function AddClientPage() {
   const onSubmit = async (data) => {
     setSubmitting(true);
     try {
-      
-      const payload = {
-        ...data,
-        cellNumbers: data.cellNumbers?.filter(c => c.number) || [],
-        chequesReceived: data.chequesReceived?.filter(c => c.chequeNumber) || [],
-        guarantor: hasAnyValue(data.guarantor) ? data.guarantor : undefined,
+      // Step 1: Create customer (or use existing customerId)
+      let cId = customerId;
+      if (!cId) {
+        const customer = await createCustomer.mutateAsync({
+          name: data.customerName,
+          address: data.address,
+          monthlySalary: data.monthlySalary,
+          cellNumbers: data.cellNumbers?.filter(c => c.number) || [],
+          guarantor: hasAnyValue(data.guarantor) ? data.guarantor : undefined,
+          profileImage: data.profileImage || '',
+          idProofType: data.idProofType || '',
+          idProofNumber: data.idProofNumber || '',
+        });
+        cId = customer._id;
+      }
+
+      // Step 2: Create loan linked to customer
+      const loanPayload = {
+        customerId: cId,
+        vehicleType: data.vehicleType,
+        make: data.make,
+        model: data.model,
+        regNo: data.regNo,
+        loanAccountNumber: data.loanAccountNumber || '',
+        loanAmount: data.loanAmount,
+        financeAmount: data.financeAmount,
+        interestRate: data.interestRate,
+        installmentPeriod: data.installmentPeriod,
+        installmentPeriodUnit: data.installmentPeriodUnit,
+        loanStartDate: data.loanStartDate,
         rcDetails: hasAnyValue(data.rcDetails) ? data.rcDetails : undefined,
+        noc: data.noc,
+        insurance: data.insurance,
+        keyStatus: data.keyStatus,
+        salesDoneBy: data.salesDoneBy,
+        chequesReceived: data.chequesReceived?.filter(c => c.chequeNumber) || [],
       };
-      
-      const loan = await createLoan.mutateAsync(payload);
-      showToast('Loan created successfully!', 'success');
-      navigate(`/client/${loan._id}`);
+
+      const loan = await createLoan.mutateAsync(loanPayload);
+      showToast('Customer and loan created successfully!', 'success');
+      navigate(`/loan/${loan._id}`);
     } catch (err) {
       showToast(err.message || 'Failed to create loan', 'error');
     } finally {
@@ -151,7 +187,7 @@ export function AddClientPage() {
   return (
     <div className="max-w-6xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">New Client Loan File</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">New Customer Loan File</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">
           {watchedValues.vehicleType ? `${watchedValues.vehicleType} project` : 'Bike or car project'} - customer loan register
         </p>
@@ -194,7 +230,7 @@ export function AddClientPage() {
           subtitle="Page 116 fields first, then the repayment tracker is generated automatically"
         />
         <CardContent className="p-6">
-          <Stepper steps={steps} currentStep={currentStep} />
+          <Stepper steps={steps} currentStep={currentStep} onStepClick={setCurrentStep} />
           
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="animate-fade-in">

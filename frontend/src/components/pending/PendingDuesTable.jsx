@@ -63,7 +63,7 @@ export function PendingDuesTable({ dues, sortConfig, onSort, filter }) {
             sortedDues.map(due => (
               <TableRow key={`${due.loanId}-${due.sNo}`}>
                 <TableCell>
-                  <NavLink to={`/client/${due.loanId}`} className="font-medium text-primary-600 hover:underline">
+                  <NavLink to={`/loan/${due.loanId}`} className="font-medium text-primary-600 hover:underline">
                     {due.customerName}
                   </NavLink>
                 </TableCell>

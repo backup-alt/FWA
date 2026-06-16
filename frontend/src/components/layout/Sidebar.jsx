@@ -5,8 +5,8 @@ import { useEffect } from 'react';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: HomeIcon },
-  { name: 'Add Client', href: '/add-client', icon: DocumentPlusIcon },
-  { name: 'Clients', href: '/clients', icon: ClipboardDocumentListIcon },
+  { name: 'Add Customer', href: '/add-customer', icon: DocumentPlusIcon },
+  { name: 'Customers', href: '/customers', icon: ClipboardDocumentListIcon },
   { name: 'Pending Dues', href: '/pending-dues', icon: ChartBarIcon },
 ];
 

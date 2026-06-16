@@ -11,16 +11,24 @@ export const routes = [
     element: <LazyRoutes.DashboardPage />,
   },
   {
-    path: '/add-client',
+    path: '/add-customer',
     element: <LazyRoutes.AddClientPage />,
   },
   {
-    path: '/clients',
-    element: <LazyRoutes.ClientsPage />,
+    path: '/customers',
+    element: <LazyRoutes.CustomersPage />,
   },
   {
-    path: '/client/:id',
-    element: <LazyRoutes.ClientDetailPage />,
+    path: '/customer/:id',
+    element: <LazyRoutes.CustomerDetailPage />,
+  },
+  {
+    path: '/customer/:customerId/add-loan',
+    element: <LazyRoutes.AddClientPage />,
+  },
+  {
+    path: '/loan/:id',
+    element: <LazyRoutes.LoanDetailPage />,
   },
   {
     path: '/pending-dues',

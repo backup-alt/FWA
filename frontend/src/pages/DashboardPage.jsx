@@ -84,10 +84,10 @@ export function DashboardPage() {
             Overview of active vehicle finance loans and collections.
           </p>
         </div>
-        <NavLink to="/add-client">
+        <NavLink to="/add-customer">
           <Button className="shrink-0 whitespace-nowrap">
             <PlusIcon className="h-5 w-5 mr-2" />
-            Add Client
+            Add Customer
           </Button>
         </NavLink>
       </div>

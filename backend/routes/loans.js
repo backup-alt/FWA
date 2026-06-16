@@ -1,5 +1,6 @@
 const express = require('express');
 const Loan = require('../models/Loan');
+const Customer = require('../models/Customer');
 const authMiddleware = require('../middleware/auth');
 const {
   generateInstallmentSchedule,
@@ -9,21 +10,18 @@ const {
 
 const router = express.Router();
 
-
 router.use(authMiddleware);
 
-
-
-
-
-
+// Create loan (requires customerId)
 router.post('/', async (req, res) => {
   try {
     const {
+      customerId,
       vehicleType,
       make,
       model,
       regNo,
+      loanAccountNumber,
       loanAmount,
       financeAmount,
       rcDetails,
@@ -32,10 +30,6 @@ router.post('/', async (req, res) => {
       idProof,
       keyStatus,
       salesDoneBy,
-      customerName,
-      address,
-      cellNumbers,
-      guarantor,
       chequesReceived,
       loanStartDate,
       installmentPeriod,
@@ -43,10 +37,18 @@ router.post('/', async (req, res) => {
       interestRate,
     } = req.body;
 
-    if (!vehicleType || !financeAmount || !installmentPeriod || interestRate === undefined || !customerName || !loanStartDate) {
+    if (!customerId) {
+      return res.status(400).json({ message: 'customerId is required.' });
+    }
+
+    const customer = await Customer.findById(customerId);
+    if (!customer) {
+      return res.status(404).json({ message: 'Customer not found.' });
+    }
+
+    if (!vehicleType || !financeAmount || !installmentPeriod || interestRate === undefined || !loanStartDate) {
       return res.status(400).json({
-        message:
-          'vehicleType, customerName, financeAmount, installmentPeriod, interestRate, and loanStartDate are required.',
+        message: 'vehicleType, financeAmount, installmentPeriod, interestRate, and loanStartDate are required.',
       });
     }
 
@@ -59,10 +61,13 @@ router.post('/', async (req, res) => {
     });
 
     const loan = new Loan({
+      customerId,
+      customerName: customer.name,
       vehicleType,
       make,
       model,
       regNo,
+      loanAccountNumber,
       loanAmount,
       financeAmount,
       rcDetails,
@@ -71,11 +76,7 @@ router.post('/', async (req, res) => {
       idProof,
       keyStatus,
       salesDoneBy,
-      customerName,
-      address,
-      cellNumbers,
-      guarantor,
-      chequesReceived,
+      chequesReceived: (chequesReceived || []).filter(c => c.chequeNumber),
       loanStartDate,
       installmentPeriod,
       installmentPeriodUnit,
@@ -96,15 +97,13 @@ router.post('/', async (req, res) => {
   }
 });
 
-
-
-
-
+// List loans (optionally filter by customerId)
 router.get('/', async (req, res) => {
   try {
     const filter = {};
     if (req.query.vehicleType) filter.vehicleType = req.query.vehicleType;
     if (req.query.status) filter.status = req.query.status;
+    if (req.query.customerId) filter.customerId = req.query.customerId;
 
     const loans = await Loan.find(filter).sort({ createdAt: -1 });
     await Promise.all(loans.map((loan) => {
@@ -118,11 +117,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-
-
-
-
-
+// Pending dues
 router.get('/pending-dues', async (req, res) => {
   try {
     const loans = await Loan.find({ status: 'Active' });
@@ -134,10 +129,7 @@ router.get('/pending-dues', async (req, res) => {
   }
 });
 
-
-
-
-
+// Get single loan
 router.get('/:id', async (req, res) => {
   try {
     const loan = await Loan.findById(req.params.id);
@@ -151,37 +143,16 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-
-
-
+// Update loan
 router.put('/:id', async (req, res) => {
   try {
     const loan = await Loan.findById(req.params.id);
     if (!loan) return res.status(404).json({ message: 'Loan not found.' });
 
     const updatableFields = [
-      'make',
-      'model',
-      'regNo',
-      'loanAmount',
-      'rcDetails',
-      'noc',
-      'insurance',
-      'idProof',
-      'keyStatus',
-      'salesDoneBy',
-      'customerName',
-      'address',
-      'cellNumbers',
-      'guarantor',
-      'chequesReceived',
+      'make', 'model', 'regNo', 'loanAmount', 'loanAccountNumber',
+      'rcDetails', 'noc', 'insurance', 'idProof', 'keyStatus', 'salesDoneBy',
+      'customerName', 'address', 'cellNumbers', 'guarantor', 'chequesReceived',
       'installmentPeriodUnit',
     ];
 
@@ -191,7 +162,6 @@ router.put('/:id', async (req, res) => {
       }
     });
 
-    
     const periodChanged =
       req.body.installmentPeriod !== undefined &&
       req.body.installmentPeriod !== loan.installmentPeriod;
@@ -228,6 +198,7 @@ router.put('/:id', async (req, res) => {
           newInst.dateReceived = oldInst.dateReceived;
           newInst.sign = oldInst.sign;
           newInst.status = oldInst.status;
+          newInst.paymentType = oldInst.paymentType || '';
           newInst.adjustment = 0;
         }
       });
@@ -249,14 +220,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-
+// Record payment on installment
 router.put('/:id/installments/:sNo', async (req, res) => {
   try {
     const loan = await Loan.findById(req.params.id);
@@ -272,7 +236,7 @@ router.put('/:id/installments/:sNo', async (req, res) => {
       return res.status(404).json({ message: `Installment #${sNo} not found.` });
     }
 
-    const { amountReceived, dateReceived, sign, completed } = req.body;
+    const { amountReceived, dateReceived, sign, completed, paymentType } = req.body;
     const nextSNo = req.body.sNo !== undefined ? parseInt(req.body.sNo, 10) : sNo;
     const nextDueAmount = req.body.dueAmount !== undefined ? Number(req.body.dueAmount) : undefined;
 
@@ -303,6 +267,7 @@ router.put('/:id/installments/:sNo', async (req, res) => {
     installment.sNo = nextSNo;
     if (nextDueAmount !== undefined) installment.dueAmount = nextDueAmount;
     if (amountReceived !== undefined) installment.amountReceived = Number(amountReceived);
+    if (paymentType !== undefined) installment.paymentType = paymentType;
     if (dateReceived !== undefined) {
       const parsedReceivedDate = dateReceived ? new Date(dateReceived) : null;
       if (dateReceived && Number.isNaN(parsedReceivedDate.getTime())) {
@@ -327,6 +292,7 @@ router.put('/:id/installments/:sNo', async (req, res) => {
       } else {
         installment.amountReceived = 0;
         installment.dateReceived = null;
+        installment.paymentType = '';
         installment.status = new Date(installment.dueDate) < new Date() ? 'Overdue' : 'Pending';
       }
     }
@@ -351,10 +317,45 @@ router.put('/:id/installments/:sNo', async (req, res) => {
   }
 });
 
+// Upload document to loan
+router.post('/:id/documents', async (req, res) => {
+  try {
+    const loan = await Loan.findById(req.params.id);
+    if (!loan) return res.status(404).json({ message: 'Loan not found.' });
 
+    const { name, type, data } = req.body;
+    if (!name || !type || !data) {
+      return res.status(400).json({ message: 'name, type, and data are required.' });
+    }
 
+    loan.documents.push({ name, type, data, uploadedAt: new Date() });
+    await loan.save();
+    res.status(201).json(loan.documents[loan.documents.length - 1]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error uploading document.' });
+  }
+});
 
+// Delete document from loan
+router.delete('/:id/documents/:docId', async (req, res) => {
+  try {
+    const loan = await Loan.findById(req.params.id);
+    if (!loan) return res.status(404).json({ message: 'Loan not found.' });
 
+    const docIndex = loan.documents.findIndex(d => d._id.toString() === req.params.docId);
+    if (docIndex === -1) return res.status(404).json({ message: 'Document not found.' });
+
+    loan.documents.splice(docIndex, 1);
+    await loan.save();
+    res.json({ message: 'Document deleted.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error deleting document.' });
+  }
+});
+
+// Delete loan
 router.delete('/:id', async (req, res) => {
   try {
     const loan = await Loan.findByIdAndDelete(req.params.id);

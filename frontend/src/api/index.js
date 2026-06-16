@@ -54,6 +54,14 @@ export const Auth = {
   logout: () => apiRequest('/auth/logout', { method: 'POST' }),
 };
 
+export const Customers = {
+  list: () => apiRequest('/customers'),
+  get: (id) => apiRequest(`/customers/${id}`),
+  create: (data) => apiRequest('/customers', { method: 'POST', body: data }),
+  update: (id, data) => apiRequest(`/customers/${id}`, { method: 'PUT', body: data }),
+  remove: (id) => apiRequest(`/customers/${id}`, { method: 'DELETE' }),
+};
+
 export const Loans = {
   list: (params = {}) => {
     const cleanParams = Object.fromEntries(
@@ -69,6 +77,10 @@ export const Loans = {
   recordPayment: (id, sNo, data) =>
     apiRequest(`/loans/${id}/installments/${sNo}`, { method: 'PUT', body: data }),
   pendingDues: () => apiRequest('/loans/pending-dues'),
+  uploadDocument: (id, data) =>
+    apiRequest(`/loans/${id}/documents`, { method: 'POST', body: data }),
+  deleteDocument: (id, docId) =>
+    apiRequest(`/loans/${id}/documents/${docId}`, { method: 'DELETE' }),
 };
 
 export const System = {

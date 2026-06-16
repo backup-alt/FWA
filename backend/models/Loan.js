@@ -9,12 +9,16 @@ const installmentSchema = new mongoose.Schema(
     amountReceived: { type: Number, default: 0 },
     dateReceived: { type: Date, default: null },
     sign: { type: String, default: '' },
+    paymentType: {
+      type: String,
+      enum: ['Cash', 'UPI', 'Bank Transfer', 'Cheque', 'Other', ''],
+      default: '',
+    },
     status: {
       type: String,
       enum: ['Pending', 'Paid', 'Partial', 'Overdue'],
       default: 'Pending',
     },
-
 
     adjustment: { type: Number, default: 0 },
     pendingAmount: { type: Number, default: 0 },
@@ -23,7 +27,6 @@ const installmentSchema = new mongoose.Schema(
   },
   { _id: false }
 );
-
 
 
 
@@ -36,11 +39,26 @@ const chequeSchema = new mongoose.Schema(
   { _id: false }
 );
 
-
+const documentSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    type: { type: String, required: true }, // mime type
+    data: { type: String, required: true }, // base64 data URI
+    uploadedAt: { type: Date, default: Date.now },
+  }
+);
 
 
 const loanSchema = new mongoose.Schema(
   {
+    customerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Customer',
+      required: true,
+    },
+
+    // Keep customerName for backward compat & quick access
+    customerName: { type: String, default: '' },
 
     vehicleType: {
       type: String,
@@ -51,6 +69,7 @@ const loanSchema = new mongoose.Schema(
     model: { type: String, default: '' },
     regNo: { type: String, default: '' },
 
+    loanAccountNumber: { type: String, default: '' },
 
     loanAmount: { type: Number, required: true },
     financeAmount: { type: Number, required: true },
@@ -70,8 +89,7 @@ const loanSchema = new mongoose.Schema(
     keyStatus: { type: String, default: '' },
     salesDoneBy: { type: String, default: '' },
 
-
-    customerName: { type: String, required: true },
+    // Legacy customer fields (kept for backward compat, new loans use Customer model)
     address: { type: String, default: '' },
     monthlySalary: { type: Number, default: 0 },
     cellNumbers: [
@@ -99,6 +117,7 @@ const loanSchema = new mongoose.Schema(
 
 
     installments: [installmentSchema],
+    documents: [documentSchema],
     outstandingPrincipal: { type: Number, default: 0 },
     totalPaid: { type: Number, default: 0 },
 

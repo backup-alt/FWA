@@ -206,40 +206,39 @@ router.put('/:id', async (req, res) => {
       const newUnit = req.body.installmentPeriodUnit || loan.installmentPeriodUnit || 'Months';
       const newRate = req.body.interestRate || loan.interestRate;
 
-      
-      const paidInstallments = loan.installments.filter((i) => i.status === 'Paid');
-      const remainingCount = newPeriod - paidInstallments.length;
-
-      if (remainingCount <= 0) {
+      const actedCount = loan.installments.filter(i => i.amountReceived > 0 || i.dateReceived || i.status === 'Paid' || i.status === 'Partial').length;
+      if (newPeriod < actedCount) {
         return res.status(400).json({
-          message: 'New installment period must be greater than the number of already-paid installments.',
+          message: `New installment period must be at least the number of installments with payment activity (${actedCount}).`,
         });
       }
 
-      const principalRemaining = loan.outstandingPrincipal;
-      const lastPaidDate =
-        paidInstallments.length > 0
-          ? new Date(paidInstallments[paidInstallments.length - 1].dueDate)
-          : new Date(loan.loanStartDate);
-
-      const { installments: newInstallments, emiAmount } = generateInstallmentSchedule({
-        financeAmount: principalRemaining,
+      const { installments: newInstallments, emiAmount, interestAmount } = generateInstallmentSchedule({
+        financeAmount: loan.financeAmount,
         interestRate: newRate,
-        installmentPeriod: remainingCount,
+        installmentPeriod: newPeriod,
         installmentPeriodUnit: newUnit,
-        loanStartDate: lastPaidDate,
+        loanStartDate: loan.loanStartDate,
       });
 
-      
-      newInstallments.forEach((inst, idx) => {
-        inst.sNo = paidInstallments.length + idx + 1;
+      newInstallments.forEach(newInst => {
+        const oldInst = loan.installments.find(i => i.sNo === newInst.sNo);
+        if (oldInst && (oldInst.amountReceived > 0 || oldInst.dateReceived || oldInst.status === 'Paid' || oldInst.status === 'Partial')) {
+          newInst.amountReceived = oldInst.amountReceived;
+          newInst.dateReceived = oldInst.dateReceived;
+          newInst.sign = oldInst.sign;
+          newInst.status = oldInst.status;
+          newInst.adjustment = 0;
+        }
       });
 
-      loan.installments = [...paidInstallments, ...newInstallments];
+      loan.installments = newInstallments;
       loan.installmentPeriod = newPeriod;
       loan.installmentPeriodUnit = newUnit;
       loan.interestRate = newRate;
+      loan.interestAmount = interestAmount;
       loan.emiAmount = emiAmount;
+      recalculateSchedule(loan);
     }
 
     await loan.save();
@@ -321,7 +320,7 @@ router.put('/:id/installments/:sNo', async (req, res) => {
       if (completed) {
         installment.amountReceived = Math.max(
           Number(installment.amountReceived || 0),
-          Number(installment.dueAmount || 0)
+          Number(installment.dueAmount || 0) + Number(installment.pendingAmount || 0)
         );
         installment.dateReceived = installment.dateReceived || new Date();
         installment.status = 'Paid';

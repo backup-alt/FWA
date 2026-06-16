@@ -108,7 +108,7 @@ export function InstallmentTable({ loan, onRecordPayment, saving }) {
       sNo: installment.sNo,
       dueAmount: installment.dueAmount || 0,
       dueDate: formatDateInput(installment.dueDate),
-      amountReceived: complete ? (installment.dueAmount || 0) : 0,
+      amountReceived: complete ? ((installment.dueAmount || 0) + (installment.pendingAmount || 0)) : 0,
       dateReceived: complete ? (formatDateInput(installment.dateReceived) || todayInputValue()) : null,
       completed: complete,
     });
@@ -161,14 +161,9 @@ export function InstallmentTable({ loan, onRecordPayment, saving }) {
       >
         <p className="text-sm text-gray-600 dark:text-gray-300">
           {confirmation?.complete
-            ? `This will mark installment #${confirmation.installment.sNo} as completed and set the received amount to ${formatCurrency(confirmation.installment.dueAmount)}.`
+            ? `This will mark installment #${confirmation.installment.sNo} as completed and set the received amount to ${formatCurrency((confirmation.installment.dueAmount || 0) + (confirmation.installment.pendingAmount || 0))}.`
             : `This will reopen installment #${confirmation?.installment.sNo} and clear the received amount and received date.`}
         </p>
-        {confirmation?.complete && Number(confirmation.installment.pendingAmount || 0) > 0 && (
-          <p className="mt-3 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200">
-            The carried pending balance of {formatCurrency(confirmation.installment.pendingAmount)} will remain open and move to the next installment.
-          </p>
-        )}
         {confirmation?.complete && (
           <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
             Received date will be set to {formatDate(formatDateInput(confirmation.installment.dateReceived) || todayInputValue())}.

@@ -119,7 +119,7 @@ function recalculateSchedule(loan) {
 
       if (received <= 0) {
         markOpenStatus(inst, now);
-      } else if (received >= dueAmount) {
+      } else if (received >= requiredAmount) {
         inst.status = 'Paid';
       } else {
         inst.status = 'Partial';

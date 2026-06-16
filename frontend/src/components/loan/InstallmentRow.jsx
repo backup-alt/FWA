@@ -17,7 +17,7 @@ export function InstallmentRow({
   const isCompleted = data.status === 'Paid';
   const [editing, setEditing] = useState(false);
   const [localSNo, setLocalSNo] = useState(data.sNo || '');
-  const [localDueAmount, setLocalDueAmount] = useState(data.dueAmount || '');
+  const [localDueAmount, setLocalDueAmount] = useState(data.baseDueAmount || data.dueAmount || '');
   const [localDueDate, setLocalDueDate] = useState(formatDateInput(data.dueDate));
   const [localAmount, setLocalAmount] = useState(data.amountReceived || '');
   const [localDate, setLocalDate] = useState(formatDateInput(data.dateReceived));
@@ -25,7 +25,7 @@ export function InstallmentRow({
   useEffect(() => {
     if (!editing) {
       setLocalSNo(data.sNo || '');
-      setLocalDueAmount(data.dueAmount || '');
+      setLocalDueAmount(data.baseDueAmount || data.dueAmount || '');
       setLocalDueDate(formatDateInput(data.dueDate));
       setLocalAmount(data.amountReceived || '');
       setLocalDate(formatDateInput(data.dateReceived));
@@ -34,7 +34,7 @@ export function InstallmentRow({
 
   const resetLocalState = () => {
     setLocalSNo(data.sNo || '');
-    setLocalDueAmount(data.dueAmount || '');
+    setLocalDueAmount(data.baseDueAmount || data.dueAmount || '');
     setLocalDueDate(formatDateInput(data.dueDate));
     setLocalAmount(data.amountReceived || '');
     setLocalDate(formatDateInput(data.dateReceived));

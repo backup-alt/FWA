@@ -22,8 +22,9 @@ function normalizeInstallments(installments = []) {
   const normalized = installments
     .map((inst) => ({
       ...inst,
-      dueAmount: roundMoney(Number(inst.dueAmount || 0)),
-      adjustment: 0,
+      baseDueAmount: Number(inst.dueAmount || 0),
+      dueAmount: roundMoney(Number(inst.dueAmount || 0) - Number(inst.adjustment || 0)),
+      adjustment: Number(inst.adjustment || 0),
       pendingAmount: 0,
       shortfallAmount: 0,
       extraAmount: 0,

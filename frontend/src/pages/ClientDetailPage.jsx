@@ -7,6 +7,7 @@ import { useToast } from '@/context/ToastContext';
 import { Modal } from '@/components/ui/Modal';
 import { InstallmentTable } from '@/components/loan/InstallmentTable';
 import { PeriodEditor } from '@/components/loan/PeriodEditor';
+import { PrepaymentPlanner } from '@/components/loan/PrepaymentPlanner';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -222,7 +223,8 @@ export function ClientDetailPage() {
                 <p className="mt-1 text-lg font-semibold text-gray-950 dark:text-white">{formatCurrency(loan.emiAmount)}</p>
               </div>
             </div>
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+              <PrepaymentPlanner loan={loan} />
               <PeriodEditor loan={loan} onUpdate={handlePeriodUpdate} updating={updateLoan.isPending} />
             </div>
           </div>

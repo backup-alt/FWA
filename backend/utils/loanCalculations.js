@@ -112,100 +112,62 @@ function generateInstallmentSchedule({
 
 
 
-function recalculateSchedule(loan, paidSNo) {
+function recalculateSchedule(loan) {
   const installments = loan.installments;
-  const idx = installments.findIndex((i) => i.sNo === paidSNo);
-  if (idx === -1) {
-    throw new Error(`Installment with sNo ${paidSNo} not found`);
+
+  // Sort by sNo to ensure order
+  installments.sort((a, b) => a.sNo - b.sNo);
+
+  let carry = 0;
+
+  for (let i = 0; i < installments.length; i++) {
+    const inst = installments[i];
+
+    // Store the carry-forward FROM previous installments onto this one
+    inst.carryForward = +(carry).toFixed(2);
+
+    const received = inst.amountReceived || 0;
+    const effectiveDue = +(inst.dueAmount + inst.carryForward).toFixed(2);
+
+    if (received >= effectiveDue && received > 0) {
+      inst.status = 'Paid';
+      carry = 0;
+    } else if (received > 0) {
+      inst.status = 'Partial';
+      carry = +(effectiveDue - received).toFixed(2);
+    } else {
+      // No payment — carry the full effective due forward
+      carry = effectiveDue;
+      inst.status = new Date(inst.dueDate) < new Date() ? 'Overdue' : 'Pending';
+    }
   }
 
-  const current = installments[idx];
-  const dueAmount = current.dueAmount;
-  const received = current.amountReceived || 0;
-  const diff = +(received - dueAmount).toFixed(2); 
-
-  
-  if (received <= 0) {
-    current.status = 'Pending';
-  } else if (received < dueAmount) {
-    current.status = 'Partial';
-  } else {
-    current.status = 'Paid';
-  }
-
-  
-  
-  const remainingInstallments = installments.slice(idx + 1);
-
-  
-  const currentRemainingTotal = remainingInstallments.reduce(
-    (sum, inst) => sum + inst.dueAmount,
-    0
-  );
-
-  
-  const newOutstanding = +(currentRemainingTotal - diff).toFixed(2);
-
-  loan.outstandingPrincipal = Math.max(newOutstanding, 0);
+  // Update loan-level totals
   loan.totalPaid = +installments
     .reduce((sum, inst) => sum + (inst.amountReceived || 0), 0)
     .toFixed(2);
 
-  
-  if (newOutstanding <= 0 && remainingInstallments.length > 0) {
-    remainingInstallments.forEach((inst) => {
-      inst.dueAmount = 0;
-      inst.adjustment = 0;
-      inst.status = 'Paid';
-    });
+  loan.outstandingPrincipal = +installments
+    .reduce((sum, inst) => {
+      const received = inst.amountReceived || 0;
+      return sum + Math.max((inst.dueAmount || 0) - received, 0);
+    }, 0)
+    .toFixed(2);
+
+  // Check if all installments are paid and no carry remains
+  const allPaid = installments.every(inst => inst.status === 'Paid');
+  if (allPaid && carry <= 0) {
     loan.status = 'Completed';
-    loan.completedAt = new Date();
+    loan.completedAt = loan.completedAt || new Date();
     loan.emiAmount = 0;
-    return loan;
+  } else {
+    loan.status = 'Active';
+    loan.completedAt = null;
+    const nextPending = installments.find(
+      i => i.status === 'Pending' || i.status === 'Overdue' || i.status === 'Partial'
+    );
+    loan.emiAmount = nextPending ? nextPending.dueAmount : installments[installments.length - 1]?.dueAmount || 0;
   }
-
-  
-  if (remainingInstallments.length === 0) {
-    if (newOutstanding > 0) {
-      
-      
-      
-      current.adjustment = +(diff).toFixed(2);
-      current.status = 'Partial';
-    } else {
-      loan.status = 'Completed';
-      loan.completedAt = new Date();
-      loan.emiAmount = 0;
-    }
-    return loan;
-  }
-
-  
-  const count = remainingInstallments.length;
-  const baseShare = +(newOutstanding / count).toFixed(2);
-  let runningTotal = 0;
-
-  remainingInstallments.forEach((inst, i) => {
-    let share = baseShare;
-    
-    if (i === count - 1) {
-      share = +(newOutstanding - runningTotal).toFixed(2);
-    }
-    inst.adjustment = +(share - inst.dueAmount).toFixed(2);
-    inst.dueAmount = share;
-    runningTotal = +(runningTotal + share).toFixed(2);
-
-    
-    if (inst.status === 'Pending' && new Date(inst.dueDate) < new Date()) {
-      inst.status = 'Overdue';
-    }
-  });
-
-  
-  const nextPending = installments.find(
-    (i) => i.status === 'Pending' || i.status === 'Overdue' || i.status === 'Partial'
-  );
-  loan.emiAmount = nextPending ? nextPending.dueAmount : 0;
 
   return loan;
 }

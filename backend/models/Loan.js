@@ -17,6 +17,7 @@ const installmentSchema = new mongoose.Schema(
 
 
     adjustment: { type: Number, default: 0 },
+    carryForward: { type: Number, default: 0 },
   },
   { _id: false }
 );

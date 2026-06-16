@@ -89,22 +89,7 @@ function recalculateSchedule(loan) {
   const period = installments.length;
   if (period === 0) return loan;
 
-  // ── Step 1: Force every dueAmount to the uniform EMI ──
-  const { totalPayable, emi } = calculateFlatEMI(
-    loan.financeAmount,
-    loan.interestRate,
-    period,
-    loan.installmentPeriodUnit || 'Months'
-  );
-
-  installments.forEach((inst, idx) => {
-    if (idx === period - 1) {
-      // Last installment absorbs any rounding remainder
-      const sumSoFar = roundMoney(emi * (period - 1));
-      inst.dueAmount = roundMoney(totalPayable - sumSoFar);
-    } else {
-      inst.dueAmount = emi;
-    }
+  installments.forEach((inst) => {
     inst.adjustment = 0;
     inst.pendingAmount = 0;
     inst.shortfallAmount = 0;

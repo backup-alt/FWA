@@ -9,6 +9,7 @@ const {
 } = require('../utils/loanCalculations');
 
 const router = express.Router();
+const roundMoney = (v) => +Number(v || 0).toFixed(2);
 
 router.use(authMiddleware);
 
@@ -352,6 +353,206 @@ router.delete('/:id/documents/:docId', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error deleting document.' });
+  }
+});
+
+// Close loan
+router.put('/:id/close', async (req, res) => {
+  try {
+    const loan = await Loan.findById(req.params.id);
+    if (!loan) return res.status(404).json({ message: 'Loan not found.' });
+    if (loan.status === 'Closed') {
+      return res.status(400).json({ message: 'Loan is already closed.' });
+    }
+
+    const {
+      closureReason,
+      closureRemarks = '',
+      amountReceived = 0,
+      closureDate,
+    } = req.body;
+
+    if (!closureReason) {
+      return res.status(400).json({ message: 'closureReason is required.' });
+    }
+
+    const VALID_REASONS = [
+      'Full Prepayment',
+      'Foreclosure',
+      'Write-off',
+      'Settlement',
+      'Waiver',
+    ];
+    if (!VALID_REASONS.includes(closureReason)) {
+      return res.status(400).json({
+        message: `closureReason must be one of: ${VALID_REASONS.join(', ')}`,
+      });
+    }
+
+    // Mark all non-paid installments as Cancelled
+    loan.installments.forEach((inst) => {
+      if (inst.status !== 'Paid') {
+        inst.status = 'Cancelled';
+      }
+    });
+
+    loan.status = 'Closed';
+    loan.closureInfo = {
+      reason: closureReason,
+      remarks: closureRemarks,
+      amountReceived: Number(amountReceived) || 0,
+      closureDate: closureDate ? new Date(closureDate) : new Date(),
+    };
+
+    // Recalculate totals (skips cancelled installments)
+    recalculateSchedule(loan);
+
+    await loan.save();
+    res.json(loan);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error closing loan.' });
+  }
+});
+
+// Restructure loan (lump sum → lower EMI or shorten period)
+router.put('/:id/restructure', async (req, res) => {
+  try {
+    const loan = await Loan.findById(req.params.id);
+    if (!loan) return res.status(404).json({ message: 'Loan not found.' });
+    if (loan.status !== 'Active') {
+      return res.status(400).json({ message: 'Only Active loans can be restructured.' });
+    }
+
+    const { mode, lumpSum } = req.body;
+    if (!mode || !['lower-emi', 'shorten-period'].includes(mode)) {
+      return res.status(400).json({ message: 'mode must be lower-emi or shorten-period.' });
+    }
+    if (!lumpSum || Number(lumpSum) <= 0) {
+      return res.status(400).json({ message: 'lumpSum must be a positive number.' });
+    }
+
+    const lumpSumNum = roundMoney(Number(lumpSum));
+
+    // Identify unacted (future) installments
+    const actedInstallments = loan.installments.filter(
+      (i) => i.status === 'Paid' || i.status === 'Partial' || Number(i.amountReceived || 0) > 0
+    );
+    const futureInstallments = loan.installments
+      .filter(
+        (i) =>
+          i.status !== 'Paid' &&
+          i.status !== 'Cancelled' &&
+          Number(i.amountReceived || 0) === 0
+      )
+      .sort((a, b) => a.sNo - b.sNo);
+
+    if (futureInstallments.length === 0) {
+      return res.status(400).json({ message: 'No future installments to restructure.' });
+    }
+
+    // Current outstanding = sum of future installment dueAmounts
+    const currentOutstanding = roundMoney(
+      futureInstallments.reduce((sum, i) => sum + Number(i.dueAmount || 0), 0)
+    );
+
+    if (lumpSumNum >= currentOutstanding) {
+      return res.status(400).json({
+        message: `Lump sum (${lumpSumNum}) must be less than outstanding balance (${currentOutstanding}). Use Close Loan for full settlement.`,
+      });
+    }
+
+    const newOutstanding = roundMoney(currentOutstanding - lumpSumNum);
+    const rate = loan.interestRate; // per-period flat rate %
+    const prevEmi = roundMoney(futureInstallments[0].dueAmount || 0);
+    const prevPeriod = futureInstallments.length;
+
+    let newPeriod;
+    let newEmi;
+
+    if (mode === 'lower-emi') {
+      // Same number of installments, lower EMI
+      newPeriod = prevPeriod;
+      const monthlyInterest = roundMoney(newOutstanding * (rate / 100));
+      const monthlyPrincipal = roundMoney(newOutstanding / newPeriod);
+      newEmi = roundMoney(monthlyPrincipal + monthlyInterest);
+    } else {
+      // Shorten period — keep same EMI, fewer installments
+      const monthlyInterest = roundMoney(newOutstanding * (rate / 100));
+      const principalPerInstallment = roundMoney(prevEmi - monthlyInterest);
+      if (principalPerInstallment <= 0) {
+        return res.status(400).json({
+          message: 'EMI is too low to cover the interest on the new outstanding. Use lower-emi mode instead.',
+        });
+      }
+      newPeriod = Math.ceil(newOutstanding / principalPerInstallment);
+      newEmi = prevEmi;
+    }
+
+    // Get due date of the first future installment as the start reference
+    const firstFutureDueDate = new Date(futureInstallments[0].dueDate);
+    const unit = loan.installmentPeriodUnit || 'Months';
+
+    // Remove all future installments from the loan
+    loan.installments = actedInstallments;
+
+    // Regenerate future installments
+    for (let i = 1; i <= newPeriod; i++) {
+      const dueDate = new Date(firstFutureDueDate);
+      if (unit === 'Weeks') dueDate.setDate(dueDate.getDate() + (i - 1) * 7);
+      else if (unit === 'Days') dueDate.setDate(dueDate.getDate() + (i - 1));
+      else dueDate.setMonth(dueDate.getMonth() + (i - 1));
+
+      const nextSNo = (actedInstallments.length > 0
+        ? Math.max(...actedInstallments.map((a) => a.sNo))
+        : 0) + i;
+
+      let dueAmount = newEmi;
+      if (i === newPeriod) {
+        const sumSoFar = roundMoney(newEmi * (newPeriod - 1));
+        // Last installment = newOutstanding + interest*newPeriod - sumSoFar
+        const totalPayable = roundMoney(
+          newOutstanding + roundMoney(newOutstanding * (rate / 100)) * newPeriod
+        );
+        dueAmount = roundMoney(totalPayable - sumSoFar);
+      }
+
+      loan.installments.push({
+        sNo: nextSNo,
+        dueAmount,
+        dueDate,
+        amountReceived: 0,
+        dateReceived: null,
+        sign: '',
+        status: dueDate < new Date() ? 'Overdue' : 'Pending',
+        adjustment: 0,
+        pendingAmount: 0,
+        shortfallAmount: 0,
+        extraAmount: 0,
+      });
+    }
+
+    // Log the restructure
+    if (!loan.restructureLog) loan.restructureLog = [];
+    loan.restructureLog.push({
+      date: new Date(),
+      mode,
+      lumpSum: lumpSumNum,
+      newPeriod,
+      newEmi,
+      prevEmi,
+      prevPeriod,
+    });
+
+    loan.installmentPeriod =
+      actedInstallments.length + newPeriod;
+
+    recalculateSchedule(loan);
+    await loan.save();
+    res.json(loan);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error restructuring loan.' });
   }
 });
 

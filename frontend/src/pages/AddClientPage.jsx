@@ -102,11 +102,14 @@ export function AddClientPage() {
   const financeAmount = Number(watchedValues.financeAmount || 0);
   const interestRate = Number(watchedValues.interestRate || 0);
   const installmentPeriod = Number(watchedValues.installmentPeriod || 0);
-  const interestAmount = financeAmount && interestRate && installmentPeriod
-    ? +(financeAmount * (interestRate / 100) * (installmentPeriod / 12)).toFixed(2)
+
+  // Flat monthly interest: interestRate% of financeAmount, fixed every installment
+  const monthlyInterest = financeAmount && interestRate
+    ? +(financeAmount * (interestRate / 100)).toFixed(2)
     : 0;
+  const interestAmount = +(monthlyInterest * installmentPeriod).toFixed(2);
   const monthlyDue = financeAmount && installmentPeriod
-    ? +((financeAmount + interestAmount) / installmentPeriod).toFixed(2)
+    ? +((financeAmount / installmentPeriod) + monthlyInterest).toFixed(2)
     : 0;
 
   const hasAnyValue = (obj = {}) =>
@@ -203,16 +206,16 @@ export function AddClientPage() {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Monthly Due</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Monthly Due (EMI)</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(monthlyDue)}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Auto schedule amount</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Principal + flat interest</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Interest Amount</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Total Interest</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(interestAmount)}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{interestRate || 0}% annual flat rate</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{interestRate || 0}% flat per month</p>
           </CardContent>
         </Card>
         <Card>

@@ -2,16 +2,23 @@ function roundMoney(value) {
   return +Number(value || 0).toFixed(2);
 }
 
-function calculateFlatEMI(principal, annualRatePercent, period, unit = 'Months') {
-  let years;
-  if (unit === 'Weeks') years = period / 52;
-  else if (unit === 'Days') years = period / 365;
-  else years = period / 12;
-
-  const totalInterest = roundMoney(principal * (annualRatePercent / 100) * years);
+/**
+ * Flat monthly interest formula:
+ *   monthly_interest = principal × (ratePercent / 100)   — fixed every installment
+ *   monthly_principal = principal / period
+ *   emi = monthly_principal + monthly_interest
+ *
+ * ratePercent is the per-installment-period rate (e.g. 2 means 2% per month).
+ * It is flat — it does NOT reduce as principal is repaid.
+ */
+function calculateFlatEMI(principal, ratePercent, period) {
+  const monthlyInterest = roundMoney(principal * (ratePercent / 100));
+  const monthlyPrincipal = roundMoney(principal / period);
+  // EMI before rounding adjustment
+  const emi = roundMoney(monthlyPrincipal + monthlyInterest);
+  const totalInterest = roundMoney(monthlyInterest * period);
   const totalPayable = roundMoney(principal + totalInterest);
-  const emi = roundMoney(totalPayable / period);
-  return { totalInterest, totalPayable, emi };
+  return { monthlyInterest, monthlyPrincipal, totalInterest, totalPayable, emi };
 }
 
 function generateInstallmentSchedule({
@@ -24,8 +31,7 @@ function generateInstallmentSchedule({
   const { totalInterest, totalPayable, emi } = calculateFlatEMI(
     financeAmount,
     interestRate,
-    installmentPeriod,
-    installmentPeriodUnit
+    installmentPeriod
   );
 
   const startDate = new Date(loanStartDate);
@@ -41,6 +47,7 @@ function generateInstallmentSchedule({
       dueDate.setMonth(dueDate.getMonth() + i);
     }
 
+    // Last installment absorbs any rounding remainder
     let dueAmount = emi;
     if (i === installmentPeriod) {
       const sumSoFar = roundMoney(emi * (installmentPeriod - 1));
@@ -90,6 +97,8 @@ function recalculateSchedule(loan) {
   if (period === 0) return loan;
 
   installments.forEach((inst) => {
+    // Skip cancelled installments — they are frozen by loan closure
+    if (inst.status === 'Cancelled') return;
     inst.adjustment = 0;
     inst.pendingAmount = 0;
     inst.shortfallAmount = 0;
@@ -103,6 +112,9 @@ function recalculateSchedule(loan) {
   let pendingPlaced = false;
 
   installments.forEach((inst, idx) => {
+    // Skip cancelled installments from carry logic
+    if (inst.status === 'Cancelled') return;
+
     const effectiveDue = roundMoney(Number(inst.dueAmount || 0) - Number(inst.adjustment || 0));
     const received = roundMoney(inst.amountReceived);
     const acted = hasInstallmentActivity(inst);
@@ -176,21 +188,25 @@ function recalculateSchedule(loan) {
   );
 
   const scheduledTotal = roundMoney(
-    installments.reduce((sum, inst) => sum + Number(inst.dueAmount || 0), 0)
+    installments
+      .filter(i => i.status !== 'Cancelled')
+      .reduce((sum, inst) => sum + Number(inst.dueAmount || 0), 0)
   );
 
   loan.outstandingPrincipal = Math.max(roundMoney(scheduledTotal - loan.totalPaid), 0);
 
-  const nextOpen = installments.find((inst) => inst.status !== 'Paid');
+  const nextOpen = installments.find((inst) => inst.status !== 'Paid' && inst.status !== 'Cancelled');
   loan.emiAmount = nextOpen ? roundMoney((nextOpen.dueAmount || 0) - (nextOpen.adjustment || 0)) : 0;
 
-  // Loan cannot close while any carry remains
-  if (loan.outstandingPrincipal <= 0 && carry <= 0) {
-    loan.status = 'Completed';
-    loan.completedAt = loan.completedAt || new Date();
-  } else {
-    loan.status = 'Active';
-    loan.completedAt = null;
+  // Never auto-change status of a Closed loan
+  if (loan.status !== 'Closed') {
+    if (loan.outstandingPrincipal <= 0 && carry <= 0) {
+      loan.status = 'Completed';
+      loan.completedAt = loan.completedAt || new Date();
+    } else {
+      loan.status = 'Active';
+      loan.completedAt = null;
+    }
   }
 
   return loan;

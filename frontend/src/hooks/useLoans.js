@@ -64,3 +64,27 @@ export function usePendingDues() {
     queryFn: () => Loans.pendingDues(),
   });
 }
+
+export function useCloseLoan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) => Loans.closeLoan(id, data),
+    onSuccess: (updatedLoan) => {
+      qc.invalidateQueries({ queryKey: ['loans'] });
+      qc.invalidateQueries({ queryKey: ['pendingDues'] });
+      qc.setQueryData(['loan', updatedLoan._id], updatedLoan);
+    },
+  });
+}
+
+export function useRestructureLoan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) => Loans.restructureLoan(id, data),
+    onSuccess: (updatedLoan) => {
+      qc.invalidateQueries({ queryKey: ['loans'] });
+      qc.invalidateQueries({ queryKey: ['pendingDues'] });
+      qc.setQueryData(['loan', updatedLoan._id], updatedLoan);
+    },
+  });
+}

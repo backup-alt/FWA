@@ -10,13 +10,14 @@ import {
   MapPinIcon,
   BanknotesIcon
 } from '@heroicons/react/24/outline';
-import { useLoan, useUpdateLoan, useRecordPayment, useDeleteLoan } from '@/hooks/useLoans';
+import { useLoan, useUpdateLoan, useRecordPayment, useDeleteLoan, useCloseLoan, useRestructureLoan } from '@/hooks/useLoans';
 import { useCustomer } from '@/hooks/useCustomers';
 import { useToast } from '@/context/ToastContext';
 import { Modal } from '@/components/ui/Modal';
 import { InstallmentTable } from '@/components/loan/InstallmentTable';
 import { PeriodEditor } from '@/components/loan/PeriodEditor';
-import { PrepaymentPlanner } from '@/components/loan/PrepaymentPlanner';
+import { CloseLoanModal } from '@/components/loan/CloseLoanModal';
+import { RestructureModal } from '@/components/loan/RestructureModal';
 import { DocumentsTab } from '@/components/loan/DocumentsTab';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -41,8 +42,12 @@ export function LoanDetailPage() {
   const updateLoan = useUpdateLoan();
   const recordPayment = useRecordPayment();
   const deleteLoan = useDeleteLoan();
+  const closeLoan = useCloseLoan();
+  const restructureLoan = useRestructureLoan();
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showCloseModal, setShowCloseModal] = useState(false);
+  const [showRestructureModal, setShowRestructureModal] = useState(false);
   const [savingInstallment, setSavingInstallment] = useState(null);
   const [activeTab, setActiveTab] = useState('schedule');
 
@@ -81,6 +86,18 @@ export function LoanDetailPage() {
   const handleDeleteDocument = async (docId) => {
     await Loans.deleteDocument(id, docId);
     qc.invalidateQueries({ queryKey: ['loan', id] });
+  };
+
+  const handleCloseLoan = async (data) => {
+    await closeLoan.mutateAsync({ id, data });
+    showToast('Loan closed successfully', 'success');
+    setShowCloseModal(false);
+  };
+
+  const handleRestructure = async (data) => {
+    await restructureLoan.mutateAsync({ id, data });
+    showToast('Loan restructured successfully', 'success');
+    setShowRestructureModal(false);
   };
 
   if (isLoading) {
@@ -146,6 +163,15 @@ export function LoanDetailPage() {
           <Badge variant={statusColors[loan.status] || 'gray'} className="text-sm">
             {loan.status}
           </Badge>
+          {loan.status === 'Active' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowCloseModal(true)}
+            >
+              Close Loan
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -158,7 +184,33 @@ export function LoanDetailPage() {
         </div>
       </div>
 
-      {/* Customer details moved to tabs */}      {/* Summary Cards */}
+      {loan.status === 'Closed' && loan.closureInfo && (
+        <div className="rounded-lg bg-gray-50 border border-gray-200 p-4 dark:bg-gray-800 dark:border-gray-700">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Loan Closed</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <p className="text-gray-500 dark:text-gray-400">Reason</p>
+              <p className="font-medium text-gray-900 dark:text-white">{loan.closureInfo.reason}</p>
+            </div>
+            <div>
+              <p className="text-gray-500 dark:text-gray-400">Amount Received</p>
+              <p className="font-medium text-gray-900 dark:text-white">{formatCurrency(loan.closureInfo.amountReceived)}</p>
+            </div>
+            <div>
+              <p className="text-gray-500 dark:text-gray-400">Closure Date</p>
+              <p className="font-medium text-gray-900 dark:text-white">{formatDate(loan.closureInfo.closureDate)}</p>
+            </div>
+            {loan.closureInfo.remarks && (
+              <div className="col-span-2 md:col-span-1">
+                <p className="text-gray-500 dark:text-gray-400">Remarks</p>
+                <p className="font-medium text-gray-900 dark:text-white">{loan.closureInfo.remarks}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="p-4">
@@ -224,7 +276,15 @@ export function LoanDetailPage() {
               subtitle="Track and record installment payments"
               action={
                 <div className="flex gap-2">
-                  <PrepaymentPlanner loan={scheduleLoan} />
+                  {loan.status === 'Active' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowRestructureModal(true)}
+                    >
+                      Restructure
+                    </Button>
+                  )}
                   {loan.status === 'Active' && (
                     <PeriodEditor
                       loan={scheduleLoan}
@@ -444,6 +504,21 @@ export function LoanDetailPage() {
           </div>
         </div>
       )}
+
+      <CloseLoanModal
+        isOpen={showCloseModal}
+        onClose={() => setShowCloseModal(false)}
+        onConfirm={handleCloseLoan}
+        isSubmitting={closeLoan.isPending}
+      />
+
+      <RestructureModal
+        isOpen={showRestructureModal}
+        onClose={() => setShowRestructureModal(false)}
+        onConfirm={handleRestructure}
+        isSubmitting={restructureLoan.isPending}
+        loan={loan}
+      />
 
       <Modal
         isOpen={showDeleteConfirm}

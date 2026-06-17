@@ -81,6 +81,10 @@ export const Loans = {
     apiRequest(`/loans/${id}/documents`, { method: 'POST', body: data }),
   deleteDocument: (id, docId) =>
     apiRequest(`/loans/${id}/documents/${docId}`, { method: 'DELETE' }),
+  closeLoan: (id, data) =>
+    apiRequest(`/loans/${id}/close`, { method: 'PUT', body: data }),
+  restructureLoan: (id, data) =>
+    apiRequest(`/loans/${id}/restructure`, { method: 'PUT', body: data }),
 };
 
 export const System = {

@@ -16,7 +16,7 @@ const installmentSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Pending', 'Paid', 'Partial', 'Overdue'],
+      enum: ['Pending', 'Paid', 'Partial', 'Overdue', 'Cancelled'],
       default: 'Pending',
     },
 
@@ -124,10 +124,31 @@ const loanSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ['Active', 'Completed'],
+      enum: ['Active', 'Completed', 'Closed'],
       default: 'Active',
     },
     completedAt: { type: Date, default: null },
+
+    // Loan Closure
+    closureInfo: {
+      reason: { type: String, default: '' }, // Full Prepayment | Foreclosure | Write-off | Settlement | Waiver
+      remarks: { type: String, default: '' },
+      amountReceived: { type: Number, default: 0 },
+      closureDate: { type: Date, default: null },
+    },
+
+    // Restructure history log
+    restructureLog: [
+      {
+        date: { type: Date, default: Date.now },
+        mode: { type: String, enum: ['lower-emi', 'shorten-period'] },
+        lumpSum: { type: Number, default: 0 },
+        newPeriod: { type: Number, default: 0 },
+        newEmi: { type: Number, default: 0 },
+        prevEmi: { type: Number, default: 0 },
+        prevPeriod: { type: Number, default: 0 },
+      },
+    ],
   },
   { timestamps: true }
 );

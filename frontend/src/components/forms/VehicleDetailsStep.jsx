@@ -70,10 +70,10 @@ export function VehicleDetailsStep({ form }) {
         />
         
         <Input
-          label="Interest Rate (%) *"
+          label="Monthly Interest Rate (%) *"
           type="number"
           step="0.01"
-          placeholder="12"
+          placeholder="2"
           error={errors.interestRate?.message}
           {...register('interestRate')}
         />

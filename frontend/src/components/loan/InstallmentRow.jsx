@@ -12,7 +12,7 @@ export function InstallmentRow({
   saving,
   optimisticData 
 }) {
-  const isLocked = loan.status === 'Completed';
+  const isLocked = loan.status === 'Completed' || loan.status === 'Closed';
   const data = optimisticData || inst;
   const isCompleted = data.status === 'Paid';
   const [editing, setEditing] = useState(false);

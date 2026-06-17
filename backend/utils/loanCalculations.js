@@ -214,11 +214,12 @@ function getPendingDues(loans) {
       const carriedPending = Number(inst.pendingAmount || 0);
       const outstanding = roundMoney(dueShortfall + carriedPending);
 
-      if (outstanding > 0) {
-        const daysOverdue = Math.max(
-          0,
-          Math.floor((now - new Date(inst.dueDate)) / (1000 * 60 * 60 * 24))
-        );
+      const daysOverdue = Math.max(
+        0,
+        Math.floor((now - new Date(inst.dueDate)) / (1000 * 60 * 60 * 24))
+      );
+
+      if (outstanding > 0 && daysOverdue > 0) {
         pending.push({
           loanId: loan._id,
           customerName: loan.customerName,

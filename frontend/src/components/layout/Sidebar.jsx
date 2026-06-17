@@ -37,7 +37,7 @@ export function Sidebar({ isOpen, onClose }) {
       )}>
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700 lg:hidden">
-            <span className="text-xl font-bold text-gray-900 dark:text-white">Vehicle Finance</span>
+            <span className="text-xl font-bold text-gray-900 dark:text-white">R a.m. Finance</span>
             <button onClick={onClose} className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">
               <XMarkIcon className="h-6 w-6" />
             </button>

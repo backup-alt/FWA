@@ -3,6 +3,7 @@ import { clsx } from 'clsx';
 import { useParams, useNavigate, NavLink } from 'react-router-dom';
 import { ArrowLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useLoan, useUpdateLoan, useRecordPayment, useDeleteLoan } from '@/hooks/useLoans';
+import { useCustomer } from '@/hooks/useCustomers';
 import { useToast } from '@/context/ToastContext';
 import { Modal } from '@/components/ui/Modal';
 import { InstallmentTable } from '@/components/loan/InstallmentTable';
@@ -27,6 +28,7 @@ export function LoanDetailPage() {
   const { showToast } = useToast();
   const qc = useQueryClient();
   const { data: loan, isLoading, refetch } = useLoan(id);
+  const { data: customer } = useCustomer(loan?.customerId);
   const updateLoan = useUpdateLoan();
   const recordPayment = useRecordPayment();
   const deleteLoan = useDeleteLoan();
@@ -145,6 +147,35 @@ export function LoanDetailPage() {
           </Button>
         </div>
       </div>
+
+      {/* Customer Details */}
+      {customer && (
+        <Card className="bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
+          <CardContent className="p-4">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Customer Details</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <p className="text-gray-500 dark:text-gray-400 mb-1">Cell Numbers</p>
+                <p className="font-medium text-gray-900 dark:text-white">
+                  {customer.cellNumbers?.join(', ') || '-'}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-gray-400 mb-1">Guarantor</p>
+                <p className="font-medium text-gray-900 dark:text-white">
+                  {customer.guarantor || '-'}
+                </p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-gray-500 dark:text-gray-400 mb-1">Address</p>
+                <p className="font-medium text-gray-900 dark:text-white truncate">
+                  {customer.address || '-'}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

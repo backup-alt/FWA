@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useToast } from '@/context/ToastContext';
 import { Button } from '@/components/ui/Button';
-import { CloudArrowUpIcon, DocumentIcon, TrashIcon, ArrowDownTrayIcon, DocumentTextIcon, PhotoIcon } from '@heroicons/react/24/outline';
+import { CloudArrowUpIcon, DocumentIcon, TrashIcon, ArrowDownTrayIcon, DocumentTextIcon, PhotoIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { formatCurrency } from '@/api';
 
 export function DocumentsTab({ loanId, documents = [], onUpload, onDelete }) {
   const { showToast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState(null);
 
   const handleFiles = async (files) => {
     if (!files || files.length === 0) return;
@@ -96,9 +97,9 @@ export function DocumentsTab({ loanId, documents = [], onUpload, onDelete }) {
             Images or PDFs (max 5MB)
           </p>
           <label>
-            <Button as="span" loading={isUploading} disabled={isUploading}>
-              Select Files
-            </Button>
+            <div className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 cursor-pointer transition-colors">
+              {isUploading ? 'Uploading...' : 'Select Files'}
+            </div>
             <input 
               type="file" 
               className="hidden" 
@@ -124,6 +125,15 @@ export function DocumentsTab({ loanId, documents = [], onUpload, onDelete }) {
                 
                 {/* Hover overlay */}
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  {isImage(doc.type) && (
+                    <button 
+                      onClick={() => setPreviewDoc(doc)}
+                      className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm transition-colors"
+                      title="View"
+                    >
+                      <EyeIcon className="h-5 w-5" />
+                    </button>
+                  )}
                   <a 
                     href={doc.data} 
                     download={doc.name}
@@ -153,6 +163,19 @@ export function DocumentsTab({ loanId, documents = [], onUpload, onDelete }) {
           ))}
         </div>
       )}
+
+      <Modal
+        isOpen={Boolean(previewDoc)}
+        onClose={() => setPreviewDoc(null)}
+        title={previewDoc?.name}
+        size="lg"
+      >
+        <div className="flex justify-center bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden p-2">
+          {previewDoc && (
+            <img src={previewDoc.data} alt={previewDoc.name} className="max-w-full max-h-[70vh] object-contain" />
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

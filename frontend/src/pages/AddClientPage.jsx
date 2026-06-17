@@ -199,11 +199,11 @@ export function AddClientPage() {
 
   const renderStep = () => {
     switch (currentStep) {
-      case 0: return <CustomerStep form={ { register, watch, setValue, formState: { errors }, control } } control={control} />;
-      case 1: return <GuarantorStep form={ { register, watch, setValue, formState: { errors } } } />;
-      case 2: return <VehicleDetailsStep form={ { register, watch, setValue, formState: { errors } } } />;
-      case 3: return <DocumentationStep form={ { register, watch, setValue, formState: { errors } } } />;
-      case 4: return <ChequesStep form={ { register, watch, setValue, formState: { errors }, control } } control={control} />;
+      case 0: return <CustomerStep form={{ register, watch, setValue, formState: { errors }, control }} control={control} />;
+      case 1: return <GuarantorStep form={{ register, watch, setValue, formState: { errors } }} />;
+      case 2: return <VehicleDetailsStep form={{ register, watch, setValue, formState: { errors }, control }} />;
+      case 3: return <DocumentationStep form={{ register, watch, setValue, formState: { errors }, control }} />;
+      case 4: return <ChequesStep form={{ register, watch, setValue, formState: { errors }, control }} control={control} />;
       default: return null;
     }
   };

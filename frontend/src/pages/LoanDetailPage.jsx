@@ -215,10 +215,8 @@ export function LoanDetailPage() {
                   <PrepaymentPlanner loan={scheduleLoan} />
                   {loan.status === 'Active' && (
                     <PeriodEditor
-                      currentPeriod={loan.installmentPeriod}
-                      currentUnit={loan.installmentPeriodUnit}
-                      minPeriod={installments.filter(i => i.amountReceived > 0 || i.status === 'Paid').length}
-                      onSave={handlePeriodUpdate}
+                      loan={scheduleLoan}
+                      onUpdate={handlePeriodUpdate}
                     />
                   )}
                 </div>

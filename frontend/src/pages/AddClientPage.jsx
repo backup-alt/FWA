@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -103,48 +103,20 @@ export function AddClientPage() {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: () => {
-      const defaultBaseValues = {
-        isNewCustomer: !customerId,
-        existingCustomerId: customerId || '',
-        loanStartDate: new Date().toISOString().split('T')[0],
-        installmentPeriodUnit: 'Months',
-        cellNumbers: [{ number: '' }],
-        guarantor: { name: '', address: '' },
-        chequesReceived: [{ chequeNumber: '', bank: '', amount: 0 }],
-        rcDetails: { status: '', paidThrough: '', chequeNumber: '', amount: 0 },
-        profileImage: '',
-        loanAccountNumber: '',
-      };
-
-      try {
-        const cached = sessionStorage.getItem('add_customer_form_draft');
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (customerId) parsed.existingCustomerId = customerId;
-          // Deep merge arrays to prevent useFieldArray crashes
-          return {
-            ...defaultBaseValues,
-            ...parsed,
-            cellNumbers: parsed.cellNumbers?.length ? parsed.cellNumbers : defaultBaseValues.cellNumbers,
-            guarantor: parsed.guarantor || defaultBaseValues.guarantor,
-            chequesReceived: parsed.chequesReceived?.length ? parsed.chequesReceived : defaultBaseValues.chequesReceived,
-            rcDetails: parsed.rcDetails || defaultBaseValues.rcDetails,
-          };
-        }
-      } catch (e) {
-        // ignore
-      }
-      return defaultBaseValues;
+    defaultValues: {
+      isNewCustomer: !customerId,
+      existingCustomerId: customerId || '',
+      loanStartDate: new Date().toISOString().split('T')[0],
+      installmentPeriodUnit: 'Months',
+      cellNumbers: [{ number: '' }],
+      guarantor: { name: '', address: '' },
+      chequesReceived: [{ chequeNumber: '', bank: '', amount: 0 }],
+      rcDetails: { status: '', paidThrough: '', chequeNumber: '', amount: 0 },
+      profileImage: '',
+      loanAccountNumber: '',
     },
   });
 
-  useEffect(() => {
-    const subscription = watch((value) => {
-      sessionStorage.setItem('add_customer_form_draft', JSON.stringify(value));
-    });
-    return () => subscription.unsubscribe();
-  }, [watch]);
 
   const watchedValues = watch();
   const loanAmount = Number(watchedValues.loanAmount || 0);
@@ -216,7 +188,6 @@ export function AddClientPage() {
       };
 
       const loan = await createLoan.mutateAsync(loanPayload);
-      sessionStorage.removeItem('add_customer_form_draft');
       showToast('Customer and loan created successfully!', 'success');
       navigate(`/loan/${loan._id}`);
     } catch (err) {
@@ -305,10 +276,7 @@ export function AddClientPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => {
-                    sessionStorage.removeItem('add_customer_form_draft');
-                    navigate(-1);
-                  }}
+                  onClick={() => navigate(-1)}
                 >
                   Cancel
                 </Button>

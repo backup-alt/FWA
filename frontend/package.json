@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "homepage": "https://backup-alt.github.io/FWA/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

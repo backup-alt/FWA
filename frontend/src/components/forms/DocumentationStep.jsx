@@ -80,8 +80,6 @@ export function DocumentationStep({ form }) {
         
         <Select
           label="ID Proof Type"
-          name="idProofType"
-          value={idProofType}
           options={ID_PROOF_OPTIONS}
           placeholder="Select ID Proof"
           {...register('idProofType')}

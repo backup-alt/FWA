@@ -1,15 +1,42 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/context/ToastContext';
-import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import { CloudArrowUpIcon, DocumentIcon, TrashIcon, ArrowDownTrayIcon, DocumentTextIcon, PhotoIcon, EyeIcon } from '@heroicons/react/24/outline';
-import { formatCurrency } from '@/api';
+import { CloudArrowUpIcon, TrashIcon, ArrowDownTrayIcon, DocumentTextIcon, EyeIcon } from '@heroicons/react/24/outline';
 
 export function DocumentsTab({ loanId, documents = [], onUpload, onDelete }) {
   const { showToast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [previewDoc, setPreviewDoc] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const getPreviewUrl = (doc) => {
+    if (!doc) return null;
+    if (doc.type === 'application/pdf' || doc.type?.startsWith('image/')) {
+      try {
+        const byteString = atob(doc.data.split(',')[1]);
+        const mimeType = doc.type;
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+        const blob = new Blob([ab], { type: mimeType });
+        return URL.createObjectURL(blob);
+      } catch (e) {
+        return doc.data;
+      }
+    }
+    return doc.data;
+  };
 
   const handleFiles = async (files) => {
     if (!files || files.length === 0) return;
@@ -74,7 +101,23 @@ export function DocumentsTab({ loanId, documents = [], onUpload, onDelete }) {
     }
   };
 
-  const isImage = (type) => type.startsWith('image/');
+  const handlePreview = (doc) => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewDoc(doc);
+    setPreviewUrl(getPreviewUrl(doc));
+  };
+
+  const handleClosePreview = () => {
+    setPreviewDoc(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  };
+
+  const isImage = (type) => type?.startsWith('image/');
 
   return (
     <div className="space-y-6">
@@ -124,11 +167,10 @@ export function DocumentsTab({ loanId, documents = [], onUpload, onDelete }) {
                   <DocumentTextIcon className="h-12 w-12 text-gray-400" />
                 )}
                 
-                {/* Hover overlay */}
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                   {(isImage(doc.type) || doc.type === 'application/pdf') && (
                     <button 
-                      onClick={() => setPreviewDoc(doc)}
+                      onClick={() => handlePreview(doc)}
                       className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm transition-colors"
                       title="View"
                     >
@@ -167,27 +209,28 @@ export function DocumentsTab({ loanId, documents = [], onUpload, onDelete }) {
 
       <Modal
         isOpen={Boolean(previewDoc)}
-        onClose={() => setPreviewDoc(null)}
+        onClose={handleClosePreview}
         title={previewDoc?.name}
         size={previewDoc?.type === 'application/pdf' ? 'xl' : 'lg'}
       >
         <div className={`flex justify-center bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden ${previewDoc?.type === 'application/pdf' ? 'h-[80vh]' : 'p-2'}`}>
-          {previewDoc && (
+          {previewDoc && previewUrl && (
             previewDoc.type === 'application/pdf' ? (
-              <iframe 
-                src={previewDoc.data} 
-                className="w-full h-full border-0" 
+              <object 
+                data={previewUrl} 
+                type="application/pdf"
+                className="w-full h-full border-0"
                 title={previewDoc.name}
               >
-                <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                  <p className="mb-4">Your browser does not support inline PDFs.</p>
+                <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-4">
+                  <p>Your browser does not support inline PDFs.</p>
                   <a href={previewDoc.data} download={previewDoc.name} className="inline-flex items-center rounded bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500">
                     Download PDF
                   </a>
                 </div>
-              </iframe>
+              </object>
             ) : (
-              <img src={previewDoc.data} alt={previewDoc.name} className="max-w-full max-h-[70vh] object-contain" />
+              <img src={previewUrl} alt={previewDoc.name} className="max-w-full max-h-[70vh] object-contain" />
             )
           )}
         </div>

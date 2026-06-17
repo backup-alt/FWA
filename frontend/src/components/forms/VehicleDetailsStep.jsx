@@ -18,8 +18,6 @@ export function VehicleDetailsStep({ form }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Select
           label="Vehicle Type *"
-          name="vehicleType"
-          value={vehicleType}
           options={[
             { value: 'Bike', label: 'Bike' },
             { value: 'Car', label: 'Car' },
@@ -97,8 +95,6 @@ export function VehicleDetailsStep({ form }) {
           <div className="w-1/2">
             <Select
               label="Unit *"
-              name="installmentPeriodUnit"
-              value={periodUnit}
               options={[
                 { value: 'Months', label: 'Months' },
                 { value: 'Weeks', label: 'Weeks' },

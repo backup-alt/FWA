@@ -77,14 +77,13 @@ export function CustomerStep({ form, control }) {
         <div className="animate-fade-in space-y-4">
           <Select
             label="Select Existing Customer *"
-            name="existingCustomerId"
-            value={existingCustomerId}
             options={customers.map(c => ({ 
               value: c._id, 
               label: `${c.name}${c.cellNumbers?.[0]?.number ? ` (${c.cellNumbers[0].number})` : ''}` 
             }))}
             placeholder={loadingCustomers ? 'Loading customers...' : 'Choose a customer'}
             error={errors.existingCustomerId?.message}
+            searchable
             {...register('existingCustomerId')}
           />
         </div>

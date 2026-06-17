@@ -1,6 +1,6 @@
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import { UserCircleIcon, ArrowRightOnRectangleIcon, SunIcon, MoonIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, ArrowRightOnRectangleIcon, SunIcon, MoonIcon, Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/context/AuthContext';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { clsx } from 'clsx';
@@ -40,6 +40,7 @@ export function Header({ sidebarOpen = false, onToggleSidebar = () => {} }) {
               <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300">
                 {user?.username}
               </span>
+              <ChevronDownIcon className="h-4 w-4 text-gray-400 hidden sm:block" />
             </Menu.Button>
             <Transition
               as={Fragment}

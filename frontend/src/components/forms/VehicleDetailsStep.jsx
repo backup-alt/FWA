@@ -4,16 +4,17 @@ export function VehicleDetailsStep({ form }) {
   const {
     register,
     watch,
+    setValue,
     formState: { errors },
   } = form;
 
-  // Read current values so Select can show them after tab-switching (cached form state)
+  // Read current values so Select can display them correctly after tab-switching (cached form state)
   const vehicleType = watch('vehicleType') || '';
   const periodUnit = watch('installmentPeriodUnit') || 'Months';
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Vehicle &amp; Finance Details</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Vehicle & Finance Details</h3>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Select
@@ -24,6 +25,7 @@ export function VehicleDetailsStep({ form }) {
           ]}
           placeholder="Select vehicle type"
           error={errors.vehicleType?.message}
+          value={vehicleType}
           {...register('vehicleType')}
         />
         
@@ -101,6 +103,7 @@ export function VehicleDetailsStep({ form }) {
                 { value: 'Days', label: 'Days' },
               ]}
               error={errors.installmentPeriodUnit?.message}
+              value={periodUnit}
               {...register('installmentPeriodUnit')}
             />
           </div>

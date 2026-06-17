@@ -84,6 +84,7 @@ export function CustomerStep({ form, control }) {
             placeholder={loadingCustomers ? 'Loading customers...' : 'Choose a customer'}
             error={errors.existingCustomerId?.message}
             searchable
+            value={existingCustomerId}
             {...register('existingCustomerId')}
           />
         </div>

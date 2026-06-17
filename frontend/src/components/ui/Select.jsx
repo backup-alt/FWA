@@ -37,8 +37,19 @@ export const Select = forwardRef(function Select({
     : options;
 
   const handleChange = (newValue) => {
+    // Call the original onChange with the value directly
+    // react-hook-form expects either raw value or event with target.value
     if (onChange) {
-      onChange({ target: { name, value: newValue } });
+      // Create a mock event-like object for react-hook-form compatibility
+      const mockEvent = {
+        target: {
+          name: name,
+          value: newValue,
+          type: 'select'
+        },
+        type: 'change'
+      };
+      onChange(mockEvent);
     }
     setSearchQuery('');
   };

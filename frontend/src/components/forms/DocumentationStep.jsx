@@ -82,6 +82,7 @@ export function DocumentationStep({ form }) {
           label="ID Proof Type"
           options={ID_PROOF_OPTIONS}
           placeholder="Select ID Proof"
+          value={idProofType}
           {...register('idProofType')}
         />
         

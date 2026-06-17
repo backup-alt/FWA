@@ -3,17 +3,23 @@ import { Input, Select } from '@/components/ui';
 export function VehicleDetailsStep({ form }) {
   const {
     register,
+    watch,
     formState: { errors },
   } = form;
 
+  // Read current values so Select can show them after tab-switching (cached form state)
+  const vehicleType = watch('vehicleType') || '';
+  const periodUnit = watch('installmentPeriodUnit') || 'Months';
+
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Vehicle & Finance Details</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Vehicle &amp; Finance Details</h3>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Select
           label="Vehicle Type *"
           name="vehicleType"
+          value={vehicleType}
           options={[
             { value: 'Bike', label: 'Bike' },
             { value: 'Car', label: 'Car' },
@@ -91,6 +97,8 @@ export function VehicleDetailsStep({ form }) {
           <div className="w-1/2">
             <Select
               label="Unit *"
+              name="installmentPeriodUnit"
+              value={periodUnit}
               options={[
                 { value: 'Months', label: 'Months' },
                 { value: 'Weeks', label: 'Weeks' },

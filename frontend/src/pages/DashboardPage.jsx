@@ -19,12 +19,52 @@ const TABS = [
   { id: 'pending', label: 'Pending Dues' },
 ];
 
+function DashboardSkeleton() {
+  return (
+    <div className="mx-auto max-w-7xl space-y-6 animate-pulse">
+      {/* Header skeleton */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-2">
+          <div className="h-8 w-56 rounded-lg bg-gray-200 dark:bg-gray-700" />
+          <div className="h-4 w-80 rounded bg-gray-200 dark:bg-gray-700" />
+        </div>
+        <div className="h-10 w-36 rounded-lg bg-gray-200 dark:bg-gray-700" />
+      </div>
+
+      {/* Tab skeleton */}
+      <div className="flex gap-2">
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="h-9 w-20 rounded-lg bg-gray-200 dark:bg-gray-700" />
+        ))}
+      </div>
+
+      {/* Summary cards skeleton */}
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 space-y-3">
+            <div className="h-4 w-24 rounded bg-gray-200 dark:bg-gray-700" />
+            <div className="h-8 w-32 rounded bg-gray-200 dark:bg-gray-700" />
+            <div className="h-3 w-16 rounded bg-gray-100 dark:bg-gray-700" />
+          </div>
+        ))}
+      </div>
+
+      {/* Chart skeleton */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {[1, 2].map(i => (
+          <div key={i} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 h-64" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function DashboardPage() {
   const [activeTab, setActiveTab] = useState('');
   const [pendingFilter, setPendingFilter] = useState({});
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
-  const { data: loans = [] } = useLoans(
+  const { data: loans = [], isLoading: loansLoading } = useLoans(
     activeTab === 'pending' ? {} : { vehicleType: activeTab || undefined }
   );
   const { data: pendingDues = [], isLoading: pendingLoading } = usePendingDues();
@@ -40,6 +80,11 @@ export function DashboardPage() {
   const handleSort = (direction, key) => {
     setSortConfig({ key, direction });
   };
+
+  // Show skeleton while the initial data load is in progress
+  if (loansLoading) {
+    return <DashboardSkeleton />;
+  }
 
   if (activeTab === 'pending') {
     return (
@@ -71,6 +116,26 @@ export function DashboardPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Tab bar to switch back */}
+        <div className="flex gap-2 overflow-x-auto pb-2" role="tablist">
+          {TABS.map(tab => (
+            <button
+              key={tab.id}
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={clsx(
+                'px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors',
+                activeTab === tab.id
+                  ? 'bg-primary-600 text-white'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
     );
   }

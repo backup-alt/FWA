@@ -64,10 +64,10 @@ export function DashboardPage() {
   const [pendingFilter, setPendingFilter] = useState({});
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
-  const { data: loans = [], isLoading: loansLoading } = useLoans(
+  const { data: loans = [], isLoading: loansLoading, isFetching: loansFetching, isError: loansError } = useLoans(
     activeTab === 'pending' ? {} : { vehicleType: activeTab || undefined }
   );
-  const { data: pendingDues = [], isLoading: pendingLoading } = usePendingDues();
+  const { data: pendingDues = [], isLoading: pendingLoading, isFetching: pendingFetching, isError: pendingError } = usePendingDues();
 
   const handleFilterChange = (newFilter) => {
     setPendingFilter(prev => ({ ...prev, ...newFilter }));
@@ -81,9 +81,20 @@ export function DashboardPage() {
     setSortConfig({ key, direction });
   };
 
-  // Show skeleton while the initial data load is in progress
-  if (loansLoading) {
+  // Show skeleton while the initial data load or background fetch is in progress and we have no data
+  if ((loansLoading || (loansFetching && loans.length === 0)) && !loansError) {
     return <DashboardSkeleton />;
+  }
+
+  if (loansError) {
+    return (
+      <div className="mx-auto max-w-7xl p-8 text-center bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
+        <h2 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">Failed to load dashboard data</h2>
+        <p className="text-sm text-red-600 dark:text-red-300">
+          The backend server might be starting up or is unreachable. Please refresh the page in a few seconds.
+        </p>
+      </div>
+    );
   }
 
   if (activeTab === 'pending') {
@@ -104,8 +115,10 @@ export function DashboardPage() {
 
         <Card>
           <CardContent className="p-0">
-            {pendingLoading ? (
+            {(pendingLoading || (pendingFetching && pendingDues.length === 0)) && !pendingError ? (
               <div className="p-8 text-center text-gray-500">Loading...</div>
+            ) : pendingError ? (
+              <div className="p-8 text-center text-red-500">Failed to load pending dues. Please refresh.</div>
             ) : (
               <PendingDuesTable
                 dues={pendingDues}

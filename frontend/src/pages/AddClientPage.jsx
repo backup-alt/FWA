@@ -104,17 +104,7 @@ export function AddClientPage() {
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: () => {
-      try {
-        const cached = sessionStorage.getItem('add_customer_form_draft');
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (customerId) parsed.existingCustomerId = customerId;
-          return parsed;
-        }
-      } catch (e) {
-        // ignore
-      }
-      return {
+      const defaultBaseValues = {
         isNewCustomer: !customerId,
         existingCustomerId: customerId || '',
         loanStartDate: new Date().toISOString().split('T')[0],
@@ -126,6 +116,26 @@ export function AddClientPage() {
         profileImage: '',
         loanAccountNumber: '',
       };
+
+      try {
+        const cached = sessionStorage.getItem('add_customer_form_draft');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (customerId) parsed.existingCustomerId = customerId;
+          // Deep merge arrays to prevent useFieldArray crashes
+          return {
+            ...defaultBaseValues,
+            ...parsed,
+            cellNumbers: parsed.cellNumbers?.length ? parsed.cellNumbers : defaultBaseValues.cellNumbers,
+            guarantor: parsed.guarantor || defaultBaseValues.guarantor,
+            chequesReceived: parsed.chequesReceived?.length ? parsed.chequesReceived : defaultBaseValues.chequesReceived,
+            rcDetails: parsed.rcDetails || defaultBaseValues.rcDetails,
+          };
+        }
+      } catch (e) {
+        // ignore
+      }
+      return defaultBaseValues;
     },
   });
 

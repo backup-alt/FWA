@@ -18,10 +18,10 @@ import { useToast } from '@/context/ToastContext';
 import { formatCurrency } from '@/api';
 
 const steps = [
-  { label: 'Vehicle & Finance' },
-  { label: 'Documentation' },
   { label: 'Customer' },
   { label: 'Guarantor' },
+  { label: 'Vehicle & Finance' },
+  { label: 'Documentation' },
   { label: 'Cheques' },
 ];
 
@@ -198,10 +198,10 @@ export function AddClientPage() {
 
   const renderStep = () => {
     switch (currentStep) {
-      case 0: return <VehicleDetailsStep form={ { register, watch, setValue, formState: { errors } } } />;
-      case 1: return <DocumentationStep form={ { register, watch, setValue, formState: { errors } } } />;
-      case 2: return <CustomerStep form={ { register, watch, setValue, formState: { errors }, control } } control={control} />;
-      case 3: return <GuarantorStep form={ { register, watch, setValue, formState: { errors } } } />;
+      case 0: return <CustomerStep form={ { register, watch, setValue, formState: { errors }, control } } control={control} />;
+      case 1: return <GuarantorStep form={ { register, watch, setValue, formState: { errors } } } />;
+      case 2: return <VehicleDetailsStep form={ { register, watch, setValue, formState: { errors } } } />;
+      case 3: return <DocumentationStep form={ { register, watch, setValue, formState: { errors } } } />;
       case 4: return <ChequesStep form={ { register, watch, setValue, formState: { errors }, control } } control={control} />;
       default: return null;
     }
@@ -261,6 +261,16 @@ export function AddClientPage() {
             </div>
 
             <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={prevStep}
+                disabled={currentStep === 0}
+              >
+                <ArrowLeftIcon className="h-5 w-5 mr-2" />
+                Back
+              </Button>
+              
               <div className="flex gap-3">
                 <Button
                   type="button"
@@ -269,18 +279,6 @@ export function AddClientPage() {
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={prevStep}
-                  disabled={currentStep === 0}
-                >
-                  <ArrowLeftIcon className="h-5 w-5 mr-2" />
-                  Back
-                </Button>
-              </div>
-              
-              <div className="flex gap-3">
                 {currentStep < steps.length - 1 ? (
                   <Button type="button" onClick={nextStep}>
                     Next

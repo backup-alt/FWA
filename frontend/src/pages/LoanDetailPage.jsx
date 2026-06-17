@@ -128,7 +128,7 @@ export function LoanDetailPage() {
   const tabs = [
     { id: 'schedule', label: 'Installment Schedule' },
     { id: 'documents', label: 'Documents' },
-    { id: 'customer', label: 'Customer Details' },
+    { id: 'client', label: 'Client Details' },
   ];
 
   return (
@@ -319,189 +319,53 @@ export function LoanDetailPage() {
         </Card>
       )}
 
-      {activeTab === 'customer' && customer && (
+      {activeTab === 'client' && customer && (
         <div className="space-y-6">
-          {/* Customer Profile Banner */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex flex-col sm:flex-row items-center gap-6">
-                {customer.profileImage ? (
-                  <img
-                    src={customer.profileImage}
-                    alt={customer.name}
-                    className="h-24 w-24 rounded-full object-cover ring-4 ring-primary-500/20 dark:ring-primary-500/40"
-                  />
-                ) : (
-                  <div className="h-24 w-24 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-3xl ring-4 ring-primary-500/20 dark:ring-primary-500/40">
-                    {customer.name?.charAt(0)?.toUpperCase() || '?'}
+          <Card padding="">
+            <CardHeader 
+              className="px-5 pt-5 mb-0" 
+              title="Client Details" 
+              subtitle="Vehicle, documentation, customer, and loan terms" 
+            />
+            <CardContent className="p-5">
+              <dl className="grid grid-cols-1 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 sm:grid-cols-2">
+                {[
+                  ['Vehicle', `${loan.vehicleType || '-'} - ${loan.make || ''} ${loan.model || ''}`],
+                  ['Registration No.', loan.regNo || '-'],
+                  ['Loan Amount (L.AMT)', formatCurrency(loan.loanAmount || 0)],
+                  ['Finance Amount (F.AMT)', formatCurrency(loan.financeAmount || 0)],
+                  ['Loan Start Date', formatDate(loan.loanStartDate)],
+                  ['Interest', `${formatCurrency(loan.interestAmount || 0)} (${loan.interestRate || 0}% flat per month)`],
+                  ['Address', customer.address || '-'],
+                  ['Cell Numbers', (customer.cellNumbers || []).map(c => c.number).join(', ') || '-'],
+                  ['Guarantor', customer.guarantor?.name ? `${customer.guarantor.name} ${customer.guarantor.address ? `(${customer.guarantor.address})` : ''}` : '-'],
+                  ['RC Status', loan.rcDetails?.status || '-'],
+                  ['NOC', loan.noc || '-'],
+                  ['Insurance', loan.insurance || '-'],
+                  ['ID Proof', customer.idProofType ? `${customer.idProofType} - ${customer.idProofNumber || ''}` : '-'],
+                  ['Monthly Salary', customer.monthlySalary ? formatCurrency(customer.monthlySalary) : '-'],
+                  ['Key Status', loan.keyStatus || '-'],
+                  ['Sales Done By', loan.salesDoneBy || '-'],
+                  ['Cheques Received', (loan.chequesReceived || []).length > 0 ? loan.chequesReceived.map(c => c.chequeNumber).join(', ') : '-'],
+                  ['', '']
+                ].map(([label, value], idx, arr) => (
+                  <div 
+                    key={idx} 
+                    className={`border-gray-200 p-4 dark:border-gray-700 sm:odd:border-r ${
+                      idx >= arr.length - 2 ? '' : 'border-b'
+                    }`}
+                  >
+                    {label ? (
+                      <>
+                        <dt className="text-sm text-gray-500 dark:text-gray-400">{label}</dt>
+                        <dd className="mt-1 text-sm font-medium text-gray-950 dark:text-white">{value}</dd>
+                      </>
+                    ) : null}
                   </div>
-                )}
-                <div className="text-center sm:text-left flex-1">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{customer.name}</h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Customer Profile & Ledger Entries</p>
-                  {loan.loanAccountNumber && (
-                    <span className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full text-xs font-semibold bg-primary-50 text-primary-700 border border-primary-200 dark:bg-primary-900/30 dark:text-primary-300 dark:border-primary-800">
-                      Account Number: {loan.loanAccountNumber}
-                    </span>
-                  )}
-                </div>
-              </div>
+                ))}
+              </dl>
             </CardContent>
           </Card>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Personal & Contact Details */}
-            <Card>
-              <CardHeader title="Contact & Identification" subtitle="Personal details from customer profile" />
-              <CardContent className="p-5 space-y-4">
-                <div className="flex items-start gap-3">
-                  <PhoneIcon className="h-5 w-5 text-gray-400 mt-0.5 animate-pulse" />
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Cell Numbers</h4>
-                    <p className="text-base text-gray-900 dark:text-white mt-0.5">
-                      {customer.cellNumbers?.map(c => c.number).join(', ') || '-'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <BanknotesIcon className="h-5 w-5 text-gray-400 mt-0.5" />
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Monthly Salary</h4>
-                    <p className="text-base text-gray-900 dark:text-white mt-0.5">
-                      {customer.monthlySalary ? formatCurrency(customer.monthlySalary) : '-'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <IdentificationIcon className="h-5 w-5 text-gray-400 mt-0.5" />
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">ID Proof</h4>
-                    <p className="text-base text-gray-900 dark:text-white mt-0.5">
-                      {customer.idProofType ? `${customer.idProofType}: ${customer.idProofNumber || '-'}` : '-'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <MapPinIcon className="h-5 w-5 text-gray-400 mt-0.5" />
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Address</h4>
-                    <p className="text-base text-gray-900 dark:text-white mt-0.5 whitespace-pre-wrap">
-                      {customer.address || '-'}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Guarantor Details */}
-            <Card>
-              <CardHeader title="Guarantor Information" subtitle="Third-party guarantee reference" />
-              <CardContent className="p-5 space-y-4">
-                <div className="flex items-start gap-3">
-                  <UserIcon className="h-5 w-5 text-gray-400 mt-0.5" />
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Guarantor Name</h4>
-                    <p className="text-base text-gray-900 dark:text-white mt-0.5">
-                      {customer.guarantor?.name || '-'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <MapPinIcon className="h-5 w-5 text-gray-400 mt-0.5" />
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Guarantor Address</h4>
-                    <p className="text-base text-gray-900 dark:text-white mt-0.5 whitespace-pre-wrap">
-                      {customer.guarantor?.address || '-'}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Documentation & RC Details */}
-            <Card>
-              <CardHeader title="RC & Documentation" subtitle="Ledger registrations and checks" />
-              <CardContent className="p-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">NOC</h4>
-                    <p className="text-sm text-gray-900 dark:text-white mt-0.5">{loan.noc || '-'}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Insurance</h4>
-                    <p className="text-sm text-gray-900 dark:text-white mt-0.5">{loan.insurance || '-'}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Key Status</h4>
-                    <p className="text-sm text-gray-900 dark:text-white mt-0.5">{loan.keyStatus || '-'}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Sales Done By</h4>
-                    <p className="text-sm text-gray-900 dark:text-white mt-0.5">{loan.salesDoneBy || '-'}</p>
-                  </div>
-                  <div className="sm:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-3">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">RC Status / Note</h4>
-                    <p className="text-sm text-gray-900 dark:text-white mt-0.5">{loan.rcDetails?.status || '-'}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">RC Paid Through</h4>
-                    <p className="text-sm text-gray-900 dark:text-white mt-0.5">{loan.rcDetails?.paidThrough || '-'}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">RC Cheque Number</h4>
-                    <p className="text-sm text-gray-900 dark:text-white mt-0.5">{loan.rcDetails?.chequeNumber || '-'}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">RC Amount</h4>
-                    <p className="text-sm text-gray-900 dark:text-white mt-0.5">
-                      {loan.rcDetails?.amount ? formatCurrency(loan.rcDetails.amount) : '-'}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Cheques Received */}
-            <Card>
-              <CardHeader title="Cheques Received" subtitle="Security cheques held for the loan" />
-              <CardContent className="p-5">
-                {!loan.chequesReceived || loan.chequesReceived.length === 0 ? (
-                  <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
-                    No cheques received for this loan.
-                  </p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                      <thead>
-                        <tr>
-                          <th scope="col" className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Cheque No.</th>
-                          <th scope="col" className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Bank</th>
-                          <th scope="col" className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Amount</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {loan.chequesReceived.map((cheque, index) => (
-                          <tr key={index}>
-                            <td className="whitespace-nowrap px-3 py-2 text-sm font-medium text-gray-900 dark:text-white">{cheque.chequeNumber}</td>
-                            <td className="whitespace-nowrap px-3 py-2 text-sm text-gray-500 dark:text-gray-400">{cheque.bank || '-'}</td>
-                            <td className="whitespace-nowrap px-3 py-2 text-sm text-right font-medium text-gray-900 dark:text-white">
-                              {cheque.amount ? formatCurrency(cheque.amount) : '-'}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
         </div>
       )}
 

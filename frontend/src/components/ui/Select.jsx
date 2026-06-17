@@ -1,36 +1,26 @@
 import { clsx } from 'clsx';
 import { forwardRef } from 'react';
 
-/**
- * Native HTML <select> styled to match the design system.
- * Works directly with react-hook-form register() and watch().
- */
 export const Select = forwardRef(function Select({
-  className = '',
-  label,
-  error,
-  helperText,
-  id,
-  name,
   options = [],
   placeholder,
+  error,
+  helperText,
+  label,
+  className = '',
   disabled = false,
+  value,
+  name,
   onChange,
   onBlur,
-  value,
-  defaultValue,
   ...props
 }, ref) {
-  const selectId = id || label?.toLowerCase().replace(/\s+/g, '-') || name;
-  const currentValue = value ?? defaultValue ?? '';
+  const currentValue = value ?? '';
 
   return (
     <div className={clsx('w-full', className)}>
       {label && (
-        <label
-          htmlFor={selectId}
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
-        >
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
           {label}
         </label>
       )}
@@ -38,12 +28,12 @@ export const Select = forwardRef(function Select({
       <div className="relative">
         <select
           ref={ref}
-          id={selectId}
+          id={name}
           name={name}
-          disabled={disabled}
+          value={currentValue}
           onChange={onChange}
           onBlur={onBlur}
-          value={currentValue}
+          disabled={disabled}
           className={clsx(
             'w-full appearance-none px-3 py-2.5 pr-10 text-sm rounded-lg shadow-sm border transition-colors cursor-pointer',
             'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500',
@@ -54,7 +44,6 @@ export const Select = forwardRef(function Select({
             disabled && 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-900',
             !currentValue && 'text-gray-400 dark:text-gray-500'
           )}
-          aria-invalid={error ? 'true' : 'false'}
           {...props}
         >
           {placeholder && (
@@ -99,5 +88,3 @@ export const Select = forwardRef(function Select({
     </div>
   );
 });
-
-Select.displayName = 'Select';

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui';
+import { Select } from '@/components/ui/Select';
 import { useFieldArray, Controller } from 'react-hook-form';
 import { PlusIcon, TrashIcon, CameraIcon } from '@heroicons/react/24/outline';
 import { useToast } from '@/context/ToastContext';
+import { useCustomers } from '@/hooks/useCustomers';
 
 export function CustomerStep({ form, control }) {
   const {
@@ -17,8 +19,12 @@ export function CustomerStep({ form, control }) {
   });
   const { showToast } = useToast();
 
+  const { data: customersData, isLoading: loadingCustomers } = useCustomers();
+  const customers = customersData?.customers || [];
+
   const profileImage = watch('profileImage');
   const customerName = watch('customerName') || '?';
+  const isNewCustomer = watch('isNewCustomer');
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
@@ -36,9 +42,50 @@ export function CustomerStep({ form, control }) {
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Customer Details</h3>
-      
-      <div className="flex items-center gap-6 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Customer Details</h3>
+        <div className="flex bg-gray-100 p-1 rounded-lg dark:bg-gray-800 w-full sm:w-auto">
+          <button
+            type="button"
+            onClick={() => setValue('isNewCustomer', true)}
+            className={`flex-1 sm:flex-none px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              isNewCustomer 
+                ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white' 
+                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            New Customer
+          </button>
+          <button
+            type="button"
+            onClick={() => setValue('isNewCustomer', false)}
+            className={`flex-1 sm:flex-none px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              !isNewCustomer 
+                ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white' 
+                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            Existing Customer
+          </button>
+        </div>
+      </div>
+
+      {!isNewCustomer ? (
+        <div className="animate-fade-in space-y-4">
+          <Select
+            label="Select Existing Customer *"
+            options={customers.map(c => ({ 
+              value: c._id, 
+              label: `${c.name} ${c.cellNumbers?.[0]?.number ? `(${c.cellNumbers[0].number})` : ''}` 
+            }))}
+            placeholder={loadingCustomers ? "Loading customers..." : "Choose a customer"}
+            error={errors.existingCustomerId?.message}
+            {...register('existingCustomerId')}
+          />
+        </div>
+      ) : (
+        <div className="animate-fade-in space-y-6">
+          <div className="flex items-center gap-6 mb-6">
         <div className="relative group shrink-0">
           {profileImage ? (
             <img
@@ -140,6 +187,8 @@ export function CustomerStep({ form, control }) {
           )}
         </div>
       </div>
+      </div>
+      )}
     </div>
   );
 }

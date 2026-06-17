@@ -49,7 +49,10 @@ const schema = z.object({
   idProofNumber: z.string().optional(),
   keyStatus: z.string().optional(),
   salesDoneBy: z.string().optional(),
-  customerName: z.string().min(1, 'Customer name is required'),
+  
+  isNewCustomer: z.boolean().default(true),
+  existingCustomerId: z.string().optional(),
+  customerName: z.string().optional(),
   address: z.string().optional(),
   monthlySalary: z.coerce.number().optional(),
   profileImage: z.string().optional(),
@@ -65,6 +68,21 @@ const schema = z.object({
     bank: z.string().optional(),
     amount: z.coerce.number().optional(),
   })).optional(),
+}).superRefine((data, ctx) => {
+  if (data.isNewCustomer && !data.customerName) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['customerName'],
+      message: 'Customer name is required',
+    });
+  }
+  if (!data.isNewCustomer && !data.existingCustomerId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['existingCustomerId'],
+      message: 'Please select an existing customer',
+    });
+  }
 });
 
 export function AddClientPage() {
@@ -86,6 +104,8 @@ export function AddClientPage() {
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
+      isNewCustomer: !customerId,
+      existingCustomerId: customerId || '',
       loanStartDate: new Date().toISOString().split('T')[0],
       installmentPeriodUnit: 'Months',
       cellNumbers: [{ number: '' }],
@@ -129,7 +149,7 @@ export function AddClientPage() {
     setSubmitting(true);
     try {
       // Step 1: Create customer (or use existing customerId)
-      let cId = customerId;
+      let cId = data.isNewCustomer ? null : data.existingCustomerId;
       if (!cId) {
         const customer = await createCustomer.mutateAsync({
           name: data.customerName,
@@ -241,15 +261,24 @@ export function AddClientPage() {
             </div>
 
             <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={prevStep}
-                disabled={currentStep === 0}
-              >
-                <ArrowLeftIcon className="h-5 w-5 mr-2" />
-                Back
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate(-1)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={prevStep}
+                  disabled={currentStep === 0}
+                >
+                  <ArrowLeftIcon className="h-5 w-5 mr-2" />
+                  Back
+                </Button>
+              </div>
               
               <div className="flex gap-3">
                 {currentStep < steps.length - 1 ? (

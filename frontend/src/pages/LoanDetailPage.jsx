@@ -217,7 +217,7 @@ export function LoanDetailPage() {
                     <PeriodEditor
                       currentPeriod={loan.installmentPeriod}
                       currentUnit={loan.installmentPeriodUnit}
-                      minPeriod={loan.installments.filter(i => i.amountReceived > 0 || i.status === 'Paid').length}
+                      minPeriod={installments.filter(i => i.amountReceived > 0 || i.status === 'Paid').length}
                       onSave={handlePeriodUpdate}
                     />
                   )}

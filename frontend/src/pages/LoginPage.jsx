@@ -47,7 +47,7 @@ export function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center pb-2">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">R a.m. Finance</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">RAM Finance</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Sign in to your account</p>
         </CardHeader>
         <CardContent>

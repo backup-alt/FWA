@@ -21,7 +21,7 @@ export function Header({ sidebarOpen = false, onToggleSidebar = () => {} }) {
             {sidebarOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
           </button>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white hidden sm:block">
-            R a.m. Finance
+            RAM Finance
           </h1>
         </div>
 

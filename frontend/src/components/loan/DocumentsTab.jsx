@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useToast } from '@/context/ToastContext';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 import { CloudArrowUpIcon, DocumentIcon, TrashIcon, ArrowDownTrayIcon, DocumentTextIcon, PhotoIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { formatCurrency } from '@/api';
 

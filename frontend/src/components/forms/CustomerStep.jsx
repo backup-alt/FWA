@@ -20,7 +20,7 @@ export function CustomerStep({ form, control }) {
   const { showToast } = useToast();
 
   const { data: customersData, isLoading: loadingCustomers } = useCustomers();
-  const customers = customersData?.customers || [];
+  const customers = Array.isArray(customersData) ? customersData : (customersData?.customers || []);
 
   const profileImage = watch('profileImage');
   const customerName = watch('customerName') || '?';

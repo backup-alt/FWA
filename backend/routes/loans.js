@@ -106,7 +106,7 @@ router.get('/', async (req, res) => {
     if (req.query.status) filter.status = req.query.status;
     if (req.query.customerId) filter.customerId = req.query.customerId;
 
-    const loans = await Loan.find(filter).sort({ createdAt: -1 });
+    const loans = await Loan.find(filter).sort({ createdAt: -1 }).lean();
     // Recalculate schedule in-memory only (DO NOT SAVE on GET request to keep it fast)
     for (const loan of loans) {
       recalculateSchedule(loan);
@@ -121,7 +121,7 @@ router.get('/', async (req, res) => {
 // Pending dues
 router.get('/pending-dues', async (req, res) => {
   try {
-    const loans = await Loan.find({ status: 'Active' });
+    const loans = await Loan.find({ status: 'Active' }).lean();
     const pending = getPendingDues(loans);
     res.json(pending);
   } catch (err) {
@@ -133,7 +133,7 @@ router.get('/pending-dues', async (req, res) => {
 // Get single loan
 router.get('/:id', async (req, res) => {
   try {
-    const loan = await Loan.findById(req.params.id);
+    const loan = await Loan.findById(req.params.id).lean();
     if (!loan) return res.status(404).json({ message: 'Loan not found.' });
     recalculateSchedule(loan);
     // In-memory return only, no save needed

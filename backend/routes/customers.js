@@ -34,7 +34,7 @@ router.post('/', async (req, res) => {
 // List all customers (with loan count)
 router.get('/', async (req, res) => {
   try {
-    const customers = await Customer.find().sort({ createdAt: -1 });
+    const customers = await Customer.find().sort({ createdAt: -1 }).lean();
 
     // Aggregate loan counts and totals per customer
     const loanAgg = await Loan.aggregate([
@@ -56,10 +56,9 @@ router.get('/', async (req, res) => {
     });
 
     const result = customers.map(c => {
-      const cObj = c.toObject();
       const agg = loanMap[c._id.toString()] || {};
       return {
-        ...cObj,
+        ...c,
         loanCount: agg.loanCount || 0,
         totalOutstanding: agg.totalOutstanding || 0,
         activeLoans: agg.activeLoans || 0,
@@ -76,10 +75,10 @@ router.get('/', async (req, res) => {
 // Get single customer with their loans
 router.get('/:id', async (req, res) => {
   try {
-    const customer = await Customer.findById(req.params.id);
+    const customer = await Customer.findById(req.params.id).lean();
     if (!customer) return res.status(404).json({ message: 'Customer not found.' });
 
-    const loans = await Loan.find({ customerId: customer._id }).sort({ createdAt: -1 });
+    const loans = await Loan.find({ customerId: customer._id }).sort({ createdAt: -1 }).lean();
 
     res.json({ customer, loans });
   } catch (err) {

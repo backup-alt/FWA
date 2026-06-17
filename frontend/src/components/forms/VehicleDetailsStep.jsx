@@ -1,14 +1,14 @@
 import { Input, Select } from '@/components/ui';
+import { Controller } from 'react-hook-form';
 
 export function VehicleDetailsStep({ form }) {
   const {
+    control,
     register,
     watch,
-    setValue,
     formState: { errors },
   } = form;
 
-  // Read current values so Select can display them correctly after tab-switching (cached form state)
   const vehicleType = watch('vehicleType') || '';
   const periodUnit = watch('installmentPeriodUnit') || 'Months';
 
@@ -17,16 +17,21 @@ export function VehicleDetailsStep({ form }) {
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Vehicle & Finance Details</h3>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Select
-          label="Vehicle Type *"
-          options={[
-            { value: 'Bike', label: 'Bike' },
-            { value: 'Car', label: 'Car' },
-          ]}
-          placeholder="Select vehicle type"
-          error={errors.vehicleType?.message}
-          value={vehicleType}
-          {...register('vehicleType')}
+        <Controller
+          name="vehicleType"
+          control={control}
+          render={({ field }) => (
+            <Select
+              {...field}
+              label="Vehicle Type *"
+              options={[
+                { value: 'Bike', label: 'Bike' },
+                { value: 'Car', label: 'Car' },
+              ]}
+              placeholder="Select vehicle type"
+              error={errors.vehicleType?.message}
+            />
+          )}
         />
         
         <Input
@@ -95,16 +100,21 @@ export function VehicleDetailsStep({ form }) {
             />
           </div>
           <div className="w-1/2">
-            <Select
-              label="Unit *"
-              options={[
-                { value: 'Months', label: 'Months' },
-                { value: 'Weeks', label: 'Weeks' },
-                { value: 'Days', label: 'Days' },
-              ]}
-              error={errors.installmentPeriodUnit?.message}
-              value={periodUnit}
-              {...register('installmentPeriodUnit')}
+            <Controller
+              name="installmentPeriodUnit"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  label="Unit *"
+                  options={[
+                    { value: 'Months', label: 'Months' },
+                    { value: 'Weeks', label: 'Weeks' },
+                    { value: 'Days', label: 'Days' },
+                  ]}
+                  error={errors.installmentPeriodUnit?.message}
+                />
+              )}
             />
           </div>
         </div>

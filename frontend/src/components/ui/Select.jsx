@@ -1,21 +1,37 @@
+import { Fragment, useState, useEffect } from 'react';
+import { Listbox, Transition } from '@headlessui/react';
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
-import { forwardRef } from 'react';
 
-export const Select = forwardRef(function Select({
+/**
+ * Modern styled Select using Headless UI Listbox.
+ * Must be used with react-hook-form's Controller:
+ * <Controller control={control} name="field" render={({ field }) => <Select {...field} options={...} />} />
+ */
+export function Select({
   options = [],
-  placeholder,
+  placeholder = 'Select an option',
   error,
   helperText,
   label,
   className = '',
   disabled = false,
   value,
-  name,
   onChange,
   onBlur,
-  ...props
-}, ref) {
-  const currentValue = value ?? '';
+  name,
+  ref,
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const selectedOption = options.find(opt => opt.value === value);
+
+  const handleChange = (newValue) => {
+    if (onChange) {
+      onChange(newValue);
+    }
+    setIsOpen(false);
+  };
 
   return (
     <div className={clsx('w-full', className)}>
@@ -25,55 +41,78 @@ export const Select = forwardRef(function Select({
         </label>
       )}
 
-      <div className="relative">
-        <select
-          ref={ref}
-          id={name}
-          name={name}
-          value={currentValue}
-          onChange={onChange}
-          onBlur={onBlur}
-          disabled={disabled}
-          className={clsx(
-            'w-full appearance-none px-3 py-2.5 pr-10 text-sm rounded-lg shadow-sm border transition-colors cursor-pointer',
-            'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500',
-            'dark:bg-gray-800 dark:text-white dark:border-gray-600',
-            error
-              ? 'border-red-500 focus:ring-red-500 focus:border-red-500 text-red-900 dark:border-red-400'
-              : 'border-gray-300 dark:border-gray-600 text-gray-900',
-            disabled && 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-900',
-            !currentValue && 'text-gray-400 dark:text-gray-500'
-          )}
-          {...props}
-        >
-          {placeholder && (
-            <option value="" disabled>
-              {placeholder}
-            </option>
-          )}
-          {options.map(opt => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-          <svg
-            className="h-4 w-4 text-gray-400"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            aria-hidden="true"
+      <Listbox value={value || ''} onChange={handleChange} disabled={disabled}>
+        <div className="relative">
+          <Listbox.Button
+            ref={ref}
+            onBlur={() => {
+              if (onBlur) onBlur();
+              setIsOpen(false);
+            }}
+            onClick={() => setIsOpen(!isOpen)}
+            className={clsx(
+              'relative w-full cursor-pointer rounded-lg bg-white dark:bg-gray-800 py-2.5 pl-3 pr-10 text-left text-sm border shadow-sm transition-all',
+              'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500',
+              error
+                ? 'border-red-500 focus:ring-red-500 focus:border-red-500 text-red-900 dark:border-red-400'
+                : 'border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white',
+              disabled && 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-900',
+              !selectedOption && 'text-gray-400 dark:text-gray-500'
+            )}
           >
-            <path
-              fillRule="evenodd"
-              d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-              clipRule="evenodd"
-            />
-          </svg>
+            <span className="block truncate">
+              {selectedOption ? selectedOption.label : placeholder}
+            </span>
+            <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5">
+              <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            </span>
+          </Listbox.Button>
+
+          <Transition
+            as={Fragment}
+            enter="transition ease-out duration-100"
+            enterFrom="transform opacity-0 scale-95"
+            enterTo="transform opacity-100 scale-100"
+            leave="transition ease-in duration-75"
+            leaveFrom="transform opacity-100 scale-100"
+            leaveTo="transform opacity-0 scale-95"
+          >
+            <Listbox.Options className="absolute z-50 mt-1.5 max-h-60 w-full overflow-auto rounded-xl bg-white dark:bg-gray-800 py-1.5 shadow-xl ring-1 ring-gray-200 dark:ring-gray-700 focus:outline-none text-sm">
+              {options.length === 0 ? (
+                <div className="px-3 py-2 text-gray-500 dark:text-gray-400">
+                  No options available
+                </div>
+              ) : (
+                options.map((option) => (
+                  <Listbox.Option
+                    key={option.value}
+                    value={option.value}
+                    as={Fragment}
+                  >
+                    {({ active, selected }) => (
+                      <li
+                        className={clsx(
+                          'relative cursor-pointer select-none py-2.5 pl-10 pr-4 mx-1 rounded-lg transition-colors',
+                          active ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-gray-100'
+                        )}
+                      >
+                        <span className="block truncate font-normal">
+                          {option.label}
+                        </span>
+                        {selected && (
+                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary-600 dark:text-primary-400">
+                            <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                          </span>
+                        )}
+                      </li>
+                    )}
+                  </Listbox.Option>
+                ))
+              )}
+            </Listbox.Options>
+          </Transition>
         </div>
-      </div>
+      </Listbox>
 
       {error && (
         <p className="mt-1.5 text-sm text-red-600 dark:text-red-400" role="alert">
@@ -87,4 +126,4 @@ export const Select = forwardRef(function Select({
       )}
     </div>
   );
-});
+}

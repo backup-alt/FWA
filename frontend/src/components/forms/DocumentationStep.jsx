@@ -1,8 +1,8 @@
 import { Input, Select } from '@/components/ui';
+import { Controller } from 'react-hook-form';
 import { useEffect } from 'react';
 
 const ID_PROOF_OPTIONS = [
-  { value: '', label: 'Select ID Proof' },
   { value: 'Aadhar', label: 'Aadhar Card' },
   { value: 'PAN', label: 'PAN Card' },
   { value: 'VoterID', label: 'Voter ID' },
@@ -19,7 +19,7 @@ const ID_FORMATS = {
 };
 
 export function DocumentationStep({ form }) {
-  const { register, watch, setValue } = form;
+  const { register, watch, setValue, control } = form;
   const idProofType = watch('idProofType') || '';
   const idProofNumber = watch('idProofNumber') || '';
 
@@ -34,7 +34,6 @@ export function DocumentationStep({ form }) {
     }
   };
 
-  // Clear the ID number when the type changes
   useEffect(() => {
     setValue('idProofNumber', '');
   }, [idProofType, setValue]);
@@ -78,12 +77,17 @@ export function DocumentationStep({ form }) {
           {...register('insurance')}
         />
         
-        <Select
-          label="ID Proof Type"
-          options={ID_PROOF_OPTIONS}
-          placeholder="Select ID Proof"
-          value={idProofType}
-          {...register('idProofType')}
+        <Controller
+          name="idProofType"
+          control={control}
+          render={({ field }) => (
+            <Select
+              {...field}
+              label="ID Proof Type"
+              options={ID_PROOF_OPTIONS}
+              placeholder="Select ID Proof"
+            />
+          )}
         />
         
         {idProofType && (

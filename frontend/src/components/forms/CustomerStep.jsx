@@ -25,8 +25,6 @@ export function CustomerStep({ form, control }) {
   const profileImage = watch('profileImage');
   const customerName = watch('customerName') || '?';
   const isNewCustomer = watch('isNewCustomer');
-
-  // Read current value so Select can display it correctly after tab-switch (cached form state)
   const existingCustomerId = watch('existingCustomerId') || '';
 
   const handleImageChange = (e) => {
@@ -75,16 +73,21 @@ export function CustomerStep({ form, control }) {
 
       {!isNewCustomer ? (
         <div className="animate-fade-in space-y-4">
-          <Select
-            label="Select Existing Customer *"
-            options={customers.map(c => ({ 
-              value: c._id, 
-              label: `${c.name}${c.cellNumbers?.[0]?.number ? ` (${c.cellNumbers[0].number})` : ''}` 
-            }))}
-            placeholder={loadingCustomers ? 'Loading customers...' : 'Choose a customer'}
-            error={errors.existingCustomerId?.message}
-            value={existingCustomerId}
-            {...register('existingCustomerId')}
+          <Controller
+            name="existingCustomerId"
+            control={control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                label="Select Existing Customer *"
+                options={customers.map(c => ({ 
+                  value: c._id, 
+                  label: `${c.name}${c.cellNumbers?.[0]?.number ? ` (${c.cellNumbers[0].number})` : ''}` 
+                }))}
+                placeholder={loadingCustomers ? 'Loading customers...' : 'Choose a customer'}
+                error={errors.existingCustomerId?.message}
+              />
+            )}
           />
         </div>
       ) : (

@@ -8,7 +8,8 @@ import {
   PhoneIcon,
   IdentificationIcon,
   MapPinIcon,
-  BanknotesIcon
+  BanknotesIcon,
+  ArrowsRightLeftIcon
 } from '@heroicons/react/24/outline';
 import { useLoan, useUpdateLoan, useRecordPayment, useDeleteLoan, useCloseLoan, useRestructureLoan } from '@/hooks/useLoans';
 import { useCustomer } from '@/hooks/useCustomers';
@@ -278,10 +279,12 @@ export function LoanDetailPage() {
                 <div className="flex gap-2">
                   {loan.status === 'Active' && (
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       size="sm"
+                      className="px-3 text-xs"
                       onClick={() => setShowRestructureModal(true)}
                     >
+                      <ArrowsRightLeftIcon className="h-4 w-4 mr-1.5" />
                       Restructure
                     </Button>
                   )}

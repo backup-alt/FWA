@@ -64,7 +64,7 @@ const players: Player[] = [
   }
 ]
 
-function PlayerCard({ player, index }: { player: Player; index: number }) {
+function PlayerCard({ player }: { player: Player; index?: number }) {
   const [isFlipped, setIsFlipped] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
@@ -258,7 +258,7 @@ export function Players() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {players.map((player, index) => (
             <div key={`${player.name}-${index}`} className="player-card-wrapper">
-              <PlayerCard player={player} index={index} />
+              <PlayerCard player={player} />
             </div>
           ))}
         </div>

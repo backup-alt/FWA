@@ -8,7 +8,7 @@ import { clsx } from 'clsx';
 
 export function RestructureModal({ isOpen, onClose, onConfirm, isSubmitting, loan }) {
   const [mode, setMode] = useState('lower-emi');
-  const [lumpSum, setLumpSum] = useState('');
+  const [targetValue, setTargetValue] = useState('');
   
   const [preview, setPreview] = useState(null);
   const [error, setError] = useState('');
@@ -30,64 +30,69 @@ export function RestructureModal({ isOpen, onClose, onConfirm, isSubmitting, loa
     const outstanding = futureInstallments.reduce((sum, i) => sum + Number(i.dueAmount || 0), 0);
     setCurrentOutstanding(outstanding);
     
-    const lumpSumNum = Number(lumpSum) || 0;
+    const targetNum = Number(targetValue) || 0;
 
-    if (lumpSumNum <= 0) {
+    if (targetNum <= 0) {
       setError('');
       setPreview(null);
       return;
     }
 
-    if (lumpSumNum >= outstanding) {
-      setError(`Lump sum must be less than outstanding balance (${formatCurrency(outstanding)}). Use Close Loan instead.`);
+    const rate = loan.interestRate || 0;
+    const prevEmi = Number(futureInstallments[0].dueAmount || 0);
+    const prevPeriod = futureInstallments.length;
+
+    let requiredLumpSum = 0;
+    let newOutstanding = 0;
+    let newPeriod;
+    let newEmi;
+    let lastEmi;
+
+    if (mode === 'lower-emi') {
+      if (targetNum >= prevEmi) {
+        setError(`Target EMI must be lower than the current EMI (${formatCurrency(prevEmi)}).`);
+        setPreview(null);
+        return;
+      }
+      newOutstanding = targetNum / ((1 / prevPeriod) + (rate / 100));
+      requiredLumpSum = outstanding - newOutstanding;
+      newPeriod = prevPeriod;
+      newEmi = targetNum;
+    } else {
+      if (!Number.isInteger(targetNum)) {
+        setError('Target period must be a whole number of months.');
+        setPreview(null);
+        return;
+      }
+      if (targetNum >= prevPeriod) {
+        setError(`Target period must be fewer than the current remaining period (${prevPeriod} months).`);
+        setPreview(null);
+        return;
+      }
+      newOutstanding = prevEmi / ((1 / targetNum) + (rate / 100));
+      requiredLumpSum = outstanding - newOutstanding;
+      newPeriod = targetNum;
+      newEmi = prevEmi;
+    }
+
+    if (requiredLumpSum <= 0 || requiredLumpSum >= outstanding) {
+      setError(`This target requires an invalid lump sum payment. Outstanding balance is ${formatCurrency(outstanding)}.`);
       setPreview(null);
       return;
     }
 
     setError('');
     
-    const newOutstanding = outstanding - lumpSumNum;
-    const rate = loan.interestRate || 0;
-    const prevEmi = Number(futureInstallments[0].dueAmount || 0);
-    const prevPeriod = futureInstallments.length;
-    
+    const totalPayable = newOutstanding + (newOutstanding * (rate / 100)) * newPeriod;
+    const sumSoFar = newEmi * (newPeriod - 1);
+    lastEmi = totalPayable - sumSoFar;
+
     const oldInterestRemaining = (prevEmi * prevPeriod) - outstanding;
-
-    let newPeriod;
-    let newEmi;
-    let lastEmi;
-
-    if (mode === 'lower-emi') {
-      newPeriod = prevPeriod;
-      const monthlyInterest = newOutstanding * (rate / 100);
-      const monthlyPrincipal = newOutstanding / newPeriod;
-      newEmi = monthlyPrincipal + monthlyInterest;
-      
-      const totalPayable = newOutstanding + (newOutstanding * (rate / 100)) * newPeriod;
-      const sumSoFar = newEmi * (newPeriod - 1);
-      lastEmi = totalPayable - sumSoFar;
-      
-    } else {
-      const monthlyInterest = newOutstanding * (rate / 100);
-      const principalPerInstallment = prevEmi - monthlyInterest;
-      
-      if (principalPerInstallment <= 0) {
-        setError('EMI is too low to cover the interest on the new balance. Use "Lower EMI" mode.');
-        setPreview(null);
-        return;
-      }
-      newPeriod = Math.ceil(newOutstanding / principalPerInstallment);
-      newEmi = prevEmi;
-      
-      const totalPayable = newOutstanding + (newOutstanding * (rate / 100)) * newPeriod;
-      const sumSoFar = newEmi * (newPeriod - 1);
-      lastEmi = totalPayable - sumSoFar;
-    }
-
     const newInterestRemaining = (newOutstanding * (rate / 100)) * newPeriod;
     const interestSaved = oldInterestRemaining - newInterestRemaining;
 
     setPreview({
+      requiredLumpSum,
       newOutstanding,
       newPeriod,
       newEmi,
@@ -97,7 +102,7 @@ export function RestructureModal({ isOpen, onClose, onConfirm, isSubmitting, loa
       interestSaved
     });
 
-  }, [lumpSum, mode, loan, isOpen]);
+  }, [targetValue, mode, loan, isOpen]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -105,7 +110,7 @@ export function RestructureModal({ isOpen, onClose, onConfirm, isSubmitting, loa
     
     onConfirm({
       mode,
-      lumpSum: Number(lumpSum)
+      targetValue: Number(targetValue)
     });
   };
 
@@ -148,21 +153,16 @@ export function RestructureModal({ isOpen, onClose, onConfirm, isSubmitting, loa
 
         <div>
           <Input
-            label="Lump Sum Prepayment (₹) *"
+            label={mode === 'lower-emi' ? 'Target Monthly EMI (₹) *' : 'Target Remaining Period (Months) *'}
             type="number"
-            step="0.01"
+            step={mode === 'lower-emi' ? '0.01' : '1'}
             min="1"
-            value={lumpSum}
-            onChange={(e) => setLumpSum(e.target.value)}
-            placeholder="e.g. 10000"
+            value={targetValue}
+            onChange={(e) => setTargetValue(e.target.value)}
+            placeholder={mode === 'lower-emi' ? 'e.g. 10000' : 'e.g. 8'}
             className="text-lg"
             required
           />
-          {currentOutstanding > 0 && (
-            <p className="text-xs text-gray-500 mt-2">
-              Max allowable prepayment: <span className="font-medium text-gray-700 dark:text-gray-300">{formatCurrency(currentOutstanding - 1)}</span>
-            </p>
-          )}
         </div>
 
         {error && (
@@ -231,7 +231,7 @@ export function RestructureModal({ isOpen, onClose, onConfirm, isSubmitting, loa
               <div className="text-right">
                 <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider mb-1">To Pay Now</p>
                 <p className="text-xl font-bold text-gray-900 dark:text-white">
-                  {formatCurrency(Number(lumpSum) || 0)}
+                  {formatCurrency(preview.requiredLumpSum)}
                 </p>
               </div>
             </div>
@@ -242,7 +242,7 @@ export function RestructureModal({ isOpen, onClose, onConfirm, isSubmitting, loa
           <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button type="submit" variant="primary" disabled={isSubmitting || !!error || !lumpSum}>
+          <Button type="submit" variant="primary" disabled={isSubmitting || !!error || !targetValue}>
             {isSubmitting ? 'Processing...' : 'Confirm Restructure'}
           </Button>
         </div>

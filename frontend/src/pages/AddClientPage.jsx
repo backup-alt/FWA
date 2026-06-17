@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -103,19 +103,38 @@ export function AddClientPage() {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: {
-      isNewCustomer: !customerId,
-      existingCustomerId: customerId || '',
-      loanStartDate: new Date().toISOString().split('T')[0],
-      installmentPeriodUnit: 'Months',
-      cellNumbers: [{ number: '' }],
-      guarantor: { name: '', address: '' },
-      chequesReceived: [{ chequeNumber: '', bank: '', amount: 0 }],
-      rcDetails: { status: '', paidThrough: '', chequeNumber: '', amount: 0 },
-      profileImage: '',
-      loanAccountNumber: '',
+    defaultValues: () => {
+      try {
+        const cached = sessionStorage.getItem('add_customer_form_draft');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (customerId) parsed.existingCustomerId = customerId;
+          return parsed;
+        }
+      } catch (e) {
+        // ignore
+      }
+      return {
+        isNewCustomer: !customerId,
+        existingCustomerId: customerId || '',
+        loanStartDate: new Date().toISOString().split('T')[0],
+        installmentPeriodUnit: 'Months',
+        cellNumbers: [{ number: '' }],
+        guarantor: { name: '', address: '' },
+        chequesReceived: [{ chequeNumber: '', bank: '', amount: 0 }],
+        rcDetails: { status: '', paidThrough: '', chequeNumber: '', amount: 0 },
+        profileImage: '',
+        loanAccountNumber: '',
+      };
     },
   });
+
+  useEffect(() => {
+    const subscription = watch((value) => {
+      sessionStorage.setItem('add_customer_form_draft', JSON.stringify(value));
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
 
   const watchedValues = watch();
   const loanAmount = Number(watchedValues.loanAmount || 0);
@@ -187,6 +206,7 @@ export function AddClientPage() {
       };
 
       const loan = await createLoan.mutateAsync(loanPayload);
+      sessionStorage.removeItem('add_customer_form_draft');
       showToast('Customer and loan created successfully!', 'success');
       navigate(`/loan/${loan._id}`);
     } catch (err) {
@@ -275,7 +295,10 @@ export function AddClientPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => navigate(-1)}
+                  onClick={() => {
+                    sessionStorage.removeItem('add_customer_form_draft');
+                    navigate(-1);
+                  }}
                 >
                   Cancel
                 </Button>

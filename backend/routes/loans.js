@@ -424,15 +424,15 @@ router.put('/:id/restructure', async (req, res) => {
       return res.status(400).json({ message: 'Only Active loans can be restructured.' });
     }
 
-    const { mode, lumpSum } = req.body;
+    const { mode, targetValue } = req.body;
     if (!mode || !['lower-emi', 'shorten-period'].includes(mode)) {
       return res.status(400).json({ message: 'mode must be lower-emi or shorten-period.' });
     }
-    if (!lumpSum || Number(lumpSum) <= 0) {
-      return res.status(400).json({ message: 'lumpSum must be a positive number.' });
+    if (!targetValue || Number(targetValue) <= 0) {
+      return res.status(400).json({ message: 'targetValue must be a positive number.' });
     }
 
-    const lumpSumNum = roundMoney(Number(lumpSum));
+    const targetNum = Number(targetValue);
 
     // Identify unacted (future) installments
     const actedInstallments = loan.installments.filter(
@@ -456,37 +456,50 @@ router.put('/:id/restructure', async (req, res) => {
       futureInstallments.reduce((sum, i) => sum + Number(i.dueAmount || 0), 0)
     );
 
-    if (lumpSumNum >= currentOutstanding) {
-      return res.status(400).json({
-        message: `Lump sum (${lumpSumNum}) must be less than outstanding balance (${currentOutstanding}). Use Close Loan for full settlement.`,
-      });
-    }
-
-    const newOutstanding = roundMoney(currentOutstanding - lumpSumNum);
-    const rate = loan.interestRate; // per-period flat rate %
+    const rate = loan.interestRate || 0; // per-period flat rate %
     const prevEmi = roundMoney(futureInstallments[0].dueAmount || 0);
     const prevPeriod = futureInstallments.length;
 
     let newPeriod;
     let newEmi;
+    let newOutstanding;
+    let requiredLumpSum;
 
     if (mode === 'lower-emi') {
-      // Same number of installments, lower EMI
-      newPeriod = prevPeriod;
-      const monthlyInterest = roundMoney(newOutstanding * (rate / 100));
-      const monthlyPrincipal = roundMoney(newOutstanding / newPeriod);
-      newEmi = roundMoney(monthlyPrincipal + monthlyInterest);
-    } else {
-      // Shorten period — keep same EMI, fewer installments
-      const monthlyInterest = roundMoney(newOutstanding * (rate / 100));
-      const principalPerInstallment = roundMoney(prevEmi - monthlyInterest);
-      if (principalPerInstallment <= 0) {
+      if (targetNum >= prevEmi) {
         return res.status(400).json({
-          message: 'EMI is too low to cover the interest on the new outstanding. Use lower-emi mode instead.',
+          message: `Target EMI must be lower than the current EMI (${prevEmi}).`,
         });
       }
-      newPeriod = Math.ceil(newOutstanding / principalPerInstallment);
+      newOutstanding = targetNum / ((1 / prevPeriod) + (rate / 100));
+      requiredLumpSum = currentOutstanding - newOutstanding;
+      newPeriod = prevPeriod;
+      newEmi = targetNum;
+    } else {
+      if (!Number.isInteger(targetNum)) {
+        return res.status(400).json({
+          message: 'Target period must be a whole number of months.',
+        });
+      }
+      if (targetNum >= prevPeriod) {
+        return res.status(400).json({
+          message: `Target period must be fewer than the current remaining period (${prevPeriod} months).`,
+        });
+      }
+      newOutstanding = prevEmi / ((1 / targetNum) + (rate / 100));
+      requiredLumpSum = currentOutstanding - newOutstanding;
+      newPeriod = targetNum;
       newEmi = prevEmi;
+    }
+
+    const lumpSumNum = roundMoney(requiredLumpSum);
+    newOutstanding = roundMoney(newOutstanding);
+    newEmi = roundMoney(newEmi);
+
+    if (lumpSumNum <= 0 || lumpSumNum >= currentOutstanding) {
+      return res.status(400).json({
+        message: 'This target requires an invalid lump sum payment.',
+      });
     }
 
     // Get due date of the first future installment as the start reference
@@ -537,13 +550,15 @@ router.put('/:id/restructure', async (req, res) => {
     loan.restructureLog.push({
       date: new Date(),
       mode,
-      lumpSum: lumpSumNum,
+      targetValue: targetNum,
+      lumpSumApplied: lumpSumNum,
+      oldOutstanding: currentOutstanding,
+      newOutstanding,
+      oldPeriod: prevPeriod,
       newPeriod,
+      oldEmi: prevEmi,
       newEmi,
-      prevEmi,
-      prevPeriod,
     });
-
     loan.installmentPeriod =
       actedInstallments.length + newPeriod;
 

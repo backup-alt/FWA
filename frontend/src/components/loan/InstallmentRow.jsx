@@ -67,34 +67,11 @@ export function InstallmentRow({
   return (
     <tr className={clsx('border-b border-gray-200 dark:border-gray-700', data.status === 'Overdue' && 'bg-red-50 dark:bg-red-900/20')}>
       <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-        {editing ? (
-          <input
-            type="number"
-            min="1"
-            step="1"
-            value={localSNo}
-            onChange={e => setLocalSNo(e.target.value)}
-            className="w-20 rounded border border-gray-300 px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800"
-            disabled={isLocked}
-          />
-        ) : (
-          <span className="font-medium">{data.sNo}</span>
-        )}
+        <span className="font-medium">{data.sNo}</span>
       </td>
       <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-        {editing ? (
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={localDueAmount}
-            onChange={e => setLocalDueAmount(e.target.value)}
-            className="w-32 rounded border border-gray-300 px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800"
-            disabled={isLocked}
-          />
-        ) : (
-          <div>
-            <div className="font-medium">{formatCurrency(data.dueAmount)}</div>
+        <div>
+          <div className="font-medium">{formatCurrency(data.dueAmount)}</div>
             {(() => {
               const carriedPending = Number(data.pendingAmount || 0);
               const shortfall = Number(data.shortfallAmount || 0);
@@ -110,8 +87,7 @@ export function InstallmentRow({
               }
               return null;
             })()}
-          </div>
-        )}
+        </div>
       </td>
       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
         {editing ? (

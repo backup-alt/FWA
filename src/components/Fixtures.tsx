@@ -25,12 +25,6 @@ const matches: Match[] = [
   { home: 'Juventus', away: 'Inter Milan', score: '0 - 0', time: '18:00', date: 'Jun 25', competition: 'Serie A', live: true, homeLogo: '⚫', awayLogo: '⚫' },
 ]
 
-const TeamLogo = ({ letter }: { letter: string }) => (
-  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-navy-700 to-navy-800 border-2 border-neon-green/30 flex items-center justify-center text-2xl font-extrabold text-neon-green group-hover:border-neon-green/50 group-hover:shadow-[0_0_15px_rgba(0,255,0,0.4)] transition-all duration-300">
-    {letter}
-  </div>
-)
-
 export function Fixtures() {
   const sectionRef = useRef<HTMLElement>(null)
 

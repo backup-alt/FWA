@@ -1,6 +1,17 @@
-const API_BASE = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL}/api`
-  : '/api';
+const getApiBase = () => {
+  const url = import.meta.env.VITE_API_URL;
+  if (!url) return '/api';
+  
+  // If running on localhost or 127.0.0.1, ignore the production VITE_API_URL and use local path
+  if (typeof window !== 'undefined' && 
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return '/api';
+  }
+  
+  return `${url}/api`;
+};
+
+const API_BASE = getApiBase();
 
 function getToken() {
   return localStorage.getItem('token');

@@ -52,13 +52,13 @@ const stats: StatItem[] = [
 ]
 
 export function Stats() {
-  const sectionRef = useRef<HTMLSectionElement>(null)
+  const sectionRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     const section = sectionRef.current
     if (!section) return
 
-    stats.forEach((stat, index) => {
+    stats.forEach((stat) => {
       const element = section.querySelector(`[data-stat="${stat.label}"]`) as HTMLElement
       if (!element) return
 
@@ -115,12 +115,11 @@ export function Stats() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
+        {stats.map((stat) => (
           <div
             key={stat.label}
             data-stat={stat.label}
             className="stat-card card relative overflow-hidden group"
-            style={{ '--index': index }}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-neon-green/5 via-transparent to-neon-gold/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="relative z-10">

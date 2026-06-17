@@ -1,7 +1,7 @@
 'use client'
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Html, OrbitControls, Stars } from '@react-three/drei'
+import { PerspectiveCamera, Stars } from '@react-three/drei'
 import { useRef, useState, useEffect } from 'react'
 import * as THREE from 'three'
 import { gsap } from 'gsap'
@@ -40,7 +40,7 @@ function Football({ onLoad }: { onLoad?: () => void }) {
       <directionalLight position={[-5, 5, -7]} intensity={1} color="#00ff00" />
       <pointLight position={[0, 0, 5]} intensity={1} color="#ffd700" decay={2} />
       
-      <Stars radius={50} depth={100} count={2000} factor={4} saturation={0} opacity={0.6} color="#00ff00" />
+      <Stars radius={50} depth={100} count={2000} factor={4} saturation={0} />
       
       <mesh castShadow receiveShadow>
         <sphereGeometry args={[1.8, 64, 64]} />
@@ -111,7 +111,7 @@ function ParticleField() {
 }
 
 export function Hero() {
-  const [loaded, setLoaded] = useState(false)
+  const [, setLoaded] = useState(false)
 
   useEffect(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })

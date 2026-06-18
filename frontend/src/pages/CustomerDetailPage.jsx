@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate, NavLink } from 'react-router-dom';
-import { ArrowLeftIcon, TrashIcon, PlusIcon, PencilIcon, CameraIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, TrashIcon, PlusIcon, PencilIcon, CameraIcon, XMarkIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { useCustomer, useUpdateCustomer, useDeleteCustomer } from '@/hooks/useCustomers';
 import { useToast } from '@/context/ToastContext';
 import { Modal } from '@/components/ui/Modal';
@@ -8,7 +8,6 @@ import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { formatCurrency, formatDate } from '@/api';
-import { clsx } from 'clsx';
 
 const statusColors = {
   Active: 'info',
@@ -24,7 +23,7 @@ export function CustomerDetailPage() {
   const deleteCustomer = useDeleteCustomer();
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [editingProfile, setEditingProfile] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const handleProfileImageChange = async (e) => {
     const file = e.target.files?.[0];
@@ -38,12 +37,24 @@ export function CustomerDetailPage() {
       try {
         await updateCustomer.mutateAsync({ id, data: { profileImage: reader.result } });
         showToast('Profile image updated', 'success');
+        setShowProfileModal(false);
         refetch();
       } catch (err) {
         showToast(err.message || 'Failed to update image', 'error');
       }
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleRemoveProfileImage = async () => {
+    try {
+      await updateCustomer.mutateAsync({ id, data: { profileImage: '' } });
+      showToast('Profile image removed', 'success');
+      setShowProfileModal(false);
+      refetch();
+    } catch (err) {
+      showToast(err.message || 'Failed to remove image', 'error');
+    }
   };
 
   const handleDelete = async () => {
@@ -94,19 +105,30 @@ export function CustomerDetailPage() {
 
           {/* Profile image */}
           <div className="relative group shrink-0">
-            {customer.profileImage ? (
-              <img
-                src={customer.profileImage}
-                alt={customer.name}
-                className="h-16 w-16 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700"
-              />
-            ) : (
-              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-2xl">
-                {customer.name?.charAt(0)?.toUpperCase() || '?'}
-              </div>
-            )}
-            <label className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-              <CameraIcon className="h-6 w-6 text-white" />
+            <button
+              onClick={() => customer.profileImage && setShowProfileModal(true)}
+              className="relative rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              disabled={!customer.profileImage}
+            >
+              {customer.profileImage ? (
+                <img
+                  src={customer.profileImage}
+                  alt={customer.name}
+                  className="h-16 w-16 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700"
+                />
+              ) : (
+                <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-2xl ring-2 ring-gray-200 dark:ring-gray-700">
+                  {customer.name?.charAt(0)?.toUpperCase() || '?'}
+                </div>
+              )}
+              {customer.profileImage && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <EyeIcon className="h-6 w-6 text-white" />
+                </div>
+              )}
+            </button>
+            <label className="absolute -bottom-1 -right-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-primary-600 text-white shadow-sm hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+              <CameraIcon className="h-4 w-4" />
               <input
                 type="file"
                 accept="image/*"
@@ -219,6 +241,46 @@ export function CustomerDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Profile Picture Modal */}
+      <Modal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        title={customer.name}
+        size="lg"
+      >
+        <div className="space-y-4">
+          {/* Full size image */}
+          <div className="flex justify-center bg-gray-100 dark:bg-gray-900 rounded-lg p-4">
+            <img
+              src={customer.profileImage}
+              alt={customer.name}
+              className="max-h-[60vh] rounded-lg object-contain"
+            />
+          </div>
+          
+          {/* Action buttons */}
+          <div className="flex justify-center gap-3">
+            <label className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 cursor-pointer">
+              <PencilIcon className="h-4 w-4" />
+              Edit Photo
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleProfileImageChange}
+              />
+            </label>
+            <Button
+              variant="danger"
+              onClick={handleRemoveProfileImage}
+            >
+              <TrashIcon className="h-4 w-4 mr-2" />
+              Remove
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Delete confirmation modal */}
       <Modal

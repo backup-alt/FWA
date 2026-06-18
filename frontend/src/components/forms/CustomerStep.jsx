@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui';
 import { Select } from '@/components/ui/Select';
+import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/Button';
 import { useFieldArray, Controller } from 'react-hook-form';
-import { PlusIcon, TrashIcon, CameraIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, CameraIcon, EyeIcon, PencilIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useToast } from '@/context/ToastContext';
 import { useCustomers } from '@/hooks/useCustomers';
 
@@ -22,6 +24,8 @@ export function CustomerStep({ form, control }) {
   const { data: customersData, isLoading: loadingCustomers } = useCustomers();
   const customers = Array.isArray(customersData) ? customersData : (customersData?.customers || []);
 
+  const [showProfileModal, setShowProfileModal] = useState(false);
+
   const profileImage = watch('profileImage');
   const customerName = watch('customerName') || '?';
   const isNewCustomer = watch('isNewCustomer');
@@ -39,6 +43,11 @@ export function CustomerStep({ form, control }) {
       setValue('profileImage', reader.result, { shouldValidate: true, shouldDirty: true });
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleRemoveProfileImage = () => {
+    setValue('profileImage', '');
+    setShowProfileModal(false);
   };
 
   return (
@@ -95,18 +104,26 @@ export function CustomerStep({ form, control }) {
           <div className="flex items-center gap-6 mb-6">
             <div className="relative group shrink-0">
               {profileImage ? (
-                <img
-                  src={profileImage}
-                  alt="Profile"
-                  className="h-20 w-20 rounded-full object-cover ring-4 ring-gray-100 dark:ring-gray-800"
-                />
+                <button
+                  onClick={() => setShowProfileModal(true)}
+                  className="relative rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                >
+                  <img
+                    src={profileImage}
+                    alt="Profile"
+                    className="h-20 w-20 rounded-full object-cover ring-4 ring-gray-100 dark:ring-gray-800"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <EyeIcon className="h-6 w-6 text-white" />
+                  </div>
+                </button>
               ) : (
                 <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-2xl ring-4 ring-gray-100 dark:ring-gray-800">
                   {customerName.charAt(0).toUpperCase()}
                 </div>
               )}
-              <label className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-                <CameraIcon className="h-6 w-6 text-white" />
+              <label className="absolute -bottom-1 -right-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-primary-600 text-white shadow-sm hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                <CameraIcon className="h-4 w-4" />
                 <input
                   type="file"
                   accept="image/*"
@@ -118,15 +135,6 @@ export function CustomerStep({ form, control }) {
             <div>
               <p className="text-sm font-medium text-gray-900 dark:text-white">Profile Photo</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Optional. Recommended size: 500x500px (Max 500KB)</p>
-              {profileImage && (
-                <button
-                  type="button"
-                  onClick={() => setValue('profileImage', '')}
-                  className="text-xs text-red-500 mt-2 hover:text-red-600"
-                >
-                  Remove photo
-                </button>
-              )}
             </div>
           </div>
 
@@ -196,6 +204,46 @@ export function CustomerStep({ form, control }) {
           </div>
         </div>
       )}
+
+      {/* Profile Picture Modal */}
+      <Modal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        title="Profile Photo"
+        size="lg"
+      >
+        <div className="space-y-4">
+          {/* Full size image */}
+          <div className="flex justify-center bg-gray-100 dark:bg-gray-900 rounded-lg p-4">
+            <img
+              src={profileImage}
+              alt="Profile"
+              className="max-h-[60vh] rounded-lg object-contain"
+            />
+          </div>
+          
+          {/* Action buttons */}
+          <div className="flex justify-center gap-3">
+            <label className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 cursor-pointer">
+              <PencilIcon className="h-4 w-4" />
+              Change Photo
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageChange}
+              />
+            </label>
+            <Button
+              variant="danger"
+              onClick={handleRemoveProfileImage}
+            >
+              <XMarkIcon className="h-4 w-4 mr-2" />
+              Remove
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

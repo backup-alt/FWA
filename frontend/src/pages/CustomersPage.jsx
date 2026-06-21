@@ -1,24 +1,43 @@
 import { useMemo, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { MagnifyingGlassIcon, PlusIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { Listbox, Transition } from '@headlessui/react';
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/outline';
 import { useCustomers } from '@/hooks/useCustomers';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { formatCurrency } from '@/api';
+import { Fragment } from 'react';
+import { clsx } from 'clsx';
+
+const SEARCH_TYPES = [
+  { value: 'name', label: 'Name' },
+  { value: 'phone', label: 'Phone Number' },
+  { value: 'regNo', label: 'Vehicle Reg. Number' },
+];
 
 export function CustomersPage() {
   const [query, setQuery] = useState('');
+  const [searchType, setSearchType] = useState('name');
   const { data: customers = [], isLoading } = useCustomers();
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return customers;
-    return customers.filter(c =>
-      [c.name, c.address, c.cellNumbers?.map(n => n.number).join(' ')]
-        .filter(Boolean).join(' ').toLowerCase().includes(q)
-    );
-  }, [customers, query]);
+    return customers.filter(c => {
+      switch (searchType) {
+        case 'name':
+          return c.name?.toLowerCase().includes(q);
+        case 'phone':
+          return c.cellNumbers?.some(n => n.number?.includes(q));
+        case 'regNo':
+          return c.regNos?.some(r => r?.toLowerCase().includes(q));
+        default:
+          return true;
+      }
+    });
+  }, [customers, query, searchType]);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -47,11 +66,60 @@ export function CustomersPage() {
           <div className="mb-5">
             <div className="relative">
               <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <div className="absolute left-10 top-1/2 h-5 w-px bg-gray-300 dark:bg-gray-600 -translate-y-1/2" />
+              <div className="absolute left-11 top-1/2 -translate-y-1/2">
+                <Listbox value={searchType} onChange={setSearchType}>
+                  <div className="relative">
+                    <Listbox.Button className="flex items-center gap-1 py-1 pr-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none">
+                      <span className="hidden sm:inline">{SEARCH_TYPES.find(t => t.value === searchType)?.label}</span>
+                      <span className="sm:hidden">{searchType === 'name' ? 'N' : searchType === 'phone' ? 'P' : 'R'}</span>
+                      <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
+                    </Listbox.Button>
+                    <Transition
+                      as={Fragment}
+                      enter="transition ease-out duration-100"
+                      enterFrom="transform opacity-0 scale-95"
+                      enterTo="transform opacity-100 scale-100"
+                      leave="transition ease-in duration-75"
+                      leaveFrom="transform opacity-100 scale-100"
+                      leaveTo="transform opacity-0 scale-95"
+                    >
+                      <Listbox.Options className="absolute z-50 mt-1.5 min-w-[140px] overflow-auto rounded-xl bg-white dark:bg-gray-800 py-1.5 shadow-xl ring-1 ring-gray-200 dark:ring-gray-700 text-sm">
+                        {SEARCH_TYPES.map((type) => (
+                          <Listbox.Option
+                            key={type.value}
+                            value={type.value}
+                            as={Fragment}
+                          >
+                            {({ active, selected }) => (
+                              <li
+                                className={clsx(
+                                  'relative cursor-pointer select-none py-2 pl-10 pr-4 mx-1 rounded-lg transition-colors',
+                                  active ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-gray-100'
+                                )}
+                              >
+                                <span className="block truncate font-normal">
+                                  {type.label}
+                                </span>
+                                {selected && (
+                                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary-600 dark:text-primary-400">
+                                    <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                  </span>
+                                )}
+                              </li>
+                            )}
+                          </Listbox.Option>
+                        ))}
+                      </Listbox.Options>
+                    </Transition>
+                  </div>
+                </Listbox>
+              </div>
               <input
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                placeholder="Search by name, address, or phone"
-                className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm text-gray-900 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                placeholder={`Search by ${SEARCH_TYPES.find(t => t.value === searchType)?.label.toLowerCase()}...`}
+                className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-24 pr-3 text-sm text-gray-900 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
               />
             </div>
           </div>

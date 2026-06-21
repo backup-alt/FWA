@@ -54,6 +54,7 @@ const schema = z.object({
   existingCustomerId: z.string().optional(),
   customerName: z.string().optional(),
   address: z.string().optional(),
+  temporaryAddress: z.string().optional(),
   monthlySalary: z.coerce.number().optional(),
   profileImage: z.string().optional(),
   cellNumbers: z.array(z.object({
@@ -155,6 +156,7 @@ export function AddClientPage() {
         const customer = await createCustomer.mutateAsync({
           name: data.customerName,
           address: data.address,
+          temporaryAddress: data.temporaryAddress || '',
           monthlySalary: data.monthlySalary,
           cellNumbers: data.cellNumbers?.filter(c => c.number) || [],
           guarantor: hasAnyValue(data.guarantor) ? data.guarantor : undefined,

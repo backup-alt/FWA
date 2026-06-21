@@ -130,6 +130,80 @@ router.get('/pending-dues', async (req, res) => {
   }
 });
 
+// Payment report
+router.get('/report', async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      return res.status(400).json({ message: 'startDate and endDate are required.' });
+    }
+
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    const loans = await Loan.find({}).lean();
+
+    const dueLoans = [];
+    const paidLoans = [];
+    let dueTotal = 0;
+    let paidTotal = 0;
+
+    for (const loan of loans) {
+      for (const installment of loan.installments || []) {
+        const dueDate = new Date(installment.dueDate);
+        dueDate.setHours(0, 0, 0, 0);
+
+        if (dueDate >= start && dueDate <= end) {
+          dueLoans.push({
+            loanId: loan._id,
+            customerName: loan.customerName,
+            vehicleType: loan.vehicleType,
+            make: loan.make,
+            model: loan.model,
+            regNo: loan.regNo,
+            dueDate: installment.dueDate,
+            dueAmount: installment.dueAmount,
+          });
+          dueTotal += installment.dueAmount;
+        }
+
+        if (installment.dateReceived) {
+          const receivedDate = new Date(installment.dateReceived);
+          receivedDate.setHours(0, 0, 0, 0);
+
+          if (receivedDate >= start && receivedDate <= end) {
+            paidLoans.push({
+              loanId: loan._id,
+              customerName: loan.customerName,
+              vehicleType: loan.vehicleType,
+              make: loan.make,
+              model: loan.model,
+              regNo: loan.regNo,
+              dateReceived: installment.dateReceived,
+              amountReceived: installment.amountReceived,
+            });
+            paidTotal += installment.amountReceived;
+          }
+        }
+      }
+    }
+
+    res.json({
+      dueCount: dueLoans.length,
+      dueTotal,
+      paidCount: paidLoans.length,
+      paidTotal,
+      dueLoans,
+      paidLoans,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error generating report.' });
+  }
+});
+
 // Get single loan
 router.get('/:id', async (req, res) => {
   try {

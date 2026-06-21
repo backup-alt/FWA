@@ -151,6 +151,12 @@ export function CustomerStep({ form, control }) {
           />
 
           <Input
+            label="Temporary Address"
+            className="sm:col-span-2"
+            {...register('temporaryAddress')}
+          />
+
+          <Input
             label="Monthly Salary"
             type="number"
             placeholder="0"

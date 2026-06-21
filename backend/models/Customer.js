@@ -4,6 +4,7 @@ const customerSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     address: { type: String, default: '' },
+    temporaryAddress: { type: String, default: '' },
     monthlySalary: { type: Number, default: 0 },
     cellNumbers: [
       {
@@ -14,7 +15,7 @@ const customerSchema = new mongoose.Schema(
       name: { type: String, default: '' },
       address: { type: String, default: '' },
     },
-    profileImage: { type: String, default: '' }, // Base64 data URI
+    profileImage: { type: String, default: '' },
     idProofType: { type: String, default: '' },
     idProofNumber: { type: String, default: '' },
   },

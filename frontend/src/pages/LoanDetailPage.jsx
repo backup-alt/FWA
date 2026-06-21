@@ -3,18 +3,21 @@ import { clsx } from 'clsx';
 import { useParams, useNavigate, NavLink } from 'react-router-dom';
 import { 
   ArrowLeftIcon, 
-  TrashIcon,
   UserIcon,
   PhoneIcon,
   IdentificationIcon,
   MapPinIcon,
   BanknotesIcon,
-  ArrowsRightLeftIcon
+  ArrowsRightLeftIcon,
+  PencilIcon
 } from '@heroicons/react/24/outline';
-import { useLoan, useUpdateLoan, useRecordPayment, useDeleteLoan, useCloseLoan, useRestructureLoan } from '@/hooks/useLoans';
-import { useCustomer } from '@/hooks/useCustomers';
+import { useLoan, useUpdateLoan, useRecordPayment, useCloseLoan, useRestructureLoan } from '@/hooks/useLoans';
+import { useCustomer, useUpdateCustomer } from '@/hooks/useCustomers';
 import { useToast } from '@/context/ToastContext';
 import { Modal } from '@/components/ui/Modal';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
+import { useFieldArray, Controller } from 'react-hook-form';
 import { InstallmentTable } from '@/components/loan/InstallmentTable';
 import { PeriodEditor } from '@/components/loan/PeriodEditor';
 import { CloseLoanModal } from '@/components/loan/CloseLoanModal';
@@ -32,6 +35,115 @@ const statusColors = {
   Completed: 'success',
 };
 
+function EditCustomerForm({ customer, onSubmit, onCancel, isSubmitting }) {
+  const [formData, setFormData] = useState({
+    customerName: customer.name || '',
+    address: customer.address || '',
+    monthlySalary: customer.monthlySalary || '',
+    cellNumbers: customer.cellNumbers?.length ? customer.cellNumbers : [{ number: '' }],
+    guarantor: customer.guarantor || { name: '', address: '' },
+    idProofType: customer.idProofType || '',
+    idProofNumber: customer.idProofNumber || '',
+  });
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCellChange = (index, value) => {
+    const newCells = [...formData.cellNumbers];
+    newCells[index] = { number: value };
+    setFormData(prev => ({ ...prev, cellNumbers: newCells }));
+  };
+
+  const handleGuarantorChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      guarantor: { ...prev.guarantor, [field]: value }
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const submitData = {
+      name: formData.customerName,
+      address: formData.address,
+      monthlySalary: formData.monthlySalary ? Number(formData.monthlySalary) : undefined,
+      cellNumbers: formData.cellNumbers.filter(c => c.number).map(c => ({ number: c.number })),
+      guarantor: formData.guarantor.name || formData.guarantor.address ? formData.guarantor : undefined,
+      idProofType: formData.idProofType || undefined,
+      idProofNumber: formData.idProofNumber || undefined,
+    };
+    onSubmit(submitData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <Input
+        label="Customer Name"
+        value={formData.customerName}
+        onChange={(e) => handleChange('customerName', e.target.value)}
+      />
+      <Input
+        label="Address"
+        value={formData.address}
+        onChange={(e) => handleChange('address', e.target.value)}
+      />
+      <Input
+        label="Monthly Salary"
+        type="number"
+        value={formData.monthlySalary}
+        onChange={(e) => handleChange('monthlySalary', e.target.value)}
+      />
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Contact Numbers
+        </label>
+        <div className="space-y-3">
+          {formData.cellNumbers.map((cell, index) => (
+            <input
+              key={index}
+              type="tel"
+              value={cell.number}
+              onChange={(e) => handleCellChange(index, e.target.value)}
+              placeholder="Phone number"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            />
+          ))}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <Input
+          label="Guarantor Name"
+          value={formData.guarantor.name}
+          onChange={(e) => handleGuarantorChange('name', e.target.value)}
+        />
+        <Input
+          label="Guarantor Address"
+          value={formData.guarantor.address}
+          onChange={(e) => handleGuarantorChange('address', e.target.value)}
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <Input
+          label="ID Proof Type"
+          value={formData.idProofType}
+          onChange={(e) => handleChange('idProofType', e.target.value)}
+        />
+        <Input
+          label="ID Proof Number"
+          value={formData.idProofNumber}
+          onChange={(e) => handleChange('idProofNumber', e.target.value)}
+        />
+      </div>
+      <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button>
+        <Button type="submit" loading={isSubmitting}>Save Changes</Button>
+      </div>
+    </form>
+  );
+}
+
 export function LoanDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -42,13 +154,14 @@ export function LoanDetailPage() {
   const customer = customerData?.customer;
   const updateLoan = useUpdateLoan();
   const recordPayment = useRecordPayment();
-  const deleteLoan = useDeleteLoan();
+  const deleteLoan = useDeleteLoan(); // eslint-disable-line no-unused-vars
   const closeLoan = useCloseLoan();
   const restructureLoan = useRestructureLoan();
+  const updateCustomer = useUpdateCustomer();
 
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [showRestructureModal, setShowRestructureModal] = useState(false);
+  const [showEditCustomerModal, setShowEditCustomerModal] = useState(false);
   const [savingInstallment, setSavingInstallment] = useState(null);
   const [activeTab, setActiveTab] = useState('schedule');
 
@@ -66,16 +179,6 @@ export function LoanDetailPage() {
       refetch();
     } finally {
       setSavingInstallment(null);
-    }
-  };
-
-  const handleDelete = async () => {
-    await deleteLoan.mutateAsync(id);
-    showToast('Loan deleted', 'success');
-    if (loan.customerId) {
-      navigate(`/customer/${loan.customerId}`);
-    } else {
-      navigate('/');
     }
   };
 
@@ -99,6 +202,13 @@ export function LoanDetailPage() {
     await restructureLoan.mutateAsync({ id, data });
     showToast('Loan restructured successfully', 'success');
     setShowRestructureModal(false);
+  };
+
+  const handleUpdateCustomer = async (data) => {
+    await updateCustomer.mutateAsync({ id: loan.customerId, data });
+    showToast('Customer updated successfully', 'success');
+    setShowEditCustomerModal(false);
+    refetch();
   };
 
   if (isLoading) {
@@ -129,7 +239,7 @@ export function LoanDetailPage() {
   const tabs = [
     { id: 'schedule', label: 'Installment Schedule' },
     { id: 'documents', label: 'Documents' },
-    { id: 'client', label: 'Client Details' },
+    { id: 'client', label: 'Customer Details' },
   ];
 
   return (
@@ -144,11 +254,20 @@ export function LoanDetailPage() {
             <ArrowLeftIcon className="h-5 w-5" />
           </NavLink>
           <div className="min-w-0">
-            <h1 className="truncate text-2xl font-bold text-gray-900 dark:text-white">
-              {loan.vehicleType} - {loan.make || ''} {loan.model || ''}
+            <h1 className="truncate text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              {loan.vehicleType === 'Bike' ? (
+                <svg className="h-6 w-6 text-primary-600 dark:text-primary-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H6m12 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9 3.75h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm6 0h.008v.008H15.75V15z" />
+                </svg>
+              ) : (
+                <svg className="h-6 w-6 text-primary-600 dark:text-primary-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H6m12 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9 3.75h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm6 0h.008v.008H15.75V15z" />
+                </svg>
+              )}
+              <span>{loan.vehicleType} - {loan.make || ''} {loan.model || ''}</span>
             </h1>
             <div className="mt-1 flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
-              <span className="truncate">{loan.customerName}</span>
+              <span className="truncate">{customer?.name}</span>
               <span>•</span>
               <span>{loan.regNo}</span>
               {loan.loanAccountNumber && (
@@ -173,15 +292,6 @@ export function LoanDetailPage() {
               Close Loan
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="px-2 text-red-500 hover:text-red-600"
-            onClick={() => setShowDeleteConfirm(true)}
-            aria-label="Delete loan"
-          >
-            <TrashIcon className="h-5 w-5 text-red-500" />
-          </Button>
         </div>
       </div>
 
@@ -327,8 +437,18 @@ export function LoanDetailPage() {
           <Card padding="">
             <CardHeader 
               className="px-5 pt-5 mb-0" 
-              title="Client Details" 
-              subtitle="Vehicle, documentation, customer, and loan terms" 
+              title="Customer Details" 
+              subtitle="Vehicle, documentation, customer, and loan terms"
+              action={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowEditCustomerModal(true)}
+                >
+                  <PencilIcon className="h-4 w-4 mr-1.5" />
+                  Edit
+                </Button>
+              }
             />
             <CardContent className="p-5">
               <dl className="grid grid-cols-1 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 sm:grid-cols-2">
@@ -377,6 +497,7 @@ export function LoanDetailPage() {
         onClose={() => setShowCloseModal(false)}
         onConfirm={handleCloseLoan}
         isSubmitting={closeLoan.isPending}
+        loan={loan}
       />
 
       <RestructureModal
@@ -388,18 +509,12 @@ export function LoanDetailPage() {
       />
 
       <Modal
-        isOpen={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
-        title="Delete Loan"
-        size="sm"
+        isOpen={showEditCustomerModal}
+        onClose={() => setShowEditCustomerModal(false)}
+        title="Edit Customer Details"
+        size="lg"
       >
-        <p className="mb-4 text-gray-600 dark:text-gray-300">
-          Are you sure you want to delete this loan for <strong>{loan.customerName}</strong>? This action cannot be undone.
-        </p>
-        <div className="flex justify-end gap-3">
-          <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
-          <Button variant="danger" onClick={handleDelete}>Delete</Button>
-        </div>
+        <EditCustomerForm customer={customer} onSubmit={handleUpdateCustomer} onCancel={() => setShowEditCustomerModal(false)} isSubmitting={updateCustomer.isPending} />
       </Modal>
     </div>
   );

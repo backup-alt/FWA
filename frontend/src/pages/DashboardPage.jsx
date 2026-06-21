@@ -7,6 +7,7 @@ import { VehicleTypeChart } from '@/components/charts/VehicleTypeChart';
 import { PaymentTrendChart } from '@/components/charts/PaymentTrendChart';
 import { PendingDuesTable } from '@/components/pending/PendingDuesTable';
 import { PendingFilters } from '@/components/pending/PendingFilters';
+import { ReportDownload } from '@/components/charts/ReportDownload';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -195,6 +196,8 @@ export function DashboardPage() {
         <VehicleTypeChart loans={loans} />
         <PaymentTrendChart loans={loans} />
       </div>
+
+      <ReportDownload />
     </div>
   );
 }

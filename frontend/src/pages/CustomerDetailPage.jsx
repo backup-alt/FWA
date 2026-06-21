@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { useParams, useNavigate, NavLink } from 'react-router-dom';
 import { ArrowLeftIcon, TrashIcon, PlusIcon, PencilIcon, CameraIcon, XMarkIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { useCustomer, useUpdateCustomer, useDeleteCustomer } from '@/hooks/useCustomers';
+import { useUpdateLoan } from '@/hooks/useLoans';
 import { useToast } from '@/context/ToastContext';
 import { Modal } from '@/components/ui/Modal';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -14,16 +17,177 @@ const statusColors = {
   Completed: 'success',
 };
 
+function EditCustomerForm({ customer, loans, onSubmit, onCancel, isSubmitting }) {
+  const firstLoan = loans && loans.length > 0 ? loans[0] : null;
+
+  const [formData, setFormData] = useState({
+    customerName: customer.name || '',
+    address: customer.address || '',
+    temporaryAddress: customer.temporaryAddress || '',
+    monthlySalary: customer.monthlySalary || '',
+    cellNumbers: customer.cellNumbers?.length ? customer.cellNumbers : [{ number: '' }],
+    guarantor: customer.guarantor || { name: '', address: '' },
+    idProofType: customer.idProofType || '',
+    idProofNumber: customer.idProofNumber || '',
+    vehicleType: firstLoan?.vehicleType || '',
+    make: firstLoan?.make || '',
+    model: firstLoan?.model || '',
+  });
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCellChange = (index, value) => {
+    const newCells = [...formData.cellNumbers];
+    newCells[index] = { number: value };
+    setFormData(prev => ({ ...prev, cellNumbers: newCells }));
+  };
+
+  const handleGuarantorChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      guarantor: { ...prev.guarantor, [field]: value }
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const customerData = {
+      name: formData.customerName,
+      address: formData.address,
+      temporaryAddress: formData.temporaryAddress || undefined,
+      monthlySalary: formData.monthlySalary ? Number(formData.monthlySalary) : undefined,
+      cellNumbers: formData.cellNumbers.filter(c => c.number).map(c => ({ number: c.number })),
+      guarantor: formData.guarantor.name || formData.guarantor.address ? formData.guarantor : undefined,
+      idProofType: formData.idProofType || undefined,
+      idProofNumber: formData.idProofNumber || undefined,
+    };
+    const loanData = firstLoan ? {
+      vehicleType: formData.vehicleType,
+      make: formData.make,
+      model: formData.model,
+    } : null;
+    onSubmit({ customerData, loanData });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
+        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">Customer Information</h3>
+      </div>
+      <Input
+        label="Customer Name"
+        value={formData.customerName}
+        onChange={(e) => handleChange('customerName', e.target.value)}
+      />
+      <Input
+        label="Address"
+        value={formData.address}
+        onChange={(e) => handleChange('address', e.target.value)}
+      />
+      <Input
+        label="Temporary Address"
+        value={formData.temporaryAddress}
+        onChange={(e) => handleChange('temporaryAddress', e.target.value)}
+      />
+      <Input
+        label="Monthly Salary"
+        type="number"
+        value={formData.monthlySalary}
+        onChange={(e) => handleChange('monthlySalary', e.target.value)}
+      />
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Contact Numbers
+        </label>
+        <div className="space-y-3">
+          {formData.cellNumbers.map((cell, index) => (
+            <input
+              key={index}
+              type="tel"
+              value={cell.number}
+              onChange={(e) => handleCellChange(index, e.target.value)}
+              placeholder="Phone number"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            />
+          ))}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <Input
+          label="Guarantor Name"
+          value={formData.guarantor.name}
+          onChange={(e) => handleGuarantorChange('name', e.target.value)}
+        />
+        <Input
+          label="Guarantor Address"
+          value={formData.guarantor.address}
+          onChange={(e) => handleGuarantorChange('address', e.target.value)}
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <Input
+          label="ID Proof Type"
+          value={formData.idProofType}
+          onChange={(e) => handleChange('idProofType', e.target.value)}
+        />
+        <Input
+          label="ID Proof Number"
+          value={formData.idProofNumber}
+          onChange={(e) => handleChange('idProofNumber', e.target.value)}
+        />
+      </div>
+
+      {firstLoan && (
+        <>
+          <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mt-6 mb-4">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">Vehicle Information</h3>
+          </div>
+          <Select
+            label="Vehicle Type"
+            value={formData.vehicleType}
+            onChange={(e) => handleChange('vehicleType', e.target.value)}
+            options={[
+              { value: 'Bike', label: 'Bike' },
+              { value: 'Car', label: 'Car' },
+            ]}
+            placeholder="Select vehicle type"
+          />
+          <Input
+            label="Make"
+            value={formData.make}
+            onChange={(e) => handleChange('make', e.target.value)}
+          />
+          <Input
+            label="Model"
+            value={formData.model}
+            onChange={(e) => handleChange('model', e.target.value)}
+          />
+        </>
+      )}
+
+      <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button>
+        <Button type="submit" loading={isSubmitting}>Save Changes</Button>
+      </div>
+    </form>
+  );
+}
+
 export function CustomerDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { data, isLoading, refetch } = useCustomer(id);
   const updateCustomer = useUpdateCustomer();
+  const updateLoan = useUpdateLoan();
   const deleteCustomer = useDeleteCustomer();
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showEditCustomerModal, setShowEditCustomerModal] = useState(false);
+  const [loanFilter, setLoanFilter] = useState('all');
 
   const handleProfileImageChange = async (e) => {
     const file = e.target.files?.[0];
@@ -63,6 +227,17 @@ export function CustomerDetailPage() {
     navigate('/customers');
   };
 
+  const handleUpdateCustomer = async (data) => {
+    const { customerData, loanData } = data;
+    await updateCustomer.mutateAsync({ id, data: customerData });
+    if (loanData && loans.length > 0) {
+      await updateLoan.mutateAsync({ id: loans[0]._id, data: loanData });
+    }
+    showToast('Updated successfully', 'success');
+    setShowEditCustomerModal(false);
+    refetch();
+  };
+
   if (isLoading) {
     return (
       <div className="mx-auto max-w-7xl">
@@ -87,7 +262,9 @@ export function CustomerDetailPage() {
   const { customer, loans = [] } = data;
 
   const detailRows = [
+    ['Customer Name', customer.name || '-'],
     ['Address', customer.address || '-'],
+    ['Temporary Address', customer.temporaryAddress || '-'],
     ['Cell Numbers', (customer.cellNumbers || []).map(c => c.number).join(', ') || '-'],
     ['Monthly Salary', customer.monthlySalary ? formatCurrency(customer.monthlySalary) : '-'],
     ['ID Proof', customer.idProofType ? `${customer.idProofType}: ${customer.idProofNumber || '-'}` : '-'],
@@ -169,7 +346,21 @@ export function CustomerDetailPage() {
 
       {/* Customer Details Card */}
       <Card padding="">
-        <CardHeader className="px-5 pt-5 mb-0" title="Customer Details" subtitle="Personal information and guarantor details" />
+        <CardHeader 
+          className="px-5 pt-5 mb-0" 
+          title="Customer Details" 
+          subtitle="Personal information and guarantor details"
+          action={
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowEditCustomerModal(true)}
+            >
+              <PencilIcon className="h-4 w-4 mr-1.5" />
+              Edit
+            </Button>
+          }
+        />
         <CardContent className="p-5">
           <dl className="grid grid-cols-1 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 sm:grid-cols-2">
             {detailRows.map(([label, value]) => (
@@ -189,12 +380,49 @@ export function CustomerDetailPage() {
           title="Loans"
           subtitle={`${loans.length} loan${loans.length !== 1 ? 's' : ''} associated with this customer`}
           action={
-            <NavLink to={`/customer/${id}/add-loan`}>
-              <Button size="sm" variant="secondary">
-                <PlusIcon className="h-4 w-4 mr-1.5" />
-                Add Loan
-              </Button>
-            </NavLink>
+            <div className="flex items-center gap-2">
+              <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => setLoanFilter('all')}
+                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                    loanFilter === 'all'
+                      ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                  }`}
+                >
+                  All ({loans.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLoanFilter('active')}
+                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                    loanFilter === 'active'
+                      ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                  }`}
+                >
+                  Active ({loans.filter(l => l.status === 'Active').length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLoanFilter('completed')}
+                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                    loanFilter === 'completed'
+                      ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                  }`}
+                >
+                  Completed ({loans.filter(l => l.status === 'Completed' || l.status === 'Closed').length})
+                </button>
+              </div>
+              <NavLink to={`/customer/${id}/add-loan`}>
+                <Button size="sm" variant="secondary">
+                  <PlusIcon className="h-4 w-4 mr-1.5" />
+                  Add Loan
+                </Button>
+              </NavLink>
+            </div>
           }
         />
         <CardContent className="p-5">
@@ -209,35 +437,51 @@ export function CustomerDetailPage() {
               </NavLink>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-              {loans.map(loan => (
-                <NavLink
-                  key={loan._id}
-                  to={`/loan/${loan._id}`}
-                  className="flex border-b border-gray-200 bg-white p-4 transition-colors last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700/50 flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-                >
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-                      {loan.vehicleType} - {loan.make || ''} {loan.model || ''}
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">
-                      {loan.regNo ? `${loan.regNo} • ` : ''}{loan.loanAccountNumber ? `Acct: ${loan.loanAccountNumber} • ` : ''}Started {formatDate(loan.loanStartDate)} • {loan.installmentPeriod} months
-                    </p>
+            (() => {
+              const filteredLoans = loans.filter(l => {
+                if (loanFilter === 'active') return l.status === 'Active';
+                if (loanFilter === 'completed') return l.status === 'Completed' || l.status === 'Closed';
+                return true;
+              });
+              if (filteredLoans.length === 0) {
+                return (
+                  <div className="rounded-lg border border-gray-200 p-8 text-center dark:border-gray-700">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">No {loanFilter === 'all' ? '' : loanFilter} loans found.</p>
                   </div>
-                  <div className="flex items-center gap-4 sm:flex-col sm:items-end">
-                    <div className="text-right">
-                      <p className="font-semibold text-gray-900 dark:text-white">
-                        {formatCurrency(loan.outstandingPrincipal || 0)}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Outstanding</p>
-                    </div>
-                    <Badge variant={statusColors[loan.status] || 'gray'}>
-                      {loan.status}
-                    </Badge>
-                  </div>
-                </NavLink>
-              ))}
-            </div>
+                );
+              }
+              return (
+                <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+                  {filteredLoans.map(loan => (
+                    <NavLink
+                      key={loan._id}
+                      to={`/loan/${loan._id}`}
+                      className="flex border-b border-gray-200 bg-white p-4 transition-colors last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700/50 flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                          {loan.vehicleType} - {loan.make || ''} {loan.model || ''}
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">
+                          {loan.regNo ? `${loan.regNo} • ` : ''}{loan.loanAccountNumber ? `Acct: ${loan.loanAccountNumber} • ` : ''}Started {formatDate(loan.loanStartDate)} • {loan.installmentPeriod} months
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-4 sm:flex-col sm:items-end">
+                        <div className="text-right">
+                          <p className="font-semibold text-gray-900 dark:text-white">
+                            {formatCurrency(loan.outstandingPrincipal || 0)}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Outstanding</p>
+                        </div>
+                        <Badge variant={statusColors[loan.status] || 'gray'}>
+                          {loan.status}
+                        </Badge>
+                      </div>
+                    </NavLink>
+                  ))}
+                </div>
+              );
+            })()
           )}
         </CardContent>
       </Card>
@@ -296,6 +540,21 @@ export function CustomerDetailPage() {
           <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
           <Button variant="danger" onClick={handleDelete}>Delete</Button>
         </div>
+      </Modal>
+
+      <Modal
+        isOpen={showEditCustomerModal}
+        onClose={() => setShowEditCustomerModal(false)}
+        title="Edit Customer & Vehicle"
+        size="lg"
+      >
+        <EditCustomerForm 
+          customer={customer} 
+          loans={loans} 
+          onSubmit={handleUpdateCustomer} 
+          onCancel={() => setShowEditCustomerModal(false)} 
+          isSubmitting={updateCustomer.isPending || updateLoan.isPending} 
+        />
       </Modal>
     </div>
   );

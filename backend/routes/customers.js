@@ -9,13 +9,14 @@ router.use(authMiddleware);
 // Create customer
 router.post('/', async (req, res) => {
   try {
-    const { name, address, monthlySalary, cellNumbers, guarantor, profileImage, idProofType, idProofNumber } = req.body;
+    const { name, address, temporaryAddress, monthlySalary, cellNumbers, guarantor, profileImage, idProofType, idProofNumber } = req.body;
     if (!name) {
       return res.status(400).json({ message: 'Customer name is required.' });
     }
     const customer = new Customer({
       name,
       address,
+      temporaryAddress,
       monthlySalary,
       cellNumbers: (cellNumbers || []).filter(c => c.number),
       guarantor,
@@ -46,6 +47,7 @@ router.get('/', async (req, res) => {
           activeLoans: {
             $sum: { $cond: [{ $eq: ['$status', 'Active'] }, 1, 0] },
           },
+          regNos: { $push: '$regNo' },
         },
       },
     ]);
@@ -62,6 +64,7 @@ router.get('/', async (req, res) => {
         loanCount: agg.loanCount || 0,
         totalOutstanding: agg.totalOutstanding || 0,
         activeLoans: agg.activeLoans || 0,
+        regNos: agg.regNos || [],
       };
     });
 
@@ -94,7 +97,7 @@ router.put('/:id', async (req, res) => {
     if (!customer) return res.status(404).json({ message: 'Customer not found.' });
 
     const updatableFields = [
-      'name', 'address', 'monthlySalary', 'cellNumbers',
+      'name', 'address', 'temporaryAddress', 'monthlySalary', 'cellNumbers',
       'guarantor', 'profileImage', 'idProofType', 'idProofNumber',
     ];
 

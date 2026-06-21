@@ -10,6 +10,16 @@ const ID_PROOF_OPTIONS = [
   { value: 'Passport', label: 'Passport' },
 ];
 
+const KEY_STATUS_OPTIONS = [
+  { value: 'Given', label: 'Given' },
+  { value: 'Not Given', label: 'Not Given' },
+];
+
+const INSURANCE_STATUS_OPTIONS = [
+  { value: 'Expired', label: 'Expired' },
+  { value: 'Not Expired', label: 'Not Expired' },
+];
+
 const ID_FORMATS = {
   Aadhar: { placeholder: 'xxxx xxxx xxxx', maxLength: 14, format: (v) => v.replace(/\D/g, '').replace(/(\d{4})(?=\d)/g, '$1 ').trim().slice(0, 14) },
   PAN: { placeholder: 'ABCDE1234F', maxLength: 10, format: (v) => v.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 10) },
@@ -44,24 +54,24 @@ export function DocumentationStep({ form }) {
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Input
-          label="RC Status / Note"
+          label="Check"
           placeholder="e.g. Amt paid through cheque"
           {...register('rcDetails.status')}
         />
         
         <Input
-          label="RC Paid Through (Payee Name)"
+          label="Check Paid Through (Payee Name)"
           placeholder="e.g. RAM AUTO CONSULTING"
           {...register('rcDetails.paidThrough')}
         />
         
         <Input
-          label="RC Cheque Number"
+          label="Check Cheque Number"
           {...register('rcDetails.chequeNumber')}
         />
         
         <Input
-          label="RC Amount"
+          label="Check Amount"
           type="number"
           placeholder="0"
           {...register('rcDetails.amount')}
@@ -72,9 +82,17 @@ export function DocumentationStep({ form }) {
           {...register('noc')}
         />
         
-        <Input
-          label="Insurance"
-          {...register('insurance')}
+        <Controller
+          name="insurance"
+          control={control}
+          render={({ field }) => (
+            <Select
+              {...field}
+              label="Insurance Status"
+              options={INSURANCE_STATUS_OPTIONS}
+              placeholder="Select status"
+            />
+          )}
         />
         
         <Controller
@@ -112,9 +130,17 @@ export function DocumentationStep({ form }) {
           </div>
         )}
         
-        <Input
-          label="Key Status"
-          {...register('keyStatus')}
+        <Controller
+          name="keyStatus"
+          control={control}
+          render={({ field }) => (
+            <Select
+              {...field}
+              label="Key Status"
+              options={KEY_STATUS_OPTIONS}
+              placeholder="Select status"
+            />
+          )}
         />
         
         <Input

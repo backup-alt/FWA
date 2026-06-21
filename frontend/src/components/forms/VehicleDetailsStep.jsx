@@ -1,16 +1,19 @@
 import { Input, Select } from '@/components/ui';
 import { Controller } from 'react-hook-form';
+import { MakeSelect } from '@/components/ui/MakeSelect';
 
 export function VehicleDetailsStep({ form }) {
   const {
     control,
     register,
     watch,
+    setValue,
     formState: { errors },
   } = form;
 
   const vehicleType = watch('vehicleType') || '';
   const periodUnit = watch('installmentPeriodUnit') || 'Months';
+  const make = watch('make') || '';
 
   return (
     <div className="space-y-6">
@@ -34,11 +37,20 @@ export function VehicleDetailsStep({ form }) {
           )}
         />
         
-        <Input
-          label="Make"
-          placeholder="e.g. Honda"
-          error={errors.make?.message}
-          {...register('make')}
+        <Controller
+          name="make"
+          control={control}
+          render={({ field }) => (
+            <MakeSelect
+              {...field}
+              value={make}
+              onChange={(val) => {
+                setValue('make', val, { shouldValidate: true, shouldDirty: true });
+              }}
+              vehicleType={vehicleType}
+              error={errors.make?.message}
+            />
+          )}
         />
         
         <Input

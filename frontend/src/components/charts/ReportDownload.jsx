@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { DownloadIcon, CalendarIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, CalendarIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { CustomCalendar } from '@/components/ui/CustomCalendar';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
@@ -198,7 +198,7 @@ export function ReportDownload({ className = '' }) {
                   size="sm"
                   className="flex items-center gap-2"
                 >
-                  <DownloadIcon className="h-4 w-4" />
+                  <ArrowDownTrayIcon className="h-4 w-4" />
                   Download CSV Report
                 </Button>
               )}

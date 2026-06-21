@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate, NavLink } from 'react-router-dom';
-import { ArrowLeftIcon, TrashIcon, PlusIcon, PencilIcon, CameraIcon, XMarkIcon, EyeIcon } from '@heroicons/react/24/outline';
-import { useCustomer, useUpdateCustomer, useDeleteCustomer } from '@/hooks/useCustomers';
+import { ArrowLeftIcon, PlusIcon, PencilIcon, CameraIcon, XMarkIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { useCustomer, useUpdateCustomer } from '@/hooks/useCustomers';
 import { useUpdateLoan } from '@/hooks/useLoans';
 import { useToast } from '@/context/ToastContext';
 import { Modal } from '@/components/ui/Modal';
@@ -182,9 +182,7 @@ export function CustomerDetailPage() {
   const { data, isLoading, refetch } = useCustomer(id);
   const updateCustomer = useUpdateCustomer();
   const updateLoan = useUpdateLoan();
-  const deleteCustomer = useDeleteCustomer();
 
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showEditCustomerModal, setShowEditCustomerModal] = useState(false);
   const [loanFilter, setLoanFilter] = useState('all');
@@ -219,12 +217,6 @@ export function CustomerDetailPage() {
     } catch (err) {
       showToast(err.message || 'Failed to remove image', 'error');
     }
-  };
-
-  const handleDelete = async () => {
-    await deleteCustomer.mutateAsync(id);
-    showToast('Customer and all loans deleted', 'success');
-    navigate('/customers');
   };
 
   const handleUpdateCustomer = async (data) => {
@@ -332,15 +324,6 @@ export function CustomerDetailPage() {
               New Loan
             </Button>
           </NavLink>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="px-2 text-red-500 hover:text-red-600"
-            onClick={() => setShowDeleteConfirm(true)}
-            aria-label="Delete customer"
-          >
-            <TrashIcon className="h-5 w-5 text-red-500" />
-          </Button>
         </div>
       </div>
 
@@ -523,22 +506,6 @@ export function CustomerDetailPage() {
               Remove
             </Button>
           </div>
-        </div>
-      </Modal>
-
-      {/* Delete confirmation modal */}
-      <Modal
-        isOpen={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
-        title="Delete Customer"
-        size="sm"
-      >
-        <p className="mb-4 text-gray-600 dark:text-gray-300">
-          Are you sure you want to delete <strong>{customer.name}</strong> and all their loans? This action cannot be undone.
-        </p>
-        <div className="flex justify-end gap-3">
-          <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
-          <Button variant="danger" onClick={handleDelete}>Delete</Button>
         </div>
       </Modal>
 

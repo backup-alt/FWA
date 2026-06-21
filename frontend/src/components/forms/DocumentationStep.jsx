@@ -54,24 +54,24 @@ export function DocumentationStep({ form }) {
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Input
-          label="Check"
+          label="RC Status / Note"
           placeholder="e.g. Amt paid through cheque"
           {...register('rcDetails.status')}
         />
         
         <Input
-          label="Check Paid Through (Payee Name)"
+          label="RC Paid Through (Payee Name)"
           placeholder="e.g. RAM AUTO CONSULTING"
           {...register('rcDetails.paidThrough')}
         />
         
         <Input
-          label="Check Cheque Number"
+          label="RC Cheque Number"
           {...register('rcDetails.chequeNumber')}
         />
         
         <Input
-          label="Check Amount"
+          label="RC Amount"
           type="number"
           placeholder="0"
           {...register('rcDetails.amount')}

@@ -175,8 +175,8 @@ export function MakeSelect({ value, onChange, vehicleType, error }) {
             leaveFrom="transform opacity-100 scale-100"
             leaveTo="transform opacity-0 scale-95"
           >
-            <Listbox.Options className="absolute z-50 mt-1 w-full max-h-64 overflow-auto rounded-xl bg-white dark:bg-gray-800 py-1.5 shadow-xl ring-1 ring-gray-200 dark:ring-gray-700 focus:outline-none text-sm">
-              <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 px-2 pb-1">
+            <div className="absolute z-50 mt-1 w-full rounded-xl bg-white dark:bg-gray-800 shadow-xl ring-1 ring-gray-200 dark:ring-gray-700 focus:outline-none">
+              <div className="p-2 border-b border-gray-100 dark:border-gray-700">
                 <div className="relative">
                   <MagnifyingGlassIcon className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <input
@@ -184,51 +184,53 @@ export function MakeSelect({ value, onChange, vehicleType, error }) {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search brands..."
-                    className="w-full py-1.5 pl-8 pr-2 text-sm border-0 bg-transparent focus:outline-none focus:ring-0 dark:text-white dark:placeholder-gray-500"
+                    className="w-full py-1.5 pl-8 pr-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white dark:placeholder-gray-500"
                     autoFocus
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => handleSelect('__other__')}
-                  className="mt-1 w-full flex items-center justify-center gap-1.5 py-1.5 text-sm text-primary-600 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-colors"
+                  className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 text-sm text-primary-600 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-colors border border-dashed border-primary-300 dark:border-primary-700"
                 >
                   <PlusIcon className="h-4 w-4" />
                   Other (Add New)
                 </button>
               </div>
-              {filteredBrands.length === 0 ? (
-                <div className="px-3 py-2 text-gray-500 dark:text-gray-400">
-                  No brands found
-                </div>
-              ) : (
-                filteredBrands.map((brand) => (
-                  <Listbox.Option
-                    key={brand}
-                    value={brand}
-                    as={Fragment}
-                  >
-                    {({ active, selected }) => (
-                      <li
-                        className={clsx(
-                          'relative cursor-pointer select-none py-2 pl-10 pr-4 mx-1 rounded-lg transition-colors',
-                          active ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-gray-100'
-                        )}
-                      >
-                        <span className="block truncate font-normal">
-                          {brand}
-                        </span>
-                        {selected && (
-                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary-600 dark:text-primary-400">
-                            <CheckIcon className="h-5 w-5" aria-hidden="true" />
+              <div className="max-h-52 overflow-auto py-1.5">
+                {filteredBrands.length === 0 ? (
+                  <div className="px-3 py-2 text-gray-500 dark:text-gray-400 text-sm">
+                    No brands found
+                  </div>
+                ) : (
+                  filteredBrands.map((brand) => (
+                    <Listbox.Option
+                      key={brand}
+                      value={brand}
+                      as={Fragment}
+                    >
+                      {({ active, selected }) => (
+                        <li
+                          className={clsx(
+                            'relative cursor-pointer select-none py-2 pl-10 pr-4 mx-1 rounded-lg transition-colors text-sm',
+                            active ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-gray-100'
+                          )}
+                        >
+                          <span className="block truncate font-normal">
+                            {brand}
                           </span>
-                        )}
-                      </li>
-                    )}
-                  </Listbox.Option>
-                ))
-              )}
-            </Listbox.Options>
+                          {selected && (
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary-600 dark:text-primary-400">
+                              <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                            </span>
+                          )}
+                        </li>
+                      )}
+                    </Listbox.Option>
+                  ))
+                )}
+              </div>
+            </div>
           </Transition>
         </div>
       </Listbox>

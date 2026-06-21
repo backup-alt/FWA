@@ -66,23 +66,114 @@ export function ReportDownload({ className = '' }) {
       return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     };
 
-    let csv = 'Type,Customer Name,Vehicle,Reg No,Amount,Date\n';
+    const dateRange = mode === 'single'
+      ? formatDateStr(selectedDate)
+      : `${formatDateStr(selectedRange.start)} - ${selectedRange.end ? formatDateStr(selectedRange.end) : 'N/A'}`;
 
-    reportData.dueLoans.forEach(loan => {
-      csv += `Due,${loan.customerName || ''},${loan.vehicleType || ''} ${loan.make || ''} ${loan.model || ''},${loan.regNo || ''},${loan.dueAmount || 0},${formatDateStr(loan.dueDate)}\n`;
-    });
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Payment Report - ${dateRange}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { color: #333; border-bottom: 2px solid #333; padding-bottom: 10px; }
+          h2 { color: #666; margin-top: 30px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+          th { background-color: #f5f5f5; }
+          .due-section { color: #e65100; }
+          .paid-section { color: #2e7d32; }
+          .summary { display: flex; gap: 20px; margin: 20px 0; }
+          .summary-card { padding: 15px; border-radius: 8px; flex: 1; }
+          .due-card { background-color: #fff3e0; }
+          .paid-card { background-color: #e8f5e9; }
+          .summary-number { font-size: 24px; font-weight: bold; }
+          .footer { margin-top: 30px; text-align: center; color: #666; font-size: 12px; }
+          @media print { body { padding: 10px; } }
+        </style>
+      </head>
+      <body>
+        <h1>Payment Report</h1>
+        <p><strong>Date Range:</strong> ${dateRange}</p>
 
-    reportData.paidLoans.forEach(loan => {
-      csv += `Paid,${loan.customerName || ''},${loan.vehicleType || ''} ${loan.make || ''} ${loan.model || ''},${loan.regNo || ''},${loan.amountReceived || 0},${formatDateStr(loan.dateReceived)}\n`;
-    });
+        <div class="summary">
+          <div class="summary-card due-card">
+            <div class="due-section">Due Today</div>
+            <div class="summary-number">${reportData.dueCount}</div>
+            <div>Total: ₹${(reportData.dueTotal || 0).toLocaleString()}</div>
+          </div>
+          <div class="summary-card paid-card">
+            <div class="paid-section">Paid Today</div>
+            <div class="summary-number">${reportData.paidCount}</div>
+            <div>Total: ₹${(reportData.paidTotal || 0).toLocaleString()}</div>
+          </div>
+        </div>
 
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `payment-report-${formatDateStr(mode === 'single' ? selectedDate : selectedRange.start)}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+        <h2 class="due-section">Pending Payments</h2>
+        ${reportData.dueLoans.length > 0 ? `
+        <table>
+          <thead>
+            <tr>
+              <th>Customer Name</th>
+              <th>Vehicle</th>
+              <th>Reg No</th>
+              <th>Amount</th>
+              <th>Due Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${reportData.dueLoans.map(loan => `
+              <tr>
+                <td>${loan.customerName || '-'}</td>
+                <td>${loan.vehicleType || ''} ${loan.make || ''} ${loan.model || ''}</td>
+                <td>${loan.regNo || '-'}</td>
+                <td>₹${(loan.dueAmount || 0).toLocaleString()}</td>
+                <td>${formatDateStr(loan.dueDate)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        ` : '<p>No pending payments for this period.</p>'}
+
+        <h2 class="paid-section">Payments Received</h2>
+        ${reportData.paidLoans.length > 0 ? `
+        <table>
+          <thead>
+            <tr>
+              <th>Customer Name</th>
+              <th>Vehicle</th>
+              <th>Reg No</th>
+              <th>Amount</th>
+              <th>Paid Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${reportData.paidLoans.map(loan => `
+              <tr>
+                <td>${loan.customerName || '-'}</td>
+                <td>${loan.vehicleType || ''} ${loan.make || ''} ${loan.model || ''}</td>
+                <td>${loan.regNo || '-'}</td>
+                <td>₹${(loan.amountReceived || 0).toLocaleString()}</td>
+                <td>${formatDateStr(loan.dateReceived)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        ` : '<p>No payments received for this period.</p>'}
+
+        <div class="footer">
+          Generated on ${new Date().toLocaleString()} | RAM Finance
+        </div>
+
+        <script>window.print();</script>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
   };
 
   const displayDate = useMemo(() => {
@@ -199,7 +290,7 @@ export function ReportDownload({ className = '' }) {
                   className="flex items-center gap-2"
                 >
                   <ArrowDownTrayIcon className="h-4 w-4" />
-                  Download CSV Report
+                  Download PDF Report
                 </Button>
               )}
             </div>

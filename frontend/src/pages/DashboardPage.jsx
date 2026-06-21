@@ -190,14 +190,14 @@ export function DashboardPage() {
         ))}
       </div>
 
+      <ReportDownload />
+
       <PortfolioSummary loans={loans} />
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <VehicleTypeChart loans={loans} />
         <PaymentTrendChart loans={loans} />
       </div>
-
-      <ReportDownload />
     </div>
   );
 }

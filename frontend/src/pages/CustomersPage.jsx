@@ -64,15 +64,13 @@ export function CustomersPage() {
         />
         <CardContent className="p-5">
           <div className="mb-5">
-            <div className="relative">
-              <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <div className="absolute left-10 top-1/2 h-5 w-px bg-gray-300 dark:bg-gray-600 -translate-y-1/2" />
-              <div className="absolute left-11 top-1/2 -translate-y-1/2">
+            <div className="flex rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 overflow-hidden">
+              <div className="flex items-center border-r border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900">
+                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 ml-3" />
                 <Listbox value={searchType} onChange={setSearchType}>
                   <div className="relative">
-                    <Listbox.Button className="flex items-center gap-1 py-1 pr-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none">
-                      <span className="hidden sm:inline">{SEARCH_TYPES.find(t => t.value === searchType)?.label}</span>
-                      <span className="sm:hidden">{searchType === 'name' ? 'N' : searchType === 'phone' ? 'P' : 'R'}</span>
+                    <Listbox.Button className="flex items-center gap-1 py-2.5 pr-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none">
+                      <span className="min-w-[60px] text-center">{SEARCH_TYPES.find(t => t.value === searchType)?.label}</span>
                       <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
                     </Listbox.Button>
                     <Transition
@@ -119,7 +117,7 @@ export function CustomersPage() {
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder={`Search by ${SEARCH_TYPES.find(t => t.value === searchType)?.label.toLowerCase()}...`}
-                className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-24 pr-3 text-sm text-gray-900 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                className="flex-1 py-2 px-3 text-sm text-gray-900 dark:text-white bg-transparent outline-none placeholder-gray-400 dark:placeholder-gray-500"
               />
             </div>
           </div>

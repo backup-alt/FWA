@@ -154,7 +154,6 @@ export function LoanDetailPage() {
   const customer = customerData?.customer;
   const updateLoan = useUpdateLoan();
   const recordPayment = useRecordPayment();
-  const deleteLoan = useDeleteLoan(); // eslint-disable-line no-unused-vars
   const closeLoan = useCloseLoan();
   const restructureLoan = useRestructureLoan();
   const updateCustomer = useUpdateCustomer();
@@ -256,12 +255,17 @@ export function LoanDetailPage() {
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               {loan.vehicleType === 'Bike' ? (
-                <svg className="h-6 w-6 text-primary-600 dark:text-primary-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H6m12 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9 3.75h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm6 0h.008v.008H15.75V15z" />
+                <svg className="h-7 w-7 text-primary-600 dark:text-primary-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="5" cy="17" r="3" />
+                  <circle cx="19" cy="17" r="3" />
+                  <path d="M12 17V9l4 3M12 9l-5 8h5M12 9l7 8h-5" />
                 </svg>
               ) : (
-                <svg className="h-6 w-6 text-primary-600 dark:text-primary-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H6m12 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9 3.75h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm6 0h.008v.008H15.75V15z" />
+                <svg className="h-7 w-7 text-primary-600 dark:text-primary-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 17h14v-5l-2-4H7l-2 4v5z" />
+                  <circle cx="7.5" cy="17.5" r="2.5" />
+                  <circle cx="16.5" cy="17.5" r="2.5" />
+                  <path d="M3 12h18M7 8h3l2 4" />
                 </svg>
               )}
               <span>{loan.vehicleType} - {loan.make || ''} {loan.model || ''}</span>

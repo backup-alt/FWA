@@ -9,6 +9,7 @@ const CustomersPage = lazy(() => import('./pages/CustomersPage').then(m => ({ de
 const CustomerDetailPage = lazy(() => import('./pages/CustomerDetailPage').then(m => ({ default: m.CustomerDetailPage })));
 const LoanDetailPage = lazy(() => import('./pages/LoanDetailPage').then(m => ({ default: m.LoanDetailPage })));
 const PendingDuesPage = lazy(() => import('./pages/PendingDuesPage').then(m => ({ default: m.PendingDuesPage })));
+const ReportPage = lazy(() => import('./pages/ReportPage').then(m => ({ default: m.ReportPage })));
 
 function LoadingFallback() {
   return (
@@ -62,6 +63,11 @@ export const LazyRoutes = {
   PendingDuesPage: () => (
     <ProtectedRoute>
       <Suspense fallback={<LoadingFallback />}><PendingDuesPage /></Suspense>
+    </ProtectedRoute>
+  ),
+  ReportPage: () => (
+    <ProtectedRoute>
+      <Suspense fallback={<LoadingFallback />}><ReportPage /></Suspense>
     </ProtectedRoute>
   ),
 };

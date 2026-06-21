@@ -66,7 +66,7 @@ export function DocumentationStep({ form }) {
         />
         
         <Input
-          label="RC Cheque Number"
+          label="Cheque Number"
           {...register('rcDetails.chequeNumber')}
         />
         

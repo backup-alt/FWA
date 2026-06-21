@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { useLoans, usePendingDues } from '@/hooks/useLoans';
 import { PortfolioSummary } from '@/components/charts/PortfolioSummary';
 import { VehicleTypeChart } from '@/components/charts/VehicleTypeChart';
 import { PaymentTrendChart } from '@/components/charts/PaymentTrendChart';
 import { PendingDuesTable } from '@/components/pending/PendingDuesTable';
 import { PendingFilters } from '@/components/pending/PendingFilters';
-import { ReportDownload } from '@/components/charts/ReportDownload';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -163,12 +162,20 @@ export function DashboardPage() {
             Overview of active RAM Finance loans and collections.
           </p>
         </div>
-        <NavLink to="/add-customer">
-          <Button className="shrink-0 whitespace-nowrap">
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Add Customer
-          </Button>
-        </NavLink>
+        <div className="flex gap-2">
+          <NavLink to="/report">
+            <Button variant="outline" className="shrink-0 whitespace-nowrap">
+              <DocumentTextIcon className="h-5 w-5 mr-2" />
+              Payment Report
+            </Button>
+          </NavLink>
+          <NavLink to="/add-customer">
+            <Button className="shrink-0 whitespace-nowrap">
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Add Customer
+            </Button>
+          </NavLink>
+        </div>
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-2" role="tablist">
@@ -189,8 +196,6 @@ export function DashboardPage() {
           </button>
         ))}
       </div>
-
-      <ReportDownload />
 
       <PortfolioSummary loans={loans} />
 

@@ -34,4 +34,8 @@ export const routes = [
     path: '/pending-dues',
     element: <LazyRoutes.PendingDuesPage />,
   },
+  {
+    path: '/report',
+    element: <LazyRoutes.ReportPage />,
+  },
 ];

@@ -138,17 +138,12 @@ router.get('/report', async (req, res) => {
       return res.status(400).json({ message: 'startDate and endDate are required.' });
     }
 
-    console.log('Report request:', { startDate, endDate });
-
     // Use date strings directly for comparison to avoid timezone issues
     const startStr = startDate; // YYYY-MM-DD
     const endStr = endDate; // YYYY-MM-DD
 
     const loans = await Loan.find({}).lean();
     const customers = await Customer.find({}).lean();
-
-    console.log('Total loans found:', loans.length);
-    console.log('Total customers found:', customers.length);
 
     const customerMap = {};
     customers.forEach(c => {
@@ -167,15 +162,20 @@ router.get('/report', async (req, res) => {
       const address = loan.address || customer.address || '';
 
       for (const installment of loan.installments || []) {
-        // Get date strings for comparison
-        const dueDateStr = installment.dueDate
-          ? new Date(installment.dueDate).toISOString().split('T')[0]
-          : null;
-        const receivedDateStr = installment.dateReceived
-          ? new Date(installment.dateReceived).toISOString().split('T')[0]
-          : null;
+        // Convert dates to YYYY-MM-DD string for comparison
+        const dueDateObj = new Date(installment.dueDate);
+        const dueDateStr = dueDateObj.toISOString().split('T')[0];
 
-        const isDueInRange = dueDateStr && dueDateStr >= startStr && dueDateStr <= endStr;
+        let receivedDateStr = null;
+        if (installment.dateReceived) {
+          const receivedDateObj = new Date(installment.dateReceived);
+          receivedDateStr = receivedDateObj.toISOString().split('T')[0];
+        }
+
+        // Check if due date falls in the selected range
+        const isDueInRange = dueDateStr >= startStr && dueDateStr <= endStr;
+
+        // Check if payment was received in the selected range
         const isPaidInRange = receivedDateStr && receivedDateStr >= startStr && receivedDateStr <= endStr;
 
         const commonData = {
@@ -200,15 +200,13 @@ router.get('/report', async (req, res) => {
         };
 
         if (isPaidInRange) {
-          console.log('Paid installment found:', { customerName, regNo: loan.regNo, receivedDateStr });
           paidTotal += installment.amountReceived || 0;
           paidInstallments.push(commonData);
         }
 
         if (isDueInRange && installment.status !== 'Paid') {
           const today = new Date();
-          const dueDate = new Date(installment.dueDate);
-          const daysOverdue = Math.floor((today - dueDate) / (1000 * 60 * 60 * 24));
+          const daysOverdue = Math.floor((today - dueDateObj) / (1000 * 60 * 60 * 24));
           dueInstallments.push({
             ...commonData,
             daysOverdue: daysOverdue > 0 ? daysOverdue : 0,
@@ -218,8 +216,6 @@ router.get('/report', async (req, res) => {
         }
       }
     }
-
-    console.log('Paid installments:', paidInstallments.length, 'Due installments:', dueInstallments.length);
 
     res.json({
       paid: {

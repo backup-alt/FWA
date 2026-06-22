@@ -76,7 +76,7 @@ export function CustomersPage() {
           title="Customer List"
           subtitle={isLoading ? 'Loading...' : `${filtered.length} customer${filtered.length === 1 ? '' : 's'}`}
         />
-<CardContent className="p-5">
+        <CardContent className="p-5">
           <div className="mb-5">
             <div className="relative flex rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
               <Listbox value={searchType} onChange={setSearchType}>

@@ -80,7 +80,7 @@ export function CustomersPage() {
           <div className="mb-5">
             <div className="relative flex rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
               <Listbox value={searchType} onChange={setSearchType}>
-                <div className="relative flex items-center border-r border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 z-10">
+                <div className="relative flex items-center border-r border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900">
                   <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 ml-3" />
                   <Listbox.Button className="flex items-center gap-1 py-2.5 pr-3 pl-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none whitespace-nowrap min-w-[120px] max-w-[140px]">
                     <span className="truncate">{SEARCH_TYPES.find(t => t.value === searchType)?.label}</span>
@@ -88,7 +88,6 @@ export function CustomersPage() {
                   </Listbox.Button>
                   <Transition
                     as={Fragment}
-                    show={true}
                     enter="transition ease-out duration-100"
                     enterFrom="opacity-0 scale-95"
                     enterTo="opacity-100 scale-100"

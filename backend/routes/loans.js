@@ -152,30 +152,23 @@ router.get('/report', async (req, res) => {
     startCompare.setHours(0, 0, 0, 0);
 
     const loans = await Loan.find({}).lean();
+    const customers = await Customer.find({}).lean();
 
-    const allLoans = [];
-    let dueCount = 0;
-    let paidCount = 0;
-    let dueTotal = 0;
+    const customerMap = {};
+    customers.forEach(c => {
+      customerMap[c._id.toString()] = c;
+    });
+
+    const paidInstallments = [];
+    const dueInstallments = [];
     let paidTotal = 0;
+    let dueTotal = 0;
 
     for (const loan of loans) {
-      const loanInfo = {
-        loanId: loan._id,
-        customerId: loan.customerId,
-        customerName: loan.customerName,
-        vehicleType: loan.vehicleType,
-        make: loan.make,
-        model: loan.model,
-        regNo: loan.regNo,
-        loanAmount: loan.loanAmount,
-        outstandingPrincipal: loan.outstandingPrincipal,
-        totalPaid: loan.totalPaid,
-        installments: [],
-      };
-
-      let hasPaidInRange = false;
-      let hasDueInRange = false;
+      const customer = customerMap[loan.customerId?.toString()] || {};
+      const customerName = loan.customerName || customer.name || 'Unknown';
+      const cellNumbers = loan.cellNumbers || customer.cellNumbers || [];
+      const address = loan.address || customer.address || '';
 
       for (const installment of loan.installments || []) {
         const dueDate = new Date(installment.dueDate);
@@ -188,46 +181,59 @@ router.get('/report', async (req, res) => {
           return receivedDate >= startCompare && receivedDate <= end;
         })();
 
-        const installmentData = {
+        const commonData = {
+          loanId: loan._id,
+          customerId: loan.customerId,
+          customerName,
+          cellNumbers: cellNumbers.map(c => c.number).filter(Boolean),
+          address,
+          vehicleType: loan.vehicleType,
+          make: loan.make,
+          model: loan.model,
+          regNo: loan.regNo,
+          loanAmount: loan.loanAmount,
+          emiAmount: loan.emiAmount,
           sNo: installment.sNo,
           dueDate: installment.dueDate,
           dueAmount: installment.dueAmount,
-          amountReceived: installment.amountReceived,
+          amountReceived: installment.amountReceived || 0,
           dateReceived: installment.dateReceived,
           status: installment.status,
-          pendingAmount: installment.pendingAmount,
+          pendingAmount: installment.pendingAmount || 0,
         };
 
-        if (isDueInRange) {
-          hasDueInRange = true;
-          dueTotal += installment.dueAmount;
-        }
-
         if (isPaidInRange) {
-          hasPaidInRange = true;
-          paidTotal += installment.amountReceived;
-          paidCount++;
+          paidTotal += installment.amountReceived || 0;
+          paidInstallments.push({
+            ...commonData,
+          });
         }
 
-        if (isDueInRange || isPaidInRange || installment.status === 'Paid') {
-          loanInfo.installments.push(installmentData);
+        if (isDueInRange && installment.status !== 'Paid') {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const daysOverdue = Math.floor((today - dueDate) / (1000 * 60 * 60 * 24));
+          dueInstallments.push({
+            ...commonData,
+            daysOverdue: daysOverdue > 0 ? daysOverdue : 0,
+            carryingOutstanding: installment.pendingAmount || installment.dueAmount,
+          });
+          dueTotal += installment.pendingAmount || installment.dueAmount;
         }
-      }
-
-      if (hasPaidInRange) paidCount++;
-      if (hasDueInRange) dueCount++;
-
-      if (loanInfo.installments.length > 0 || loan.status === 'Active') {
-        allLoans.push(loanInfo);
       }
     }
 
     res.json({
-      loans: allLoans,
-      dueCount,
-      paidCount,
-      dueTotal,
-      paidTotal,
+      paid: {
+        count: paidInstallments.length,
+        total: paidTotal,
+        data: paidInstallments,
+      },
+      due: {
+        count: dueInstallments.length,
+        total: dueTotal,
+        data: dueInstallments,
+      },
     });
   } catch (err) {
     console.error(err);

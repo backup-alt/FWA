@@ -138,65 +138,96 @@ router.get('/report', async (req, res) => {
       return res.status(400).json({ message: 'startDate and endDate are required.' });
     }
 
-    const start = new Date(startDate);
+    // Parse date-only strings (YYYY-MM-DD) to avoid timezone issues
+    const [startYear, startMonth, startDay] = startDate.split('-').map(Number);
+    const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
+
+    const start = new Date(startYear, startMonth - 1, startDay);
     start.setHours(0, 0, 0, 0);
-    const end = new Date(endDate);
+
+    const end = new Date(endYear, endMonth - 1, endDay);
     end.setHours(23, 59, 59, 999);
+
+    const startCompare = new Date(startYear, startMonth - 1, startDay);
+    startCompare.setHours(0, 0, 0, 0);
 
     const loans = await Loan.find({}).lean();
 
-    const dueLoans = [];
-    const paidLoans = [];
+    const allLoans = [];
+    let dueCount = 0;
+    let paidCount = 0;
     let dueTotal = 0;
     let paidTotal = 0;
 
     for (const loan of loans) {
+      const loanInfo = {
+        loanId: loan._id,
+        customerId: loan.customerId,
+        customerName: loan.customerName,
+        vehicleType: loan.vehicleType,
+        make: loan.make,
+        model: loan.model,
+        regNo: loan.regNo,
+        loanAmount: loan.loanAmount,
+        outstandingPrincipal: loan.outstandingPrincipal,
+        totalPaid: loan.totalPaid,
+        installments: [],
+      };
+
+      let hasPaidInRange = false;
+      let hasDueInRange = false;
+
       for (const installment of loan.installments || []) {
         const dueDate = new Date(installment.dueDate);
         dueDate.setHours(0, 0, 0, 0);
 
-        if (dueDate >= start && dueDate <= end) {
-          dueLoans.push({
-            loanId: loan._id,
-            customerName: loan.customerName,
-            vehicleType: loan.vehicleType,
-            make: loan.make,
-            model: loan.model,
-            regNo: loan.regNo,
-            dueDate: installment.dueDate,
-            dueAmount: installment.dueAmount,
-          });
+        const isDueInRange = dueDate >= startCompare && dueDate <= end;
+        const isPaidInRange = installment.dateReceived && (() => {
+          const receivedDate = new Date(installment.dateReceived);
+          receivedDate.setHours(0, 0, 0, 0);
+          return receivedDate >= startCompare && receivedDate <= end;
+        })();
+
+        const installmentData = {
+          sNo: installment.sNo,
+          dueDate: installment.dueDate,
+          dueAmount: installment.dueAmount,
+          amountReceived: installment.amountReceived,
+          dateReceived: installment.dateReceived,
+          status: installment.status,
+          pendingAmount: installment.pendingAmount,
+        };
+
+        if (isDueInRange) {
+          hasDueInRange = true;
           dueTotal += installment.dueAmount;
         }
 
-        if (installment.dateReceived) {
-          const receivedDate = new Date(installment.dateReceived);
-          receivedDate.setHours(0, 0, 0, 0);
-
-          if (receivedDate >= start && receivedDate <= end) {
-            paidLoans.push({
-              loanId: loan._id,
-              customerName: loan.customerName,
-              vehicleType: loan.vehicleType,
-              make: loan.make,
-              model: loan.model,
-              regNo: loan.regNo,
-              dateReceived: installment.dateReceived,
-              amountReceived: installment.amountReceived,
-            });
-            paidTotal += installment.amountReceived;
-          }
+        if (isPaidInRange) {
+          hasPaidInRange = true;
+          paidTotal += installment.amountReceived;
+          paidCount++;
         }
+
+        if (isDueInRange || isPaidInRange || installment.status === 'Paid') {
+          loanInfo.installments.push(installmentData);
+        }
+      }
+
+      if (hasPaidInRange) paidCount++;
+      if (hasDueInRange) dueCount++;
+
+      if (loanInfo.installments.length > 0 || loan.status === 'Active') {
+        allLoans.push(loanInfo);
       }
     }
 
     res.json({
-      dueCount: dueLoans.length,
+      loans: allLoans,
+      dueCount,
+      paidCount,
       dueTotal,
-      paidCount: paidLoans.length,
       paidTotal,
-      dueLoans,
-      paidLoans,
     });
   } catch (err) {
     console.error(err);

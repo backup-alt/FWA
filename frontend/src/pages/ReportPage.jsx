@@ -1,11 +1,28 @@
 import { useState, useMemo } from 'react';
-import { ArrowLeftIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ArrowDownTrayIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { NavLink } from 'react-router-dom';
 import { CustomCalendar } from '@/components/ui/CustomCalendar';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 import { formatCurrency } from '@/api';
 import { clsx } from 'clsx';
+
+const BikeIcon = () => (
+  <svg viewBox="0 0 512 512" className="h-4 w-4" fill="currentColor">
+    <path d="M417.975,226.338c-5.966,0-11.764,0.618-17.404,1.684l-33.048-100.841c-5.781-17.644-22.258-29.577-40.822-29.577h-45.506v24.414h45.506c8.038-0.008,15.147,5.155,17.636,12.768l6.028,18.433h-60.684c-31.084,0-54.424,15.542-54.424,15.542v45.358h135.064l7.064,21.54c-31.579,15.163-53.42,47.345-53.435,84.704c0.016,51.936,42.09,94.018,94.026,94.033c51.92-0.015,94.01-42.097,94.025-94.033C511.985,268.435,469.895,226.353,417.975,226.338z M461.456,363.844c-11.175,11.144-26.462,18.007-43.48,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.144-11.176-18.008-26.447-18.008-43.481c0-17.026,6.863-32.29,18.008-43.465c3.88-3.88,8.409-7.01,13.185-9.754l11.114,33.928c-4.962,4.931-8.037,11.748-8.037,19.29c0,15.032,12.18,27.22,27.204,27.22c15.024,0,27.204-12.188,27.204-27.22c0-13.633-10.062-24.809-23.14-26.787l-11.128-33.974c2.35-0.278,4.637-0.711,7.064-0.711c17.018,0,32.305,6.855,43.48,18.008c11.144,11.175,17.977,26.439,18.008,43.465C479.432,337.397,472.6,352.668,461.456,363.844z"/>
+    <path d="M94.01,226.338C42.074,226.353,0.016,268.435,0,320.363c0.016,51.936,42.074,94.018,94.01,94.033c51.936-0.015,94.01-42.097,94.026-94.033C188.02,268.435,145.946,226.353,94.01,226.338z M137.491,363.844c-11.176,11.144-26.447,18.007-43.481,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.16-11.176-18.008-26.447-18.008-43.481c0-17.026,6.848-32.29,18.008-43.465C61.72,265.745,76.976,258.89,94.01,258.89c17.034,0,32.306,6.855,43.481,18.008c11.144,11.175,17.992,26.439,18.008,43.465C155.483,337.397,148.636,352.668,137.491,363.844z"/>
+    <circle cx="5" cy="17" r="3"/>
+    <circle cx="19" cy="17" r="3"/>
+    <path d="M70.5,214.119H220.17v-42.762h-45.52c-12.212,0-24.345-1.932-35.954-5.742l-16.261-5.34c-11.592-3.81-23.742-5.758-35.953-5.758H70.5c-8.47,0-15.348,6.886-15.348,15.372v28.858C55.151,207.233,62.029,214.119,70.5,214.119z"/>
+  </svg>
+);
+
+const CarIcon = () => (
+  <svg viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor">
+    <path d="M3 1L1.66667 5H0V8H1V15H3V13H13V15H15V8H16V5H14.3333L13 1H3ZM4 9C3.44772 9 3 9.44772 3 10C3 10.5523 3.44772 11 4 11C4.55228 11 5 10.5523 5 10C5 9.44772 4.55228 9 4 9ZM11.5585 3H4.44152L3.10819 7H12.8918L11.5585 3ZM12 9C11.4477 9 11 9.44772 11 10C11 10.5523 11.4477 11 12 11C12.5523 11 13 10.5523 13 10C13 9.44772 12.5523 9 12 9Z"/>
+  </svg>
+);
 
 export function ReportPage() {
   const [mode, setMode] = useState('single');
@@ -14,6 +31,14 @@ export function ReportPage() {
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
+
+  const formatDateString = (date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   const handleDateSelect = (date) => {
     setSelectedDate(date);
@@ -27,16 +52,16 @@ export function ReportPage() {
   const generateReport = async () => {
     setLoading(true);
     try {
-      let startDate, endDate;
+      let startDateStr, endDateStr;
       if (mode === 'single') {
-        startDate = selectedDate;
-        endDate = selectedDate;
+        startDateStr = formatDateString(selectedDate);
+        endDateStr = formatDateString(selectedDate);
       } else {
-        startDate = selectedRange.start;
-        endDate = selectedRange.end || selectedRange.start;
+        startDateStr = formatDateString(selectedRange.start);
+        endDateStr = selectedRange.end ? formatDateString(selectedRange.end) : formatDateString(selectedRange.start);
       }
 
-      const response = await fetch(`/api/loans/report?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`, {
+      const response = await fetch(`/api/loans/report?startDate=${startDateStr}&endDate=${endDateStr}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
@@ -46,10 +71,11 @@ export function ReportPage() {
         const data = await response.json();
         setReportData(data);
       } else {
-        setReportData({ dueCount: 0, paidCount: 0, dueLoans: [], paidLoans: [], dueTotal: 0, paidTotal: 0 });
+        setReportData({ loans: [], dueCount: 0, paidCount: 0, dueTotal: 0, paidTotal: 0 });
       }
     } catch (err) {
-      setReportData({ dueCount: 0, paidCount: 0, dueLoans: [], paidLoans: [], dueTotal: 0, paidTotal: 0 });
+      console.error(err);
+      setReportData({ loans: [], dueCount: 0, paidCount: 0, dueTotal: 0, paidTotal: 0 });
     } finally {
       setLoading(false);
     }
@@ -58,15 +84,15 @@ export function ReportPage() {
   const downloadReport = () => {
     if (!reportData) return;
 
-    const formatDateStr = (date) => {
-      if (!date) return '';
+    const formatDisplayDate = (date) => {
+      if (!date) return 'N/A';
       const d = new Date(date);
       return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     };
 
     const dateRange = mode === 'single'
-      ? formatDateStr(selectedDate)
-      : `${formatDateStr(selectedRange.start)} - ${selectedRange.end ? formatDateStr(selectedRange.end) : 'N/A'}`;
+      ? formatDisplayDate(selectedDate)
+      : `${formatDisplayDate(selectedRange.start)} - ${selectedRange.end ? formatDisplayDate(selectedRange.end) : 'N/A'}`;
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -76,17 +102,25 @@ export function ReportPage() {
         <style>
           body { font-family: Arial, sans-serif; padding: 20px; }
           h1 { color: #333; border-bottom: 2px solid #333; padding-bottom: 10px; }
-          h2 { color: #666; margin-top: 30px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-          th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-          th { background-color: #f5f5f5; }
+          h2 { color: #666; margin-top: 30px; font-size: 16px; }
+          h3 { color: #444; margin-top: 20px; font-size: 14px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+          th { background-color: #f5f5f5; font-weight: bold; }
           .due-section { color: #e65100; }
           .paid-section { color: #2e7d32; }
+          .pending-section { color: #c62828; }
           .summary { display: flex; gap: 20px; margin: 20px 0; }
           .summary-card { padding: 15px; border-radius: 8px; flex: 1; }
           .due-card { background-color: #fff3e0; }
           .paid-card { background-color: #e8f5e9; }
           .summary-number { font-size: 24px; font-weight: bold; }
+          .loan-block { margin-bottom: 20px; border: 1px solid #ddd; border-radius: 8px; padding: 15px; }
+          .loan-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+          .loan-info { font-size: 13px; color: #666; }
+          .status-paid { color: #2e7d32; font-weight: bold; }
+          .status-pending { color: #e65100; font-weight: bold; }
+          .status-overdue { color: #c62828; font-weight: bold; }
           .footer { margin-top: 30px; text-align: center; color: #666; font-size: 12px; }
           @media print { body { padding: 10px; } }
         </style>
@@ -97,68 +131,59 @@ export function ReportPage() {
 
         <div class="summary">
           <div class="summary-card due-card">
-            <div class="due-section">Due Today</div>
+            <div class="due-section">Due (${mode === 'single' ? 'Today' : 'In Range'})</div>
             <div class="summary-number">${reportData.dueCount}</div>
             <div>Total: ₹${(reportData.dueTotal || 0).toLocaleString()}</div>
           </div>
           <div class="summary-card paid-card">
-            <div class="paid-section">Paid Today</div>
+            <div class="paid-section">Paid (${mode === 'single' ? 'Today' : 'In Range'})</div>
             <div class="summary-number">${reportData.paidCount}</div>
             <div>Total: ₹${(reportData.paidTotal || 0).toLocaleString()}</div>
           </div>
         </div>
 
-        <h2 class="due-section">Pending Payments</h2>
-        ${reportData.dueLoans.length > 0 ? `
-        <table>
-          <thead>
-            <tr>
-              <th>Customer Name</th>
-              <th>Vehicle</th>
-              <th>Reg No</th>
-              <th>Amount</th>
-              <th>Due Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${reportData.dueLoans.map(loan => `
-              <tr>
-                <td>${loan.customerName || '-'}</td>
-                <td>${loan.vehicleType || ''} ${loan.make || ''} ${loan.model || ''}</td>
-                <td>${loan.regNo || '-'}</td>
-                <td>₹${(loan.dueAmount || 0).toLocaleString()}</td>
-                <td>${formatDateStr(loan.dueDate)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-        ` : '<p>No pending payments for this period.</p>'}
-
-        <h2 class="paid-section">Payments Received</h2>
-        ${reportData.paidLoans.length > 0 ? `
-        <table>
-          <thead>
-            <tr>
-              <th>Customer Name</th>
-              <th>Vehicle</th>
-              <th>Reg No</th>
-              <th>Amount</th>
-              <th>Paid Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${reportData.paidLoans.map(loan => `
-              <tr>
-                <td>${loan.customerName || '-'}</td>
-                <td>${loan.vehicleType || ''} ${loan.make || ''} ${loan.model || ''}</td>
-                <td>${loan.regNo || '-'}</td>
-                <td>₹${(loan.amountReceived || 0).toLocaleString()}</td>
-                <td>${formatDateStr(loan.dateReceived)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-        ` : '<p>No payments received for this period.</p>'}
+        <h2>Detailed Report</h2>
+        ${reportData.loans.length > 0 ? reportData.loans.map(loan => `
+          <div class="loan-block">
+            <div class="loan-header">
+              <div>
+                <strong>${loan.customerName || 'Unknown'}</strong>
+                <span style="margin-left: 10px;">${loan.vehicleType === 'Bike' ? '🏍️' : '🚗'} ${loan.make || ''} ${loan.model || ''}</span>
+              </div>
+              <div class="loan-info">
+                Reg: ${loan.regNo || 'N/A'} | Loan Amt: ₹${(loan.loanAmount || 0).toLocaleString()}
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Due Date</th>
+                  <th>Due Amount</th>
+                  <th>Amount Received</th>
+                  <th>Date Received</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${loan.installments.map(inst => `
+                  <tr>
+                    <td>${inst.sNo}</td>
+                    <td>${formatDisplayDate(inst.dueDate)}</td>
+                    <td>₹${(inst.dueAmount || 0).toLocaleString()}</td>
+                    <td>₹${(inst.amountReceived || 0).toLocaleString()}</td>
+                    <td>${inst.dateReceived ? formatDisplayDate(inst.dateReceived) : '-'}</td>
+                    <td class="status-${inst.status?.toLowerCase() || 'pending'}">${inst.status || 'Pending'}</td>
+                  </tr>
+                `).join('')}
+                ${loan.installments.length === 0 ? '<tr><td colspan="6" style="text-align:center;color:#999;">No installments in range</td></tr>' : ''}
+              </tbody>
+            </table>
+            <div style="margin-top: 10px; font-size: 12px; color: #666;">
+              Outstanding: ₹${(loan.outstandingPrincipal || 0).toLocaleString()} | Total Paid: ₹${(loan.totalPaid || 0).toLocaleString()}
+            </div>
+          </div>
+        `).join('') : '<p>No loan data found for this period.</p>'}
 
         <div class="footer">
           Generated on ${new Date().toLocaleString()} | RAM Finance
@@ -184,15 +209,30 @@ export function ReportPage() {
     }
   }, [mode, selectedDate, selectedRange]);
 
+  const getInstallmentStatusBadge = (status) => {
+    switch (status) {
+      case 'Paid':
+        return <Badge variant="success">Paid</Badge>;
+      case 'Pending':
+        return <Badge variant="warning">Pending</Badge>;
+      case 'Overdue':
+        return <Badge variant="error">Overdue</Badge>;
+      case 'Partial':
+        return <Badge variant="info">Partial</Badge>;
+      default:
+        return <Badge variant="gray">{status || 'Pending'}</Badge>;
+    }
+  };
+
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6">
       <div className="flex items-center gap-4">
         <NavLink to="/" className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300">
           <ArrowLeftIcon className="h-5 w-5" />
         </NavLink>
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Payment Report</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Generate and download payment reports</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Generate and download detailed payment reports</p>
         </div>
       </div>
 
@@ -237,7 +277,7 @@ export function ReportPage() {
                 </button>
 
                 {showCalendar && (
-                  <div className="absolute z-50 top-full mt-2 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700">
+                  <div className="absolute left-0 z-50 top-full mt-2 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700">
                     <CustomCalendar
                       mode={mode}
                       selectedDate={selectedDate}
@@ -258,24 +298,117 @@ export function ReportPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-                    <p className="text-sm font-medium text-orange-600 dark:text-orange-400">Due</p>
+                    <p className="text-sm font-medium text-orange-600 dark:text-orange-400">Due ({mode === 'single' ? 'Today' : 'In Range'})</p>
                     <p className="text-3xl font-bold text-orange-700 dark:text-orange-300">{reportData.dueCount}</p>
                     <p className="text-sm text-orange-500 mt-1">Total: {formatCurrency(reportData.dueTotal || 0)}</p>
                   </div>
                   <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                    <p className="text-sm font-medium text-green-600 dark:text-green-400">Paid</p>
+                    <p className="text-sm font-medium text-green-600 dark:text-green-400">Paid ({mode === 'single' ? 'Today' : 'In Range'})</p>
                     <p className="text-3xl font-bold text-green-700 dark:text-green-300">{reportData.paidCount}</p>
                     <p className="text-sm text-green-500 mt-1">Total: {formatCurrency(reportData.paidTotal || 0)}</p>
                   </div>
                 </div>
 
-                {reportData.dueCount > 0 || reportData.paidCount > 0 ? (
-                  <Button onClick={downloadReport} className="flex items-center gap-2">
-                    <ArrowDownTrayIcon className="h-5 w-5" />
-                    Download PDF Report
-                  </Button>
+                {reportData.loans && reportData.loans.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Detailed Breakdown ({reportData.loans.length} loan{reportData.loans.length !== 1 ? 's' : ''})
+                      </h3>
+                      <Button onClick={downloadReport} className="flex items-center gap-2">
+                        <ArrowDownTrayIcon className="h-5 w-5" />
+                        Download PDF Report
+                      </Button>
+                    </div>
+
+                    {reportData.loans.map(loan => (
+                      <Card key={loan.loanId}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <div className={clsx(
+                                'w-10 h-10 rounded-full flex items-center justify-center',
+                                loan.vehicleType === 'Bike' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
+                              )}>
+                                {loan.vehicleType === 'Bike' ? <BikeIcon /> : <CarIcon />}
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-gray-900 dark:text-white">{loan.customerName || 'Unknown'}</h4>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                  {loan.vehicleType} • {loan.make} {loan.model} • {loan.regNo}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Loan Amount</p>
+                              <p className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(loan.loanAmount)}</p>
+                            </div>
+                          </div>
+
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b border-gray-200 dark:border-gray-700">
+                                  <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-400">#</th>
+                                  <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-400">Due Date</th>
+                                  <th className="text-right py-2 px-3 font-medium text-gray-600 dark:text-gray-400">Due Amt</th>
+                                  <th className="text-right py-2 px-3 font-medium text-gray-600 dark:text-gray-400">Received</th>
+                                  <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-400">Received Date</th>
+                                  <th className="text-center py-2 px-3 font-medium text-gray-600 dark:text-gray-400">Status</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {loan.installments.length > 0 ? loan.installments.map(inst => (
+                                  <tr key={inst.sNo} className="border-b border-gray-100 dark:border-gray-800">
+                                    <td className="py-2 px-3 text-gray-600 dark:text-gray-400">{inst.sNo}</td>
+                                    <td className="py-2 px-3 text-gray-900 dark:text-white">
+                                      {new Date(inst.dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                    </td>
+                                    <td className="py-2 px-3 text-right text-gray-900 dark:text-white">{formatCurrency(inst.dueAmount)}</td>
+                                    <td className="py-2 px-3 text-right text-gray-900 dark:text-white">{formatCurrency(inst.amountReceived || 0)}</td>
+                                    <td className="py-2 px-3 text-gray-600 dark:text-gray-400">
+                                      {inst.dateReceived ? new Date(inst.dateReceived).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                    </td>
+                                    <td className="py-2 px-3 text-center">
+                                      {getInstallmentStatusBadge(inst.status)}
+                                    </td>
+                                  </tr>
+                                )) : (
+                                  <tr>
+                                    <td colSpan="6" className="py-4 text-center text-gray-500 dark:text-gray-400">
+                                      No installments in selected date range
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+
+                          <div className="mt-4 flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
+                            <div className="flex gap-6">
+                              <div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Outstanding</p>
+                                <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">{formatCurrency(loan.outstandingPrincipal || 0)}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Total Paid</p>
+                                <p className="text-sm font-semibold text-green-600 dark:text-green-400">{formatCurrency(loan.totalPaid || 0)}</p>
+                              </div>
+                            </div>
+                            <NavLink to={`/loan/${loan.loanId}`}>
+                              <Button variant="ghost" size="sm">View Loan</Button>
+                            </NavLink>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 ) : (
-                  <p className="text-center text-gray-500 dark:text-gray-400 py-4">No payment data found for this period.</p>
+                  <div className="text-center py-12">
+                    <DocumentTextIcon className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                    <p className="text-gray-500 dark:text-gray-400">No payment data found for this period.</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Try selecting a different date or date range.</p>
+                  </div>
                 )}
               </div>
             )}

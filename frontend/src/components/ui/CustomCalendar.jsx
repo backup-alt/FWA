@@ -111,7 +111,7 @@ export function CustomCalendar({ selectedDate, onDateSelect, selectedRange, onRa
   }
 
   return (
-    <div className="w-full max-w-sm">
+    <div className={clsx(mode === 'single' ? 'w-72' : 'w-full max-w-sm')}>
       <div className="flex items-center justify-between mb-3">
         <button
           type="button"

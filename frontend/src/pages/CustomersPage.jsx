@@ -44,14 +44,42 @@ export function CustomersPage() {
         case 'name':
           return c.name?.toLowerCase().includes(q);
         case 'phone':
-          return c.cellNumbers?.some(n => n.number?.includes(q));
-        case 'regNo':
-          return c.regNos?.some(r => r?.toLowerCase().includes(q));
+          return c.cellNumbers?.some(n => n.number?.replace(/\s/g, '').includes(q.replace(/\s/g, '')));
+        case 'regNo': {
+          const allRegNos = [...(c.bikeRegNos || []), ...(c.carRegNos || [])];
+          return allRegNos.some(r => r?.toLowerCase().replace(/\s/g, '').includes(q));
+        }
         default:
           return true;
       }
     });
   }, [customers, query, searchType]);
+
+  const renderRegNumbers = (customer) => {
+    const bikeRegs = customer.bikeRegNos || [];
+    const carRegs = customer.carRegNos || [];
+
+    if (bikeRegs.length === 0 && carRegs.length === 0) {
+      return <span className="text-xs text-gray-400 dark:text-gray-500">No vehicles</span>;
+    }
+
+    return (
+      <div className="flex flex-wrap gap-2 mt-1">
+        {bikeRegs.map((reg, idx) => (
+          <span key={`bike-${idx}`} className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded text-xs font-medium">
+            <BikeIcon />
+            {reg}
+          </span>
+        ))}
+        {carRegs.map((reg, idx) => (
+          <span key={`car-${idx}`} className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded text-xs font-medium">
+            <CarIcon />
+            {reg}
+          </span>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -154,7 +182,7 @@ export function CustomersPage() {
                 <NavLink
                   key={customer._id}
                   to={`/customer/${customer._id}`}
-                  className="flex border-b border-gray-200 bg-white p-4 transition-colors last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700/50 flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+                  className="flex border-b border-gray-200 bg-white p-4 transition-colors last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700/50 flex-col sm:flex-row sm:items-start gap-4"
                 >
                   <div className="flex items-center gap-4 flex-1 min-w-0">
                     {customer.profileImage ? (
@@ -168,31 +196,36 @@ export function CustomersPage() {
                         {customer.name?.charAt(0)?.toUpperCase() || '?'}
                       </div>
                     )}
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-gray-900 dark:text-white truncate">
                           {customer.name}
                         </h3>
-                        {customer.bikeCount > 0 && (
-                          <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400" title={`${customer.bikeCount} Bike loan(s)`}>
-                            <BikeIcon />
-                            <span className="text-xs font-bold">{customer.bikeCount}</span>
-                          </div>
-                        )}
-                        {customer.carCount > 0 && (
-                          <div className="flex items-center gap-1 text-green-600 dark:text-green-400" title={`${customer.carCount} Car loan(s)`}>
-                            <CarIcon />
-                            <span className="text-xs font-bold">{customer.carCount}</span>
+                        {(customer.bikeCount > 0 || customer.carCount > 0) && (
+                          <div className="flex items-center gap-1.5">
+                            {customer.bikeCount > 0 && (
+                              <span className="inline-flex items-center gap-0.5 text-blue-600 dark:text-blue-400" title={`${customer.bikeCount} Bike loan(s)`}>
+                                <BikeIcon />
+                                <span className="text-xs font-bold">{customer.bikeCount}</span>
+                              </span>
+                            )}
+                            {customer.carCount > 0 && (
+                              <span className="inline-flex items-center gap-0.5 text-green-600 dark:text-green-400" title={`${customer.carCount} Car loan(s)`}>
+                                <CarIcon />
+                                <span className="text-xs font-bold">{customer.carCount}</span>
+                              </span>
+                            )}
                           </div>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                         {customer.cellNumbers?.map(c => c.number).join(', ') || 'No phone'}
                         {customer.address ? ` • ${customer.address}` : ''}
                       </p>
+                      {renderRegNumbers(customer)}
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 sm:flex-col sm:items-end">
+                  <div className="flex items-center gap-4 sm:flex-col sm:items-end shrink-0">
                     <div className="text-right">
                       <p className="font-semibold text-gray-900 dark:text-white">
                         {customer.loanCount || 0} loan{customer.loanCount !== 1 ? 's' : ''}

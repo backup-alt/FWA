@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { HomeIcon, DocumentPlusIcon, ClipboardDocumentListIcon, ChartBarIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, DocumentPlusIcon, ClipboardDocumentListIcon, ChartBarIcon, DocumentTextIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
 import { useEffect } from 'react';
 
@@ -8,6 +8,7 @@ const navigation = [
   { name: 'Add Customer', href: '/add-customer', icon: DocumentPlusIcon },
   { name: 'Customers', href: '/customers', icon: ClipboardDocumentListIcon },
   { name: 'Pending Dues', href: '/pending-dues', icon: ChartBarIcon },
+  { name: 'Payment Report', href: '/report', icon: DocumentTextIcon },
 ];
 
 export function Sidebar({ isOpen, onClose }) {

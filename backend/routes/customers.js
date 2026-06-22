@@ -47,7 +47,24 @@ router.get('/', async (req, res) => {
           activeLoans: {
             $sum: { $cond: [{ $eq: ['$status', 'Active'] }, 1, 0] },
           },
-          regNos: { $push: '$regNo' },
+          bikeRegNos: {
+            $push: {
+              $cond: [
+                { $eq: ['$vehicleType', 'Bike'] },
+                '$regNo',
+                '$$REMOVE'
+              ]
+            }
+          },
+          carRegNos: {
+            $push: {
+              $cond: [
+                { $eq: ['$vehicleType', 'Car'] },
+                '$regNo',
+                '$$REMOVE'
+              ]
+            }
+          },
           bikeCount: { $sum: { $cond: [{ $eq: ['$vehicleType', 'Bike'] }, 1, 0] } },
           carCount: { $sum: { $cond: [{ $eq: ['$vehicleType', 'Car'] }, 1, 0] } },
         },
@@ -66,7 +83,8 @@ router.get('/', async (req, res) => {
         loanCount: agg.loanCount || 0,
         totalOutstanding: agg.totalOutstanding || 0,
         activeLoans: agg.activeLoans || 0,
-        regNos: agg.regNos || [],
+        bikeRegNos: (agg.bikeRegNos || []).filter(r => r),
+        carRegNos: (agg.carRegNos || []).filter(r => r),
         bikeCount: agg.bikeCount || 0,
         carCount: agg.carCount || 0,
       };

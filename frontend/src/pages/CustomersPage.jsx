@@ -82,9 +82,9 @@ export function CustomersPage() {
               <Listbox value={searchType} onChange={setSearchType}>
                 <div className="relative flex items-center border-r border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900">
                   <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 ml-3" />
-                  <Listbox.Button className="flex items-center gap-1 py-2.5 pr-3 pl-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none whitespace-nowrap min-w-[90px]">
-                    <span>{SEARCH_TYPES.find(t => t.value === searchType)?.label}</span>
-                    <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
+                  <Listbox.Button className="flex items-center gap-1 py-2.5 pr-3 pl-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none whitespace-nowrap min-w-[120px] max-w-[140px]">
+                    <span className="truncate">{SEARCH_TYPES.find(t => t.value === searchType)?.label}</span>
+                    <ChevronUpDownIcon className="h-4 w-4 text-gray-400 shrink-0" />
                   </Listbox.Button>
                   <Transition
                     as={Fragment}

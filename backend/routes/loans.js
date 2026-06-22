@@ -138,21 +138,17 @@ router.get('/report', async (req, res) => {
       return res.status(400).json({ message: 'startDate and endDate are required.' });
     }
 
-    // Parse date-only strings (YYYY-MM-DD) to avoid timezone issues
-    const [startYear, startMonth, startDay] = startDate.split('-').map(Number);
-    const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
+    console.log('Report request:', { startDate, endDate });
 
-    const start = new Date(startYear, startMonth - 1, startDay);
-    start.setHours(0, 0, 0, 0);
-
-    const end = new Date(endYear, endMonth - 1, endDay);
-    end.setHours(23, 59, 59, 999);
-
-    const startCompare = new Date(startYear, startMonth - 1, startDay);
-    startCompare.setHours(0, 0, 0, 0);
+    // Use date strings directly for comparison to avoid timezone issues
+    const startStr = startDate; // YYYY-MM-DD
+    const endStr = endDate; // YYYY-MM-DD
 
     const loans = await Loan.find({}).lean();
     const customers = await Customer.find({}).lean();
+
+    console.log('Total loans found:', loans.length);
+    console.log('Total customers found:', customers.length);
 
     const customerMap = {};
     customers.forEach(c => {
@@ -171,21 +167,22 @@ router.get('/report', async (req, res) => {
       const address = loan.address || customer.address || '';
 
       for (const installment of loan.installments || []) {
-        const dueDate = new Date(installment.dueDate);
-        dueDate.setHours(0, 0, 0, 0);
+        // Get date strings for comparison
+        const dueDateStr = installment.dueDate
+          ? new Date(installment.dueDate).toISOString().split('T')[0]
+          : null;
+        const receivedDateStr = installment.dateReceived
+          ? new Date(installment.dateReceived).toISOString().split('T')[0]
+          : null;
 
-        const isDueInRange = dueDate >= startCompare && dueDate <= end;
-        const isPaidInRange = installment.dateReceived && (() => {
-          const receivedDate = new Date(installment.dateReceived);
-          receivedDate.setHours(0, 0, 0, 0);
-          return receivedDate >= startCompare && receivedDate <= end;
-        })();
+        const isDueInRange = dueDateStr && dueDateStr >= startStr && dueDateStr <= endStr;
+        const isPaidInRange = receivedDateStr && receivedDateStr >= startStr && receivedDateStr <= endStr;
 
         const commonData = {
           loanId: loan._id,
           customerId: loan.customerId,
           customerName,
-          cellNumbers: cellNumbers.map(c => c.number).filter(Boolean),
+          cellNumbers: cellNumbers.map ? cellNumbers.map(c => c.number).filter(Boolean) : [],
           address,
           vehicleType: loan.vehicleType,
           make: loan.make,
@@ -203,15 +200,14 @@ router.get('/report', async (req, res) => {
         };
 
         if (isPaidInRange) {
+          console.log('Paid installment found:', { customerName, regNo: loan.regNo, receivedDateStr });
           paidTotal += installment.amountReceived || 0;
-          paidInstallments.push({
-            ...commonData,
-          });
+          paidInstallments.push(commonData);
         }
 
         if (isDueInRange && installment.status !== 'Paid') {
           const today = new Date();
-          today.setHours(0, 0, 0, 0);
+          const dueDate = new Date(installment.dueDate);
           const daysOverdue = Math.floor((today - dueDate) / (1000 * 60 * 60 * 24));
           dueInstallments.push({
             ...commonData,
@@ -222,6 +218,8 @@ router.get('/report', async (req, res) => {
         }
       }
     }
+
+    console.log('Paid installments:', paidInstallments.length, 'Due installments:', dueInstallments.length);
 
     res.json({
       paid: {
@@ -236,7 +234,7 @@ router.get('/report', async (req, res) => {
       },
     });
   } catch (err) {
-    console.error(err);
+    console.error('Report error:', err);
     res.status(500).json({ message: 'Server error generating report.' });
   }
 });

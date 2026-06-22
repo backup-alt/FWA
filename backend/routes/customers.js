@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const Customer = require('../models/Customer');
 const Loan = require('../models/Loan');
 const authMiddleware = require('../middleware/auth');
@@ -37,14 +38,16 @@ router.get('/', async (req, res) => {
   try {
     const { search, searchType } = req.query;
     let customers = await Customer.find().sort({ createdAt: -1 }).lean();
+    let customerIds = null;
 
     // If searching by regNo, first find matching loans and their customerIds
     if (search && searchType === 'regNo') {
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const matchingLoans = await Loan.find({
-        regNo: { $regex: search, $options: 'i' }
+        regNo: { $regex: escapedSearch, $options: 'i' }
       }).select('customerId').lean();
 
-      const customerIds = [...new Set(
+      customerIds = [...new Set(
         matchingLoans
           .map(l => l.customerId?.toString())
           .filter(Boolean)
@@ -54,6 +57,7 @@ router.get('/', async (req, res) => {
 
     // Aggregate loan counts and totals per customer
     const loanAgg = await Loan.aggregate([
+      customerIds ? { $match: { customerId: { $in: customerIds.map(id => new mongoose.Types.ObjectId(id)) } } } : { $match: {} },
       {
         $group: {
           _id: '$customerId',

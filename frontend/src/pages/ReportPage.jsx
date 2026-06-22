@@ -5,7 +5,7 @@ import { CustomCalendar } from '@/components/ui/CustomCalendar';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { formatCurrency } from '@/api';
+import { formatCurrency, Loans } from '@/api';
 import { clsx } from 'clsx';
 
 const BikeIcon = () => (
@@ -165,14 +165,8 @@ export function ReportPage() {
         endDateStr = selectedRange.end ? formatDateString(selectedRange.end) : formatDateString(selectedRange.start);
       }
 
-      const response = await fetch(`/api/loans/report?startDate=${startDateStr}&endDate=${endDateStr}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
+      const data = await Loans.report(startDateStr, endDateStr);
+      if (data) {
         setReportData(data);
       } else {
         setReportData({ paid: { data: [] }, due: { data: [] } });

@@ -133,15 +133,6 @@ export function CustomersPage() {
               />
             </div>
           </div>
-              </Listbox>
-              <input
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                placeholder={`Search by ${SEARCH_TYPES.find(t => t.value === searchType)?.label.toLowerCase()}...`}
-                className="flex-1 py-2.5 px-3 text-sm text-gray-900 dark:text-white bg-transparent outline-none placeholder-gray-400 dark:placeholder-gray-500"
-              />
-            </div>
-          </div>
 
           {isLoading ? (
             <div className="rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">

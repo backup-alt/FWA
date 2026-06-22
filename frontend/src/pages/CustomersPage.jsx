@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { MagnifyingGlassIcon, PlusIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/outline';
 import { useCustomers } from '@/hooks/useCustomers';
@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/Badge';
 import { formatCurrency } from '@/api';
 import { Fragment } from 'react';
 import { clsx } from 'clsx';
+import bikeIcon from '../../../bike-svgrepo-com.svg';
+import carIcon from '../../../car-svgrepo-com.svg';
 
 const SEARCH_TYPES = [
   { value: 'name', label: 'Name' },
@@ -64,12 +66,12 @@ export function CustomersPage() {
         />
         <CardContent className="p-5">
           <div className="mb-5 flex rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 overflow-hidden">
-            <div className="flex items-center border-r border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 px-2">
-              <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 mr-2" />
+            <div className="relative flex items-center border-r border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900">
+              <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 ml-3" />
               <Listbox value={searchType} onChange={setSearchType}>
                 <div className="relative">
-                  <Listbox.Button className="flex items-center gap-1 py-2 pr-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none whitespace-nowrap">
-                    <span>{searchType === 'name' ? 'Name' : searchType === 'phone' ? 'Phone' : 'Reg. No.'}</span>
+                  <Listbox.Button className="flex items-center gap-1 py-2.5 pr-3 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none whitespace-nowrap">
+                    <span className="min-w-[60px]">{searchType === 'name' ? 'Name' : searchType === 'phone' ? 'Phone' : 'Reg. No.'}</span>
                     <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
                   </Listbox.Button>
                   <Transition
@@ -81,7 +83,7 @@ export function CustomersPage() {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Listbox.Options className="absolute left-0 z-50 mt-1.5 min-w-[140px] overflow-auto rounded-xl bg-white dark:bg-gray-800 py-1.5 shadow-xl ring-1 ring-gray-200 dark:ring-gray-700 text-sm">
+                    <Listbox.Options className="absolute left-0 top-full z-50 mt-1.5 min-w-[140px] overflow-auto rounded-xl bg-white dark:bg-gray-800 py-1.5 shadow-xl ring-1 ring-gray-200 dark:ring-gray-700 text-sm">
                       {SEARCH_TYPES.map((type) => (
                         <Listbox.Option
                           key={type.value}
@@ -165,6 +167,20 @@ export function CustomersPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-4 sm:flex-col sm:items-end">
+                    <div className="flex items-center gap-2">
+                      {customer.bikeCount > 0 && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 dark:bg-blue-900/30 rounded-lg" title={`${customer.bikeCount} Bike loan(s)`}>
+                          <img src={bikeIcon} alt="Bike" className="h-4 w-4" />
+                          <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">{customer.bikeCount}</span>
+                        </div>
+                      )}
+                      {customer.carCount > 0 && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-green-50 dark:bg-green-900/30 rounded-lg" title={`${customer.carCount} Car loan(s)`}>
+                          <img src={carIcon} alt="Car" className="h-4 w-4" />
+                          <span className="text-xs font-semibold text-green-600 dark:text-green-400">{customer.carCount}</span>
+                        </div>
+                      )}
+                    </div>
                     <div className="text-right">
                       <p className="font-semibold text-gray-900 dark:text-white">
                         {customer.loanCount || 0} loan{customer.loanCount !== 1 ? 's' : ''}

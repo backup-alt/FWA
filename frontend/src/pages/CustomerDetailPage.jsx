@@ -11,6 +11,8 @@ import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { formatCurrency, formatDate } from '@/api';
+import bikeIcon from '../../../bike-svgrepo-com.svg';
+import carIcon from '../../../car-svgrepo-com.svg';
 
 const statusColors = {
   Active: 'info',
@@ -441,13 +443,20 @@ export function CustomerDetailPage() {
                       to={`/loan/${loan._id}`}
                       className="flex border-b border-gray-200 bg-white p-4 transition-colors last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700/50 flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
                     >
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-                          {loan.vehicleType} - {loan.make || ''} {loan.model || ''}
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">
-                          {loan.regNo ? `${loan.regNo} • ` : ''}{loan.loanAccountNumber ? `Acct: ${loan.loanAccountNumber} • ` : ''}Started {formatDate(loan.loanStartDate)} • {loan.installmentPeriod} months
-                        </p>
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        {loan.vehicleType === 'Bike' ? (
+                          <img src={bikeIcon} alt="Bike" className="h-8 w-8 shrink-0" />
+                        ) : (
+                          <img src={carIcon} alt="Car" className="h-8 w-8 shrink-0" />
+                        )}
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                            {loan.vehicleType} - {loan.make || ''} {loan.model || ''}
+                          </h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">
+                            {loan.regNo ? `${loan.regNo} • ` : ''}{loan.loanAccountNumber ? `Acct: ${loan.loanAccountNumber} • ` : ''}Started {formatDate(loan.loanStartDate)} • {loan.installmentPeriod} months
+                          </p>
+                        </div>
                       </div>
                       <div className="flex items-center gap-4 sm:flex-col sm:items-end">
                         <div className="text-right">

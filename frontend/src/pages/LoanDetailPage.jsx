@@ -29,6 +29,8 @@ import { Button } from '@/components/ui/Button';
 import { formatCurrency, formatDate } from '@/api';
 import { Loans } from '@/api';
 import { useQueryClient } from '@tanstack/react-query';
+import bikeIcon from '../../../bike-svgrepo-com.svg';
+import carIcon from '../../../car-svgrepo-com.svg';
 
 const statusColors = {
   Active: 'info',
@@ -255,18 +257,9 @@ export function LoanDetailPage() {
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               {loan.vehicleType === 'Bike' ? (
-                <svg className="h-7 w-7 text-primary-600 dark:text-primary-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="5" cy="17" r="3" />
-                  <circle cx="19" cy="17" r="3" />
-                  <path d="M12 17V9l4 3M12 9l-5 8h5M12 9l7 8h-5" />
-                </svg>
+                <img src={bikeIcon} alt="Bike" className="h-8 w-8 shrink-0" />
               ) : (
-                <svg className="h-7 w-7 text-primary-600 dark:text-primary-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 17h14v-5l-2-4H7l-2 4v5z" />
-                  <circle cx="7.5" cy="17.5" r="2.5" />
-                  <circle cx="16.5" cy="17.5" r="2.5" />
-                  <path d="M3 12h18M7 8h3l2 4" />
-                </svg>
+                <img src={carIcon} alt="Car" className="h-8 w-8 shrink-0" />
               )}
               <span>{loan.vehicleType} - {loan.make || ''} {loan.model || ''}</span>
             </h1>
@@ -459,21 +452,33 @@ export function LoanDetailPage() {
                 {[
                   ['Vehicle', `${loan.vehicleType || '-'} - ${loan.make || ''} ${loan.model || ''}`],
                   ['Registration No.', loan.regNo || '-'],
+                  ['Loan Account No.', loan.loanAccountNumber || '-'],
                   ['Loan Amount (L.AMT)', formatCurrency(loan.loanAmount || 0)],
                   ['Finance Amount (F.AMT)', formatCurrency(loan.financeAmount || 0)],
                   ['Loan Start Date', formatDate(loan.loanStartDate)],
-                  ['Interest', `${formatCurrency(loan.interestAmount || 0)} (${loan.interestRate || 0}% flat per month)`],
+                  ['Interest Rate', `${loan.interestRate || 0}% flat per month`],
+                  ['Interest Amount', formatCurrency(loan.interestAmount || 0)],
+                  ['EMI Amount', formatCurrency(loan.emiAmount || 0)],
+                  ['Installment Period', `${loan.installmentPeriod || 0} ${loan.installmentPeriodUnit || 'Months'}`],
+                  ['Customer Name', customer.name || '-'],
                   ['Address', customer.address || '-'],
+                  ['Temporary Address', customer.temporaryAddress || '-'],
                   ['Cell Numbers', (customer.cellNumbers || []).map(c => c.number).join(', ') || '-'],
-                  ['Guarantor', customer.guarantor?.name ? `${customer.guarantor.name} ${customer.guarantor.address ? `(${customer.guarantor.address})` : ''}` : '-'],
-                  ['RC Status', loan.rcDetails?.status || '-'],
-                  ['NOC', loan.noc || '-'],
-                  ['Insurance', loan.insurance || '-'],
-                  ['ID Proof', customer.idProofType ? `${customer.idProofType} - ${customer.idProofNumber || ''}` : '-'],
                   ['Monthly Salary', customer.monthlySalary ? formatCurrency(customer.monthlySalary) : '-'],
+                  ['Guarantor', customer.guarantor?.name ? `${customer.guarantor.name} ${customer.guarantor.address ? `(${customer.guarantor.address})` : ''}` : '-'],
+                  ['RC Status / Note', loan.rcDetails?.status || '-'],
+                  ['RC Paid Through', loan.rcDetails?.paidThrough || '-'],
+                  ['RC Cheque Number', loan.rcDetails?.chequeNumber || '-'],
+                  ['RC Amount', loan.rcDetails?.amount ? formatCurrency(loan.rcDetails.amount) : '-'],
+                  ['NOC', loan.noc || '-'],
+                  ['Insurance Status', loan.insurance || '-'],
                   ['Key Status', loan.keyStatus || '-'],
+                  ['ID Proof', customer.idProofType ? `${customer.idProofType} - ${customer.idProofNumber || ''}` : '-'],
                   ['Sales Done By', loan.salesDoneBy || '-'],
-                  ['Cheques Received', (loan.chequesReceived || []).length > 0 ? loan.chequesReceived.map(c => c.chequeNumber).join(', ') : '-'],
+                  ['Cheques Received', (loan.chequesReceived || []).length > 0 ? loan.chequesReceived.map(c => `${c.chequeNumber}${c.bank ? ` (${c.bank})` : ''}`).join(', ') : '-'],
+                  ['Status', loan.status || '-'],
+                  ['Outstanding Principal', formatCurrency(loan.outstandingPrincipal || 0)],
+                  ['Total Paid', formatCurrency(loan.totalPaid || 0)],
                   ['', '']
                 ].map(([label, value], idx, arr) => (
                   <div 

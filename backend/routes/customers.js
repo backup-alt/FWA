@@ -48,6 +48,8 @@ router.get('/', async (req, res) => {
             $sum: { $cond: [{ $eq: ['$status', 'Active'] }, 1, 0] },
           },
           regNos: { $push: '$regNo' },
+          bikeCount: { $sum: { $cond: [{ $eq: ['$vehicleType', 'Bike'] }, 1, 0] } },
+          carCount: { $sum: { $cond: [{ $eq: ['$vehicleType', 'Car'] }, 1, 0] } },
         },
       },
     ]);
@@ -65,6 +67,8 @@ router.get('/', async (req, res) => {
         totalOutstanding: agg.totalOutstanding || 0,
         activeLoans: agg.activeLoans || 0,
         regNos: agg.regNos || [],
+        bikeCount: agg.bikeCount || 0,
+        carCount: agg.carCount || 0,
       };
     });
 

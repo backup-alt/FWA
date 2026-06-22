@@ -42,17 +42,23 @@ router.get('/', async (req, res) => {
 
     // If searching by regNo, first find matching loans and their customerIds
     if (search && searchType === 'regNo') {
+      console.log('Searching for regNo:', search);
       const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const matchingLoans = await Loan.find({
         regNo: { $regex: escapedSearch, $options: 'i' }
-      }).select('customerId').lean();
+      }).select('customerId regNo').lean();
+
+      console.log('Matching loans count:', matchingLoans.length);
+      console.log('Sample matching loan:', matchingLoans[0]);
 
       customerIds = [...new Set(
         matchingLoans
-          .map(l => l.customerId?.toString())
+          .map(l => l.customerId ? l.customerId.toString() : null)
           .filter(Boolean)
       )];
+      console.log('Customer IDs found:', customerIds);
       customers = customers.filter(c => customerIds.includes(c._id.toString()));
+      console.log('Filtered customers count:', customers.length);
     }
 
     // Aggregate loan counts and totals per customer

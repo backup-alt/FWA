@@ -1,23 +1,35 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, Fragment } from 'react';
 import { NavLink } from 'react-router-dom';
-import { MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, MagnifyingGlassIcon, ChevronUpDownIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { Listbox, Transition } from '@headlessui/react';
-import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/outline';
 import { useCustomers } from '@/hooks/useCustomers';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { formatCurrency } from '@/api';
-import { Fragment } from 'react';
 import { clsx } from 'clsx';
-import bikeIcon from '../../../bike-svgrepo-com.svg';
-import carIcon from '../../../car-svgrepo-com.svg';
 
 const SEARCH_TYPES = [
   { value: 'name', label: 'Name' },
   { value: 'phone', label: 'Phone Number' },
   { value: 'regNo', label: 'Vehicle Reg. Number' },
 ];
+
+const BikeIcon = () => (
+  <svg viewBox="0 0 512 512" className="h-5 w-5" fill="currentColor">
+    <path d="M417.975,226.338c-5.966,0-11.764,0.618-17.404,1.684l-33.048-100.841c-5.781-17.644-22.258-29.577-40.822-29.577h-45.506v24.414h45.506c8.038-0.008,15.147,5.155,17.636,12.768l6.028,18.433h-60.684c-31.084,0-54.424,15.542-54.424,15.542v45.358h135.064l7.064,21.54c-31.579,15.163-53.42,47.345-53.435,84.704c0.016,51.936,42.09,94.018,94.026,94.033c51.92-0.015,94.01-42.097,94.025-94.033C511.985,268.435,469.895,226.353,417.975,226.338z M461.456,363.844c-11.175,11.144-26.462,18.007-43.48,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.144-11.176-18.008-26.447-18.008-43.481c0-17.026,6.863-32.29,18.008-43.465c3.88-3.88,8.409-7.01,13.185-9.754l11.114,33.928c-4.962,4.931-8.037,11.748-8.037,19.29c0,15.032,12.18,27.22,27.204,27.22c15.024,0,27.204-12.188,27.204-27.22c0-13.633-10.062-24.809-23.14-26.787l-11.128-33.974c2.35-0.278,4.637-0.711,7.064-0.711c17.018,0,32.305,6.855,43.48,18.008c11.144,11.175,17.977,26.439,18.008,43.465C479.432,337.397,472.6,352.668,461.456,363.844z"/>
+    <path d="M94.01,226.338C42.074,226.353,0.016,268.435,0,320.363c0.016,51.936,42.074,94.018,94.01,94.033c51.936-0.015,94.01-42.097,94.026-94.033C188.02,268.435,145.946,226.353,94.01,226.338z M137.491,363.844c-11.176,11.144-26.447,18.007-43.481,18.007c-17.034,0-32.29-6.862-43.466-18.007c-11.16-11.176-18.008-26.447-18.008-43.481c0-17.026,6.848-32.29,18.008-43.465C61.72,265.745,76.976,258.89,94.01,258.89c17.034,0,32.306,6.855,43.481,18.008c11.144,11.175,17.992,26.439,18.008,43.465C155.483,337.397,148.636,352.668,137.491,363.844z"/>
+    <circle cx="5" cy="17" r="3"/>
+    <circle cx="19" cy="17" r="3"/>
+    <path d="M70.5,214.119H220.17v-42.762h-45.52c-12.212,0-24.345-1.932-35.954-5.742l-16.261-5.34c-11.592-3.81-23.742-5.758-35.953-5.758H70.5c-8.47,0-15.348,6.886-15.348,15.372v28.858C55.151,207.233,62.029,214.119,70.5,214.119z"/>
+  </svg>
+);
+
+const CarIcon = () => (
+  <svg viewBox="0 0 16 16" className="h-5 w-5" fill="currentColor">
+    <path d="M3 1L1.66667 5H0V8H1V15H3V13H13V15H15V8H16V5H14.3333L13 1H3ZM4 9C3.44772 9 3 9.44772 3 10C3 10.5523 3.44772 11 4 11C4.55228 11 5 10.5523 5 10C5 9.44772 4.55228 9 4 9ZM11.5585 3H4.44152L3.10819 7H12.8918L11.5585 3ZM12 9C11.4477 9 11 9.44772 11 10C11 10.5523 11.4477 11 12 11C12.5523 11 13 10.5523 13 10C13 9.44772 12.5523 9 12 9Z"/>
+  </svg>
+);
 
 export function CustomersPage() {
   const [query, setQuery] = useState('');
@@ -66,55 +78,54 @@ export function CustomersPage() {
         />
         <CardContent className="p-5">
           <div className="mb-5">
-            <div className="relative flex rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 overflow-hidden">
-              <div className="relative flex items-center border-r border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 z-10">
-                <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 ml-3" />
-                <Listbox value={searchType} onChange={setSearchType}>
-                  <div className="relative">
-                    <Listbox.Button className="flex items-center gap-1 py-2.5 pr-3 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none whitespace-nowrap">
-                      <span className="min-w-[60px]">{searchType === 'name' ? 'Name' : searchType === 'phone' ? 'Phone' : 'Reg. No.'}</span>
-                      <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
-                    </Listbox.Button>
-                    <Transition
-                      as={Fragment}
-                      enter="transition ease-out duration-100"
-                      enterFrom="transform opacity-0 scale-95"
-                      enterTo="transform opacity-100 scale-100"
-                      leave="transition ease-in duration-75"
-                      leaveFrom="transform opacity-100 scale-100"
-                      leaveTo="transform opacity-0 scale-95"
-                    >
-                      <Listbox.Options className="absolute left-0 top-full z-[100] mt-1 min-w-[140px] overflow-auto rounded-xl bg-white dark:bg-gray-800 py-1.5 shadow-xl ring-1 ring-gray-200 dark:ring-gray-700 text-sm">
-                        {SEARCH_TYPES.map((type) => (
-                          <Listbox.Option
-                            key={type.value}
-                            value={type.value}
-                            as={Fragment}
-                          >
-                            {({ active, selected }) => (
-                              <li
-                                className={clsx(
-                                  'relative cursor-pointer select-none py-2 pl-10 pr-4 mx-1 rounded-lg transition-colors',
-                                  active ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-gray-100'
-                                )}
-                              >
-                                <span className="block truncate font-normal">
-                                  {type.label}
+            <div className="flex rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 overflow-hidden">
+              <Listbox value={searchType} onChange={setSearchType}>
+                <div className="relative flex items-center border-r border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900">
+                  <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 ml-3" />
+                  <Listbox.Button className="flex items-center gap-1 py-2.5 pr-3 pl-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none whitespace-nowrap min-w-[90px]">
+                    <span>{SEARCH_TYPES.find(t => t.value === searchType)?.label}</span>
+                    <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
+                  </Listbox.Button>
+                  <Transition
+                    as={Fragment}
+                    show={true}
+                    enter="transition ease-out duration-100"
+                    enterFrom="opacity-0 scale-95"
+                    enterTo="opacity-100 scale-100"
+                    leave="transition ease-in duration-75"
+                    leaveFrom="opacity-100 scale-100"
+                    leaveTo="opacity-0 scale-95"
+                  >
+                    <Listbox.Options className="absolute left-0 top-full z-50 mt-1 ml-2 min-w-[160px] overflow-auto rounded-xl bg-white dark:bg-gray-800 py-1 shadow-xl ring-1 ring-gray-200 dark:ring-gray-700 text-sm">
+                      {SEARCH_TYPES.map((type) => (
+                        <Listbox.Option
+                          key={type.value}
+                          value={type.value}
+                          as={Fragment}
+                        >
+                          {({ active, selected }) => (
+                            <li
+                              className={clsx(
+                                'relative cursor-pointer select-none py-2 pl-10 pr-4 mx-1 rounded-lg transition-colors',
+                                active ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-gray-100'
+                              )}
+                            >
+                              <span className="block truncate font-normal">
+                                {type.label}
+                              </span>
+                              {selected && (
+                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary-600 dark:text-primary-400">
+                                  <CheckIcon className="h-5 w-5" aria-hidden="true" />
                                 </span>
-                                {selected && (
-                                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary-600 dark:text-primary-400">
-                                    <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                                  </span>
-                                )}
-                              </li>
-                            )}
-                          </Listbox.Option>
-                        ))}
-                      </Listbox.Options>
-                    </Transition>
-                  </div>
-                </Listbox>
-              </div>
+                              )}
+                            </li>
+                          )}
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </Transition>
+                </div>
+              </Listbox>
               <input
                 value={query}
                 onChange={e => setQuery(e.target.value)}
@@ -164,10 +175,16 @@ export function CustomersPage() {
                           {customer.name}
                         </h3>
                         {customer.bikeCount > 0 && (
-                          <img src={bikeIcon} alt="Bike" className="h-5 w-5 shrink-0" title={`${customer.bikeCount} Bike loan(s)`} />
+                          <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400" title={`${customer.bikeCount} Bike loan(s)`}>
+                            <BikeIcon />
+                            <span className="text-xs font-bold">{customer.bikeCount}</span>
+                          </div>
                         )}
                         {customer.carCount > 0 && (
-                          <img src={carIcon} alt="Car" className="h-5 w-5 shrink-0" title={`${customer.carCount} Car loan(s)`} />
+                          <div className="flex items-center gap-1 text-green-600 dark:text-green-400" title={`${customer.carCount} Car loan(s)`}>
+                            <CarIcon />
+                            <span className="text-xs font-bold">{customer.carCount}</span>
+                          </div>
                         )}
                       </div>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate">
@@ -177,20 +194,6 @@ export function CustomersPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-4 sm:flex-col sm:items-end">
-                    <div className="flex items-center gap-2">
-                      {customer.bikeCount > 0 && (
-                        <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 dark:bg-blue-900/30 rounded-lg" title={`${customer.bikeCount} Bike loan(s)`}>
-                          <img src={bikeIcon} alt="Bike" className="h-4 w-4" />
-                          <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">{customer.bikeCount}</span>
-                        </div>
-                      )}
-                      {customer.carCount > 0 && (
-                        <div className="flex items-center gap-1 px-2 py-1 bg-green-50 dark:bg-green-900/30 rounded-lg" title={`${customer.carCount} Car loan(s)`}>
-                          <img src={carIcon} alt="Car" className="h-4 w-4" />
-                          <span className="text-xs font-semibold text-green-600 dark:text-green-400">{customer.carCount}</span>
-                        </div>
-                      )}
-                    </div>
                     <div className="text-right">
                       <p className="font-semibold text-gray-900 dark:text-white">
                         {customer.loanCount || 0} loan{customer.loanCount !== 1 ? 's' : ''}

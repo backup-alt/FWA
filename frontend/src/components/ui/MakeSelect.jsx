@@ -169,8 +169,8 @@ export function MakeSelect({ value, onChange, vehicleType, error }) {
           leaveFrom="opacity-100 scale-100"
           leaveTo="opacity-0 scale-95"
         >
-          <Listbox.Options className="absolute z-[100] mt-1 w-full max-h-60 overflow-auto rounded-xl bg-white dark:bg-gray-800 py-1 shadow-xl ring-1 ring-gray-200 dark:ring-gray-700 focus:outline-none">
-            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 px-2 pb-1">
+          <Listbox.Options className="absolute z-[9999] mt-1 w-full max-h-60 overflow-auto rounded-xl bg-white dark:bg-gray-800 py-1 shadow-xl ring-1 ring-gray-200 dark:ring-gray-700 focus:outline-none border border-gray-100 dark:border-gray-700">
+            <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 px-2 pb-1 shadow-sm">
               <div className="relative">
                 <svg className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -180,7 +180,7 @@ export function MakeSelect({ value, onChange, vehicleType, error }) {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search brands..."
-                  className="w-full py-1.5 pl-8 pr-2 text-sm border-0 bg-transparent focus:outline-none focus:ring-0 dark:text-white dark:placeholder-gray-500"
+                  className="w-full py-1.5 pl-8 pr-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white dark:placeholder-gray-500"
                   autoFocus
                 />
               </div>

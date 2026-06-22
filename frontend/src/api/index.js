@@ -66,7 +66,13 @@ export const Auth = {
 };
 
 export const Customers = {
-  list: () => apiRequest('/customers'),
+  list: (params = {}) => {
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== '')
+    );
+    const query = new URLSearchParams(cleanParams).toString();
+    return apiRequest(`/customers${query ? `?${query}` : ''}`);
+  },
   get: (id) => apiRequest(`/customers/${id}`),
   create: (data) => apiRequest('/customers', { method: 'POST', body: data }),
   update: (id, data) => apiRequest(`/customers/${id}`, { method: 'PUT', body: data }),

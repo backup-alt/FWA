@@ -34,32 +34,22 @@ const CarIcon = () => (
 export function CustomersPage() {
   const [query, setQuery] = useState('');
   const [searchType, setSearchType] = useState('name');
-  const { data: customers = [], isLoading } = useCustomers();
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return customers;
-    return customers.filter(c => {
-      switch (searchType) {
-        case 'name':
-          return c.name?.toLowerCase().includes(q);
-        case 'phone':
-          return c.cellNumbers?.some(n => n.number?.replace(/\s/g, '').includes(q.replace(/\s/g, '')));
-        case 'regNo': {
-          const allRegNos = [...(c.bikeRegNos || []), ...(c.carRegNos || [])];
-          return allRegNos.some(r => r?.toLowerCase().replace(/\s/g, '').includes(q));
-        }
-        default:
-          return true;
-      }
-    });
-  }, [customers, query, searchType]);
+  const searchParams = useMemo(() => {
+    if (query.trim() && query.length >= 2) {
+      return { search: query.trim(), searchType };
+    }
+    return {};
+  }, [query, searchType]);
+
+  const { data: customers = [], isLoading } = useCustomers(searchParams);
 
   const renderRegNumbers = (customer) => {
     const bikeRegs = customer.bikeRegNos || [];
     const carRegs = customer.carRegNos || [];
+    const totalVehicles = bikeRegs.length + carRegs.length;
 
-    if (bikeRegs.length === 0 && carRegs.length === 0) {
+    if (totalVehicles === 0) {
       return <span className="text-xs text-gray-400 dark:text-gray-500">No vehicles</span>;
     }
 
@@ -102,7 +92,7 @@ export function CustomersPage() {
         <CardHeader
           className="px-5 pt-5 mb-0"
           title="Customer List"
-          subtitle={isLoading ? 'Loading...' : `${filtered.length} customer${filtered.length === 1 ? '' : 's'}`}
+          subtitle={isLoading ? 'Loading...' : `${customers.length} customer${customers.length === 1 ? '' : 's'}`}
         />
         <CardContent className="p-5">
           <div className="mb-5">
@@ -166,7 +156,7 @@ export function CustomersPage() {
             <div className="rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
               Loading customers...
             </div>
-          ) : filtered.length === 0 ? (
+          ) : customers.length === 0 ? (
             <div className="rounded-lg border border-gray-200 p-8 text-center dark:border-gray-700">
               <p className="text-sm text-gray-500 dark:text-gray-400">No customers found.</p>
               <NavLink to="/add-customer" className="mt-4 inline-flex">
@@ -178,7 +168,7 @@ export function CustomersPage() {
             </div>
           ) : (
             <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-              {filtered.map(customer => (
+              {customers.map(customer => (
                 <NavLink
                   key={customer._id}
                   to={`/customer/${customer._id}`}
@@ -201,21 +191,17 @@ export function CustomersPage() {
                         <h3 className="font-semibold text-gray-900 dark:text-white truncate">
                           {customer.name}
                         </h3>
-                        {(customer.bikeCount > 0 || customer.carCount > 0) && (
-                          <div className="flex items-center gap-1.5">
-                            {customer.bikeCount > 0 && (
-                              <span className="inline-flex items-center gap-0.5 text-blue-600 dark:text-blue-400" title={`${customer.bikeCount} Bike loan(s)`}>
-                                <BikeIcon />
-                                <span className="text-xs font-bold">{customer.bikeCount}</span>
-                              </span>
-                            )}
-                            {customer.carCount > 0 && (
-                              <span className="inline-flex items-center gap-0.5 text-green-600 dark:text-green-400" title={`${customer.carCount} Car loan(s)`}>
-                                <CarIcon />
-                                <span className="text-xs font-bold">{customer.carCount}</span>
-                              </span>
-                            )}
-                          </div>
+                        {customer.bikeCount > 0 && (
+                          <span className="inline-flex items-center gap-0.5 text-blue-600 dark:text-blue-400" title={`${customer.bikeCount} Bike loan(s)`}>
+                            <BikeIcon />
+                            <span className="text-xs font-bold">{customer.bikeCount}</span>
+                          </span>
+                        )}
+                        {customer.carCount > 0 && (
+                          <span className="inline-flex items-center gap-0.5 text-green-600 dark:text-green-400" title={`${customer.carCount} Car loan(s)`}>
+                            <CarIcon />
+                            <span className="text-xs font-bold">{customer.carCount}</span>
+                          </span>
                         )}
                       </div>
                       <p className="text-sm text-gray-500 dark:text-gray-400 truncate">

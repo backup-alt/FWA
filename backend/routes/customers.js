@@ -35,7 +35,22 @@ router.post('/', async (req, res) => {
 // List all customers (with loan count)
 router.get('/', async (req, res) => {
   try {
-    const customers = await Customer.find().sort({ createdAt: -1 }).lean();
+    const { search, searchType } = req.query;
+    let customers = await Customer.find().sort({ createdAt: -1 }).lean();
+
+    // If searching by regNo, first find matching loans and their customerIds
+    if (search && searchType === 'regNo') {
+      const matchingLoans = await Loan.find({
+        regNo: { $regex: search, $options: 'i' }
+      }).select('customerId').lean();
+
+      const customerIds = [...new Set(
+        matchingLoans
+          .map(l => l.customerId?.toString())
+          .filter(Boolean)
+      )];
+      customers = customers.filter(c => customerIds.includes(c._id.toString()));
+    }
 
     // Aggregate loan counts and totals per customer
     const loanAgg = await Loan.aggregate([

@@ -204,7 +204,8 @@ router.get('/report', async (req, res) => {
           paidInstallments.push(commonData);
         }
 
-        if (isDueInRange && installment.status !== 'Paid') {
+        // For due installments: show all unpaid installments due on or before endDate
+        if (dueDateStr <= endStr && installment.status !== 'Paid') {
           const today = new Date();
           const daysOverdue = Math.floor((today - dueDateObj) / (1000 * 60 * 60 * 24));
           dueInstallments.push({

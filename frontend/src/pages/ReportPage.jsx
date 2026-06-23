@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ArrowLeftIcon, ArrowDownTrayIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { NavLink } from 'react-router-dom';
 import { CustomCalendar } from '@/components/ui/CustomCalendar';
@@ -60,7 +60,7 @@ function ReportTable({ title, data, type, icon: Icon, emptyMessage }) {
                 <th className="text-center py-3 px-4 font-semibold text-gray-600 dark:text-gray-300">Installment</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-600 dark:text-gray-300">Due Date</th>
                 {type === 'paid' && <th className="text-left py-3 px-4 font-semibold text-gray-600 dark:text-gray-300">Paid Date</th>}
-                {type === 'due' && <th className="text-center py-3 px-4 font-semibold text-gray-600 dark:text-gray-300">Days Overdue</th>}
+                {type === 'due' && <th className="text-center py-3 px-4 font-semibold text-gray-600 dark:text-gray-300">Pending Status</th>}
                 <th className="text-right py-3 px-4 font-semibold text-gray-600 dark:text-gray-300">Amount</th>
               </tr>
             </thead>
@@ -110,7 +110,7 @@ function ReportTable({ title, data, type, icon: Icon, emptyMessage }) {
                   {type === 'due' && (
                     <td className="py-3 px-4 text-center">
                       <Badge variant={item.daysOverdue > 0 ? 'error' : 'warning'}>
-                        {item.daysOverdue > 0 ? `${item.daysOverdue} days` : 'Due today'}
+                        {item.daysOverdue > 0 ? `Overdue by ${item.daysOverdue} day${item.daysOverdue !== 1 ? 's' : ''}` : 'Due today'}
                       </Badge>
                     </td>
                   )}
@@ -142,6 +142,27 @@ export function ReportPage() {
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
+
+  useEffect(() => {
+    const loadTodayReport = async () => {
+      setLoading(true);
+      try {
+        const today = formatDateString(new Date());
+        const data = await Loans.report(today, today);
+        if (data) {
+          setReportData(data);
+        } else {
+          setReportData({ paid: { data: [] }, due: { data: [] } });
+        }
+      } catch (err) {
+        console.error(err);
+        setReportData({ paid: { data: [] }, due: { data: [] } });
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadTodayReport();
+  }, []);
 
   const handleDateSelect = (date) => {
     setSelectedDate(date);
@@ -278,7 +299,7 @@ export function ReportPage() {
               <th>Make/Model</th>
               <th>Installment</th>
               <th>Due Date</th>
-              <th>Days Overdue</th>
+              <th>Pending Status</th>
               <th>Amount Due</th>
             </tr>
           </thead>
@@ -292,7 +313,7 @@ export function ReportPage() {
                 <td>${item.make} ${item.model}</td>
                 <td>#${item.sNo}</td>
                 <td>${formatDisplayDate(item.dueDate)}</td>
-                <td>${item.daysOverdue > 0 ? item.daysOverdue + ' days' : 'Due today'}</td>
+                <td>${item.daysOverdue > 0 ? 'Overdue by ' + item.daysOverdue + ' day' + (item.daysOverdue !== 1 ? 's' : '') : 'Due today'}</td>
                 <td>₹${(item.dueAmount || 0).toLocaleString()}</td>
               </tr>
             `).join('')}

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { ArrowLeftIcon, ArrowDownTrayIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { NavLink } from 'react-router-dom';
 import { CustomCalendar } from '@/components/ui/CustomCalendar';
@@ -134,6 +134,8 @@ export function ReportPage() {
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [activeTab, setActiveTab] = useState('all');
+  const calendarRef = useRef(null);
 
   const formatDateString = (date) => {
     const d = new Date(date);
@@ -163,6 +165,20 @@ export function ReportPage() {
     };
     loadTodayReport();
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (calendarRef.current && !calendarRef.current.contains(event.target)) {
+        setShowCalendar(false);
+      }
+    };
+    if (showCalendar) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCalendar]);
 
   const handleDateSelect = (date) => {
     setSelectedDate(date);
@@ -200,93 +216,33 @@ export function ReportPage() {
     }
   };
 
-  const downloadReport = () => {
-    if (!reportData) return;
+  const formatDisplayDate = (date) => {
+    if (!date) return 'N/A';
+    const d = new Date(date);
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  };
 
-    const formatDisplayDate = (date) => {
-      if (!date) return 'N/A';
-      const d = new Date(date);
-      return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  const getReportTitle = (type) => {
+    const dateRange = mode === 'single'
+      ? formatDisplayDate(selectedDate)
+      : `${formatDisplayDate(selectedRange.start)} - ${selectedRange.end ? formatDisplayDate(selectedRange.end) : 'N/A'}`;
+    const titles = {
+      all: `Complete Payment Report - ${dateRange}`,
+      due: `Pending Dues Report - ${dateRange}`,
+      paid: `Payments Received Report - ${dateRange}`,
     };
+    return titles[type] || titles.all;
+  };
 
+  const generateHtmlContent = (type) => {
     const dateRange = mode === 'single'
       ? formatDisplayDate(selectedDate)
       : `${formatDisplayDate(selectedRange.start)} - ${selectedRange.end ? formatDisplayDate(selectedRange.end) : 'N/A'}`;
 
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Payment Report - ${dateRange}</title>
-        <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          h1 { color: #333; border-bottom: 2px solid #333; padding-bottom: 10px; }
-          h2 { color: #666; margin-top: 30px; font-size: 16px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-          th { background-color: #f5f5f5; font-weight: bold; }
-          .paid-section { color: #2e7d32; }
-          .due-section { color: #c62828; }
-          .summary { display: flex; gap: 20px; margin: 20px 0; }
-          .summary-card { padding: 15px; border-radius: 8px; flex: 1; }
-          .due-card { background-color: #fff3e0; }
-          .paid-card { background-color: #e8f5e9; }
-          .summary-number { font-size: 24px; font-weight: bold; }
-          .footer { margin-top: 30px; text-align: center; color: #666; font-size: 12px; }
-          @media print { body { padding: 10px; } }
-        </style>
-      </head>
-      <body>
-        <h1>Payment Report</h1>
-        <p><strong>Date Range:</strong> ${dateRange}</p>
+    const showDue = type === 'all' || type === 'due';
+    const showPaid = type === 'all' || type === 'paid';
 
-        <div class="summary">
-          <div class="summary-card due-card">
-            <div class="due-section">Due (${mode === 'single' ? 'Today' : 'In Range'})</div>
-            <div class="summary-number">${reportData.due?.count || 0}</div>
-            <div>Total: ₹${(reportData.due?.total || 0).toLocaleString()}</div>
-          </div>
-          <div class="summary-card paid-card">
-            <div class="paid-section">Paid (${mode === 'single' ? 'Today' : 'In Range'})</div>
-            <div class="summary-number">${reportData.paid?.count || 0}</div>
-            <div>Total: ₹${(reportData.paid?.total || 0).toLocaleString()}</div>
-          </div>
-        </div>
-
-        <h2 class="paid-section">Payments Received</h2>
-        ${reportData.paid?.data?.length > 0 ? `
-        <table>
-          <thead>
-            <tr>
-              <th>Customer</th>
-              <th>Vehicle</th>
-              <th>Reg. No.</th>
-              <th>Phone</th>
-              <th>Make/Model</th>
-              <th>Installment</th>
-              <th>Due Date</th>
-              <th>Paid Date</th>
-              <th>Amount Paid</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${reportData.paid.data.map(item => `
-              <tr>
-                <td>${item.customerName}</td>
-                <td>${item.vehicleType}</td>
-                <td>${item.regNo || '-'}</td>
-                <td>${item.cellNumbers?.join(', ') || '-'}</td>
-                <td>${item.make} ${item.model}</td>
-                <td>#${item.sNo}</td>
-                <td>${formatDisplayDate(item.dueDate)}</td>
-                <td>${formatDisplayDate(item.dateReceived)}</td>
-                <td>₹${(item.amountReceived || 0).toLocaleString()}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-        ` : '<p>No payments received for this period.</p>'}
-
+    const dueSection = showDue ? `
         <h2 class="due-section">Pending Dues</h2>
         ${reportData.due?.data?.length > 0 ? `
         <table>
@@ -320,20 +276,107 @@ export function ReportPage() {
           </tbody>
         </table>
         ` : '<p>No pending dues for this period.</p>'}
+    ` : '';
 
+    const paidSection = showPaid ? `
+        <h2 class="paid-section">Payments Received</h2>
+        ${reportData.paid?.data?.length > 0 ? `
+        <table>
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Vehicle</th>
+              <th>Reg. No.</th>
+              <th>Phone</th>
+              <th>Make/Model</th>
+              <th>Installment</th>
+              <th>Due Date</th>
+              <th>Paid Date</th>
+              <th>Amount Paid</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${reportData.paid.data.map(item => `
+              <tr>
+                <td>${item.customerName}</td>
+                <td>${item.vehicleType}</td>
+                <td>${item.regNo || '-'}</td>
+                <td>${item.cellNumbers?.join(', ') || '-'}</td>
+                <td>${item.make} ${item.model}</td>
+                <td>#${item.sNo}</td>
+                <td>${formatDisplayDate(item.dueDate)}</td>
+                <td>${formatDisplayDate(item.dateReceived)}</td>
+                <td>₹${(item.amountReceived || 0).toLocaleString()}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        ` : '<p>No payments received for this period.</p>'}
+    ` : '';
+
+    const summarySection = type === 'all' ? `
+        <div class="summary">
+          <div class="summary-card due-card">
+            <div class="due-section">Due (${mode === 'single' ? 'Today' : 'In Range'})</div>
+            <div class="summary-number">${reportData.due?.count || 0}</div>
+            <div>Total: ₹${(reportData.due?.total || 0).toLocaleString()}</div>
+          </div>
+          <div class="summary-card paid-card">
+            <div class="paid-section">Paid (${mode === 'single' ? 'Today' : 'In Range'})</div>
+            <div class="summary-number">${reportData.paid?.count || 0}</div>
+            <div>Total: ₹${(reportData.paid?.total || 0).toLocaleString()}</div>
+          </div>
+        </div>
+    ` : '';
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>${getReportTitle(type)}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { color: #333; border-bottom: 2px solid #333; padding-bottom: 10px; }
+          h2 { color: #666; margin-top: 30px; font-size: 16px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+          th { background-color: #f5f5f5; font-weight: bold; }
+          .paid-section { color: #2e7d32; }
+          .due-section { color: #c62828; }
+          .summary { display: flex; gap: 20px; margin: 20px 0; }
+          .summary-card { padding: 15px; border-radius: 8px; flex: 1; }
+          .due-card { background-color: #fff3e0; }
+          .paid-card { background-color: #e8f5e9; }
+          .summary-number { font-size: 24px; font-weight: bold; }
+          .footer { margin-top: 30px; text-align: center; color: #666; font-size: 12px; }
+          @media print { body { padding: 10px; } }
+        </style>
+      </head>
+      <body>
+        <h1>${getReportTitle(type)}</h1>
+        ${summarySection}
+        ${dueSection}
+        ${paidSection}
         <div class="footer">
           Generated on ${new Date().toLocaleString()} | RAM Finance
         </div>
-
         <script>window.print();</script>
       </body>
       </html>
     `;
+  };
 
+  const downloadReport = (type = 'all') => {
+    if (!reportData) return;
+    const htmlContent = generateHtmlContent(type);
     const printWindow = window.open('', '_blank');
     printWindow.document.write(htmlContent);
     printWindow.document.close();
   };
+
+  const downloadPendingDues = () => downloadReport('due');
+  const downloadPaymentsReceived = () => downloadReport('paid');
+  const downloadAllReport = () => downloadReport('all');
 
   const displayDate = useMemo(() => {
     if (mode === 'single') {
@@ -388,7 +431,7 @@ export function ReportPage() {
                 </button>
               </div>
 
-              <div className="relative">
+              <div className="relative" ref={calendarRef}>
                 <button
                   type="button"
                   onClick={() => setShowCalendar(!showCalendar)}
@@ -431,27 +474,78 @@ export function ReportPage() {
                 </div>
 
                 {(reportData.paid?.data?.length > 0 || reportData.due?.data?.length > 0) && (
-                  <Button onClick={downloadReport} className="flex items-center gap-2">
-                    <ArrowDownTrayIcon className="h-5 w-5" />
-                    Download PDF Report
-                  </Button>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Download:</span>
+                    <Button onClick={downloadPendingDues} variant="outline" size="sm" className="flex items-center gap-1 text-orange-600 border-orange-300 hover:bg-orange-50">
+                      <ArrowDownTrayIcon className="h-4 w-4" />
+                      Pending Dues
+                    </Button>
+                    <Button onClick={downloadPaymentsReceived} variant="outline" size="sm" className="flex items-center gap-1 text-green-600 border-green-300 hover:bg-green-50">
+                      <ArrowDownTrayIcon className="h-4 w-4" />
+                      Payments Received
+                    </Button>
+                    <Button onClick={downloadAllReport} size="sm" className="flex items-center gap-1">
+                      <ArrowDownTrayIcon className="h-4 w-4" />
+                      Complete Report
+                    </Button>
+                  </div>
                 )}
 
+                <div className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-700">
+                  {[
+                    { key: 'all', label: 'All' },
+                    { key: 'due', label: 'Pending Dues', color: 'orange' },
+                    { key: 'paid', label: 'Payments Received', color: 'green' },
+                  ].map(tab => (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() => setActiveTab(tab.key)}
+                      className={clsx(
+                        'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
+                        activeTab === tab.key
+                          ? tab.key === 'due'
+                            ? 'border-orange-500 text-orange-600'
+                            : tab.key === 'paid'
+                              ? 'border-green-500 text-green-600'
+                              : 'border-gray-900 text-gray-900 dark:border-white dark:text-white'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                      )}
+                    >
+                      {tab.label}
+                      {tab.key === 'due' && reportData.due?.count > 0 && (
+                        <span className="ml-1.5 px-1.5 py-0.5 text-xs rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">
+                          {reportData.due.count}
+                        </span>
+                      )}
+                      {tab.key === 'paid' && reportData.paid?.count > 0 && (
+                        <span className="ml-1.5 px-1.5 py-0.5 text-xs rounded-full bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
+                          {reportData.paid.count}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
                 <div className="space-y-6">
-                  <ReportTable
-                    title="Payments Received"
-                    data={reportData.paid?.data || []}
-                    type="paid"
-                    icon={DocumentTextIcon}
-                    emptyMessage="No payments received in this period"
-                  />
-                  <ReportTable
-                    title="Pending Dues"
-                    data={reportData.due?.data || []}
-                    type="due"
-                    icon={DocumentTextIcon}
-                    emptyMessage="No pending dues in this period"
-                  />
+                  {(activeTab === 'all' || activeTab === 'due') && (
+                    <ReportTable
+                      title="Pending Dues"
+                      data={reportData.due?.data || []}
+                      type="due"
+                      icon={DocumentTextIcon}
+                      emptyMessage="No pending dues in this period"
+                    />
+                  )}
+                  {(activeTab === 'all' || activeTab === 'paid') && (
+                    <ReportTable
+                      title="Payments Received"
+                      data={reportData.paid?.data || []}
+                      type="paid"
+                      icon={DocumentTextIcon}
+                      emptyMessage="No payments received in this period"
+                    />
+                  )}
                 </div>
               </div>
             )}

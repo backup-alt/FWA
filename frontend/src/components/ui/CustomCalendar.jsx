@@ -36,6 +36,12 @@ export function CustomCalendar({ selectedDate, onDateSelect, selectedRange, onRa
     return date.getTime() === today.getTime();
   };
 
+  const isFuture = (day) => {
+    const date = new Date(year, month, day);
+    date.setHours(0, 0, 0, 0);
+    return date.getTime() > today.getTime();
+  };
+
   const isSelected = (day) => {
     const date = new Date(year, month, day);
     date.setHours(0, 0, 0, 0);
@@ -76,6 +82,8 @@ export function CustomCalendar({ selectedDate, onDateSelect, selectedRange, onRa
     const date = new Date(year, month, day);
     date.setHours(0, 0, 0, 0);
 
+    if (date > today) return;
+
     if (mode === 'single') {
       onDateSelect?.(date);
     } else if (mode === 'range') {
@@ -111,7 +119,7 @@ export function CustomCalendar({ selectedDate, onDateSelect, selectedRange, onRa
   }
 
   return (
-    <div className={clsx(mode === 'single' ? 'w-72' : 'w-full max-w-sm')}>
+    <div className="w-72">
       <div className="flex items-center justify-between mb-3">
         <button
           type="button"
@@ -149,14 +157,17 @@ export function CustomCalendar({ selectedDate, onDateSelect, selectedRange, onRa
               onClick={() => handleDateClick(day)}
               onMouseEnter={() => handleDateHover(day)}
               onMouseLeave={() => setHoverDate(null)}
+              disabled={isFuture(day)}
               className={clsx(
                 'h-8 w-full text-sm rounded-lg transition-colors',
-                isSelected(day)
-                  ? 'bg-primary-600 text-white'
-                  : isInRange(day)
-                    ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300'
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200',
-                isToday(day) && !isSelected(day) && 'font-bold text-primary-600 dark:text-primary-400'
+                isFuture(day)
+                  ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                  : isSelected(day)
+                    ? 'bg-primary-600 text-white'
+                    : isInRange(day)
+                      ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300'
+                      : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200',
+                isToday(day) && !isSelected(day) && !isFuture(day) && 'font-bold text-primary-600 dark:text-primary-400'
               )}
             >
               {day}

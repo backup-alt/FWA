@@ -74,4 +74,27 @@ router.post('/test-pcloud', requireAdminSecret, async (req, res) => {
   });
 });
 
+router.post('/cleanup-root-files', requireAdminSecret, async (req, res) => {
+  const { deleteFromPcloud } = require('../utils/pcloud');
+  const axios = require('axios');
+
+  try {
+    const rootResponse = await axios.get(
+      `${pcloudConfig.baseUrl}/listfolder?folderid=0&access_token=${pcloudConfig.token}`
+    );
+    const contents = rootResponse.data.metadata?.contents || [];
+    const toDelete = contents.filter(f => f.name && (f.name.startsWith('doc_') || f.name.startsWith('profile_') || f.name.startsWith('test_')));
+
+    const results = [];
+    for (const file of toDelete) {
+      const deleted = await deleteFromPcloud(file.fileid);
+      results.push({ name: file.name, fileid: file.fileid, deleted });
+    }
+
+    res.json({ ok: true, deleted: results.length, files: results });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;

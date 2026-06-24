@@ -152,13 +152,13 @@ async function getPublicLink(fileId) {
 async function deleteFromPcloud(fileId) {
   try {
     const response = await axios.get(
-      `${API_BASE}/fileops/delete?fileid=${fileId}&access_token=${TOKEN}`
+      `${API_BASE}/deletefile?fileid=${fileId}&access_token=${TOKEN}`
     );
 
     if (response.data.result === 0) {
       return true;
     } else {
-      console.warn(`pcloud delete warning: ${response.data.error}`);
+      console.warn(`pcloud delete warning: ${response.data.result}: ${response.data.error}`);
       return false;
     }
   } catch (err) {

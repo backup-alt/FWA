@@ -10,7 +10,7 @@ const {
 const {
   uploadBase64ToPcloud,
   deleteFromPcloud,
-  getPubLink,
+  getPublicLink,
 } = require('../utils/pcloud');
 const { getFileFromCacheOrPcloud, getMimeTypeFromExtension } = require('../middleware/fileProxy');
 const pcloudConfig = require('../config/pcloud');
@@ -458,7 +458,7 @@ router.post('/:id/documents', async (req, res) => {
         pcloudConfig.folders.documents,
         false
       );
-      pubUrl = await getPubLink(fileId);
+      pubUrl = await getPublicLink(fileId);
     } catch (err) {
       console.error('pcloud document upload failed:', err.message);
       return res.status(500).json({ message: 'Failed to upload document to storage.' });

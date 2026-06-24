@@ -3,11 +3,16 @@ const path = require('path');
 const { downloadFromPcloud, getPublicLink } = require('../utils/pcloud');
 const pcloudConfig = require('../config/pcloud');
 
-const cacheDir = path.resolve(pcloudConfig.cacheDir || './cache/files');
+const cacheDir = path.resolve(__dirname, '..', 'cache', 'files');
 const cacheTTL = pcloudConfig.cacheTTL || 60 * 60 * 1000;
 
 if (!fs.existsSync(cacheDir)) {
-  fs.mkdirSync(cacheDir, { recursive: true });
+  try {
+    fs.mkdirSync(cacheDir, { recursive: true });
+    console.log(`[fileProxy] Created cache directory: ${cacheDir}`);
+  } catch (err) {
+    console.error(`[fileProxy] Failed to create cache directory: ${err.message}`);
+  }
 }
 
 function getCacheFilePath(fileId, extension) {

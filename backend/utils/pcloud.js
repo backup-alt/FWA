@@ -169,15 +169,39 @@ async function deleteFromPcloud(fileId) {
 
 async function downloadFromPcloud(fileId, localPath) {
   try {
-    const url = await getPublicLink(fileId);
-    const response = await axios.get(url, { responseType: 'arraybuffer' });
+    const linkResponse = await axios.get(
+      `${API_BASE}/getfilelink?fileid=${fileId}&access_token=${TOKEN}`,
+      { timeout: 30000 }
+    );
+
+    if (linkResponse.data.result !== 0) {
+      throw new Error(`getfilelink failed: ${linkResponse.data.error}`);
+    }
+
+    const downloadUrl = linkResponse.data.url;
+
+    let response;
+    try {
+      response = await axios.get(downloadUrl, {
+        responseType: 'arraybuffer',
+        timeout: 60000,
+        maxRedirects: 5,
+      });
+    } catch (downloadErr) {
+      console.error(`pcloud CDN download failed, trying API direct: ${downloadErr.message}`);
+      const apiDownloadUrl = `https://api.pcloud.com/downloadfile?fileid=${fileId}&access_token=${TOKEN}`;
+      response = await axios.get(apiDownloadUrl, {
+        responseType: 'arraybuffer',
+        timeout: 60000,
+      });
+    }
 
     const dir = path.dirname(localPath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
 
-    fs.writeFileSync(localPath, response.data);
+    fs.writeFileSync(localPath, Buffer.from(response.data));
     return localPath;
   } catch (err) {
     console.error('pcloud download error:', err.message);

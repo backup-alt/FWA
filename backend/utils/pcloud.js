@@ -175,7 +175,7 @@ async function downloadFromPcloud(fileId, localPath) {
     );
 
     if (linkResponse.data.result !== 0) {
-      throw new Error(`getfilelink failed: ${linkResponse.data.error}`);
+      throw new Error(`getfilelink failed: ${linkResponse.data.error || linkResponse.data.result}`);
     }
 
     const downloadUrl = linkResponse.data.url;
@@ -187,22 +187,40 @@ async function downloadFromPcloud(fileId, localPath) {
         timeout: 60000,
         maxRedirects: 5,
       });
+
+      const buffer = Buffer.from(response.data);
+      if (buffer.length < 100 || !buffer[0]) {
+        throw new Error(`Download returned invalid data (${buffer.length} bytes)`);
+      }
+
+      const dir = path.dirname(localPath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+
+      fs.writeFileSync(localPath, buffer);
+      return localPath;
     } catch (downloadErr) {
-      console.error(`pcloud CDN download failed, trying API direct: ${downloadErr.message}`);
+      console.error(`pcloud CDN download failed: ${downloadErr.message}`);
       const apiDownloadUrl = `https://api.pcloud.com/downloadfile?fileid=${fileId}&access_token=${TOKEN}`;
       response = await axios.get(apiDownloadUrl, {
         responseType: 'arraybuffer',
         timeout: 60000,
       });
-    }
 
-    const dir = path.dirname(localPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+      const buffer = Buffer.from(response.data);
+      if (buffer.length < 100) {
+        throw new Error(`API direct download also returned invalid data (${buffer.length} bytes)`);
+      }
 
-    fs.writeFileSync(localPath, Buffer.from(response.data));
-    return localPath;
+      const dir = path.dirname(localPath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+
+      fs.writeFileSync(localPath, buffer);
+      return localPath;
+    }
   } catch (err) {
     console.error('pcloud download error:', err.message);
     throw err;

@@ -1,7 +1,7 @@
 const express = require('express');
 const authMiddleware = require('../middleware/auth');
 const { migrateCustomerProfileImages, migrateLoanDocuments, cleanupOldFields } = require('../scripts/migrateImagesToPcloud');
-const { uploadBase64ToPcloud, getPublicLink } = require('../utils/pcloud');
+const { uploadBase64ToPcloud, getPublicLink, getPubLink } = require('../utils/pcloud');
 const { getFileFromCacheOrPcloud } = require('../middleware/fileProxy');
 const pcloudConfig = require('../config/pcloud');
 const https = require('https');
@@ -100,6 +100,44 @@ router.post('/cleanup-root-files', requireAdminSecret, async (req, res) => {
     }
 
     res.json({ ok: true, deleted: results.length, files: results });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post('/backfill-doc-urls', requireAdminSecret, async (req, res) => {
+  const { getPubLink } = require('../utils/pcloud');
+  const Loan = require('../models/Loan');
+
+  try {
+    const loans = await Loan.find({ 'documents.0': { $exists: true } }).lean();
+    let updated = 0;
+    let skipped = 0;
+    let errors = 0;
+    const results = [];
+
+    for (const loan of loans) {
+      for (const doc of loan.documents) {
+        if (doc.fileId && !doc.url) {
+          try {
+            const pubUrl = await getPubLink(doc.fileId);
+            await Loan.updateOne(
+              { _id: loan._id, 'documents._id': doc._id.toString() },
+              { $set: { 'documents.$.url': pubUrl } }
+            );
+            results.push({ docId: doc._id.toString(), name: doc.name, url: pubUrl });
+            updated++;
+          } catch (err) {
+            errors++;
+            results.push({ docId: doc._id.toString(), name: doc.name, error: err.message });
+          }
+        } else if (doc.url) {
+          skipped++;
+        }
+      }
+    }
+
+    res.json({ ok: true, updated, skipped, errors, results });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }

@@ -79,8 +79,10 @@ async function uploadToPcloud(buffer, filename, folderId) {
     formData.append('folderid', folderId);
     formData.append('renameifexists', 1);
 
+    const uploadUrl = `${API_BASE}/fileops/upload_file?access_token=${TOKEN}&folderid=${folderId}`;
+
     const response = await axios.post(
-      `${API_BASE}/fileops/upload_file?access_token=${TOKEN}`,
+      uploadUrl,
       formData,
       {
         headers: formData.getHeaders(),
@@ -95,6 +97,9 @@ async function uploadToPcloud(buffer, filename, folderId) {
       throw new Error(`pcloud upload failed: ${response.data.error}`);
     }
   } catch (err) {
+    if (err.response) {
+      throw new Error(`pcloud upload failed with status ${err.response.status}: ${JSON.stringify(err.response.data)}`);
+    }
     console.error('pcloud upload error:', err.message);
     throw err;
   }

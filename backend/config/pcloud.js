@@ -1,10 +1,10 @@
 module.exports = {
-  token: 'hwwEZC70fbQB8DbpZMhWTO7Zeswo5En32opA21MAJKr2RFadrYBX',
+  token: process.env.PCLOUD_TOKEN || '',
   folders: {
-    profilePictures: '32047901260',
-    documents: '32047901924',
+    profilePictures: process.env.PCLOUD_FOLDER_PROFILE_PICTURES || '',
+    documents: process.env.PCLOUD_FOLDER_DOCUMENTS || '',
   },
   baseUrl: 'https://api.pcloud.com',
-  cacheDir: './cache/files',
-  cacheTTL: 60 * 60 * 1000, // 1 hour in milliseconds
+  cacheDir: process.env.PCLOUD_CACHE_DIR || './cache/files',
+  cacheTTL: parseInt(process.env.PCLOUD_CACHE_TTL || '3600000', 10), // 1 hour default
 };

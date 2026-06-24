@@ -6,6 +6,7 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
 const loanRoutes = require('./routes/loans');
 const customerRoutes = require('./routes/customers');
+const fileRoutes = require('./routes/files');
 const systemRoutes = require('./routes/system');
 
 const app = express();
@@ -38,6 +39,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/customers', customerRoutes);
+app.use('/api/files', fileRoutes);
 app.use('/api/system', systemRoutes);
 
 // Health check endpoint (useful for Render)

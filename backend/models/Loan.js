@@ -43,7 +43,7 @@ const documentSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     type: { type: String, required: true }, // mime type
-    data: { type: String, required: true }, // base64 data URI
+    fileId: { type: String, default: '' }, // pcloud file id
     uploadedAt: { type: Date, default: Date.now },
   }
 );

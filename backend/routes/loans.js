@@ -7,6 +7,12 @@ const {
   recalculateSchedule,
   getPendingDues,
 } = require('../utils/loanCalculations');
+const {
+  uploadBase64ToPcloud,
+  deleteFromPcloud,
+} = require('../utils/pcloud');
+const { getFileFromCacheOrPcloud, getMimeTypeFromExtension } = require('../middleware/fileProxy');
+const pcloudConfig = require('../config/pcloud');
 
 const router = express.Router();
 const roundMoney = (v) => +Number(v || 0).toFixed(2);
@@ -424,7 +430,7 @@ router.put('/:id/installments/:sNo', async (req, res) => {
   }
 });
 
-// Upload document to loan
+// Upload document to loan (uploads to pcloud, stores fileId)
 router.post('/:id/documents', async (req, res) => {
   try {
     const loan = await Loan.findById(req.params.id);
@@ -435,16 +441,85 @@ router.post('/:id/documents', async (req, res) => {
       return res.status(400).json({ message: 'name, type, and data are required.' });
     }
 
-    loan.documents.push({ name, type, data, uploadedAt: new Date() });
+    if (!data.startsWith('data:')) {
+      return res.status(400).json({ message: 'Document data must be a Base64 data URI.' });
+    }
+
+    const safeName = name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const filename = `doc_${loan._id}_${Date.now()}_${safeName.split('.')[0]}`;
+
+    let fileId;
+    try {
+      fileId = await uploadBase64ToPcloud(
+        data,
+        filename,
+        pcloudConfig.folders.documents,
+        false
+      );
+    } catch (err) {
+      console.error('pcloud document upload failed:', err.message);
+      return res.status(500).json({ message: 'Failed to upload document to storage.' });
+    }
+
+    loan.documents.push({
+      name,
+      type,
+      fileId,
+      uploadedAt: new Date(),
+    });
     await loan.save();
-    res.status(201).json(loan.documents[loan.documents.length - 1]);
+
+    const savedDoc = loan.documents[loan.documents.length - 1];
+    res.status(201).json({
+      _id: savedDoc._id,
+      name: savedDoc.name,
+      type: savedDoc.type,
+      fileId: savedDoc.fileId,
+      uploadedAt: savedDoc.uploadedAt,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error uploading document.' });
   }
 });
 
-// Delete document from loan
+// Stream a document file via proxy (downloads from pcloud, caches locally)
+router.get('/:id/documents/:docId/file', async (req, res) => {
+  try {
+    const loan = await Loan.findById(req.params.id).lean();
+    if (!loan) return res.status(404).json({ message: 'Loan not found.' });
+
+    const doc = (loan.documents || []).find(d => d._id.toString() === req.params.docId);
+    if (!doc) return res.status(404).json({ message: 'Document not found.' });
+    if (!doc.fileId) return res.status(404).json({ message: 'Document file is missing.' });
+
+    const extFromName = doc.name && doc.name.includes('.')
+      ? doc.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/gi, '')
+      : '';
+    const extFromMime = doc.type && doc.type.includes('/')
+      ? doc.type.split('/')[1].toLowerCase().replace(/[^a-z0-9]/gi, '')
+      : '';
+    const ext = extFromName || extFromMime || 'bin';
+
+    const filePath = await getFileFromCacheOrPcloud(doc.fileId, ext);
+    const mimeType = getMimeTypeFromExtension(ext);
+
+    res.setHeader('Content-Type', doc.type || mimeType);
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+    res.sendFile(filePath, (err) => {
+      if (err && !res.headersSent) {
+        res.status(500).json({ message: 'Error sending file.' });
+      }
+    });
+  } catch (err) {
+    console.error('Loan document proxy error:', err.message);
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Failed to fetch document from storage.' });
+    }
+  }
+});
+
+// Delete document from loan (also deletes file from pcloud)
 router.delete('/:id/documents/:docId', async (req, res) => {
   try {
     const loan = await Loan.findById(req.params.id);
@@ -453,8 +528,20 @@ router.delete('/:id/documents/:docId', async (req, res) => {
     const docIndex = loan.documents.findIndex(d => d._id.toString() === req.params.docId);
     if (docIndex === -1) return res.status(404).json({ message: 'Document not found.' });
 
+    const doc = loan.documents[docIndex];
+    const fileIdToDelete = doc.fileId;
+
     loan.documents.splice(docIndex, 1);
     await loan.save();
+
+    if (fileIdToDelete) {
+      try {
+        await deleteFromPcloud(fileIdToDelete);
+      } catch (err) {
+        console.error(`Failed to delete pcloud file ${fileIdToDelete}:`, err.message);
+      }
+    }
+
     res.json({ message: 'Document deleted.' });
   } catch (err) {
     console.error(err);

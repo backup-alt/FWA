@@ -3,17 +3,82 @@ const mongoose = require('mongoose');
 const Customer = require('../models/Customer');
 const Loan = require('../models/Loan');
 const authMiddleware = require('../middleware/auth');
+const {
+  uploadBase64ToPcloud,
+  deleteFromPcloud,
+} = require('../utils/pcloud');
+const pcloudConfig = require('../config/pcloud');
 
 const router = express.Router();
 router.use(authMiddleware);
 
-// Create customer
+function buildProxyUrl(fileId, ext = 'jpg') {
+  if (!fileId) return '';
+  const base = process.env.API_BASE_URL || '';
+  return `${base}/api/files/${fileId}?ext=${ext}`;
+}
+
+function shapeCustomerResponse(customer) {
+  if (!customer) return customer;
+  const obj = typeof customer.toObject === 'function' ? customer.toObject() : { ...customer };
+  const fileId = obj.profileImageFileId || '';
+  const proxyUrl = fileId ? buildProxyUrl(fileId, 'jpg') : '';
+  obj.profileImage = obj.profileImageUrl || proxyUrl || '';
+  return obj;
+}
+
+async function uploadProfileImage(base64Data) {
+  if (!base64Data || !base64Data.startsWith('data:')) {
+    return { fileId: '', url: '' };
+  }
+  const filename = `profile_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const fileId = await uploadBase64ToPcloud(
+    base64Data,
+    filename,
+    pcloudConfig.folders.profilePictures,
+    true
+  );
+  const { getPublicLink } = require('../utils/pcloud');
+  const url = await getPublicLink(fileId);
+  return { fileId, url };
+}
+
+async function deleteProfileImage(fileId) {
+  if (!fileId) return;
+  try {
+    await deleteFromPcloud(fileId);
+  } catch (err) {
+    console.error(`Failed to delete profile image ${fileId} from pcloud:`, err.message);
+  }
+}
+
 router.post('/', async (req, res) => {
   try {
-    const { name, address, temporaryAddress, monthlySalary, cellNumbers, guarantor, profileImage, idProofType, idProofNumber } = req.body;
+    const {
+      name, address, temporaryAddress, monthlySalary, cellNumbers, guarantor,
+      profileImage, idProofType, idProofNumber,
+    } = req.body;
+
     if (!name) {
       return res.status(400).json({ message: 'Customer name is required.' });
     }
+
+    let profileImageFileId = '';
+    let profileImageUrl = '';
+
+    if (profileImage && profileImage.startsWith('data:')) {
+      try {
+        const uploaded = await uploadProfileImage(profileImage);
+        profileImageFileId = uploaded.fileId;
+        profileImageUrl = uploaded.url;
+      } catch (err) {
+        console.error('Profile image upload failed:', err.message);
+        return res.status(500).json({ message: 'Failed to upload profile image.' });
+      }
+    } else if (profileImage && /^https?:\/\//.test(profileImage)) {
+      profileImageUrl = profileImage;
+    }
+
     const customer = new Customer({
       name,
       address,
@@ -21,47 +86,40 @@ router.post('/', async (req, res) => {
       monthlySalary,
       cellNumbers: (cellNumbers || []).filter(c => c.number),
       guarantor,
-      profileImage,
+      profileImageFileId,
+      profileImageUrl,
       idProofType,
       idProofNumber,
     });
+
     await customer.save();
-    res.status(201).json(customer);
+    res.status(201).json(shapeCustomerResponse(customer));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error creating customer.' });
   }
 });
 
-// List all customers (with loan count)
 router.get('/', async (req, res) => {
   try {
     const { search, searchType } = req.query;
     let customers = await Customer.find().sort({ createdAt: -1 }).lean();
     let customerIds = null;
 
-    // If searching by regNo, first find matching loans and their customerIds
     if (search && searchType === 'regNo') {
-      console.log('Searching for regNo:', search);
       const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const matchingLoans = await Loan.find({
         regNo: { $regex: escapedSearch, $options: 'i' }
       }).select('customerId regNo').lean();
-
-      console.log('Matching loans count:', matchingLoans.length);
-      console.log('Sample matching loan:', matchingLoans[0]);
 
       customerIds = [...new Set(
         matchingLoans
           .map(l => l.customerId ? l.customerId.toString() : null)
           .filter(Boolean)
       )];
-      console.log('Customer IDs found:', customerIds);
       customers = customers.filter(c => customerIds.includes(c._id.toString()));
-      console.log('Filtered customers count:', customers.length);
     }
 
-    // Aggregate loan counts and totals per customer
     const loanAgg = await Loan.aggregate([
       customerIds ? { $match: { customerId: { $in: customerIds.map(id => new mongoose.Types.ObjectId(id)) } } } : { $match: {} },
       {
@@ -103,8 +161,9 @@ router.get('/', async (req, res) => {
 
     const result = customers.map(c => {
       const agg = loanMap[c._id.toString()] || {};
+      const shaped = shapeCustomerResponse(c);
       return {
-        ...c,
+        ...shaped,
         loanCount: agg.loanCount || 0,
         totalOutstanding: agg.totalOutstanding || 0,
         activeLoans: agg.activeLoans || 0,
@@ -122,7 +181,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get single customer with their loans
 router.get('/:id', async (req, res) => {
   try {
     const customer = await Customer.findById(req.params.id).lean();
@@ -130,30 +188,68 @@ router.get('/:id', async (req, res) => {
 
     const loans = await Loan.find({ customerId: customer._id }).sort({ createdAt: -1 }).lean();
 
-    res.json({ customer, loans });
+    res.json({
+      customer: shapeCustomerResponse(customer),
+      loans,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error fetching customer.' });
   }
 });
 
-// Update customer
 router.put('/:id', async (req, res) => {
   try {
     const customer = await Customer.findById(req.params.id);
     if (!customer) return res.status(404).json({ message: 'Customer not found.' });
 
     const oldName = customer.name;
-    const updatableFields = [
-      'name', 'address', 'temporaryAddress', 'monthlySalary', 'cellNumbers',
-      'guarantor', 'profileImage', 'idProofType', 'idProofNumber',
-    ];
+    const oldProfileFileId = customer.profileImageFileId;
 
-    updatableFields.forEach(field => {
+    const scalarFields = [
+      'name', 'address', 'temporaryAddress', 'monthlySalary',
+      'idProofType', 'idProofNumber',
+    ];
+    scalarFields.forEach(field => {
       if (req.body[field] !== undefined) {
         customer[field] = req.body[field];
       }
     });
+
+    if (req.body.cellNumbers !== undefined) {
+      customer.cellNumbers = (req.body.cellNumbers || []).filter(c => c.number);
+    }
+    if (req.body.guarantor !== undefined) {
+      customer.guarantor = req.body.guarantor;
+    }
+
+    if (req.body.profileImage !== undefined) {
+      const incoming = req.body.profileImage;
+
+      if (!incoming || incoming === '') {
+        if (customer.profileImageFileId) {
+          await deleteProfileImage(customer.profileImageFileId);
+        }
+        customer.profileImageFileId = '';
+        customer.profileImageUrl = '';
+      } else if (incoming.startsWith('data:')) {
+        let uploaded;
+        try {
+          uploaded = await uploadProfileImage(incoming);
+        } catch (err) {
+          console.error('Profile image upload failed:', err.message);
+          return res.status(500).json({ message: 'Failed to upload profile image.' });
+        }
+
+        if (customer.profileImageFileId && customer.profileImageFileId !== uploaded.fileId) {
+          await deleteProfileImage(customer.profileImageFileId);
+        }
+        customer.profileImageFileId = uploaded.fileId;
+        customer.profileImageUrl = uploaded.url;
+      } else if (/^https?:\/\//.test(incoming)) {
+        customer.profileImageUrl = incoming;
+      }
+    }
 
     await customer.save();
 
@@ -164,19 +260,25 @@ router.put('/:id', async (req, res) => {
       );
     }
 
-    res.json(customer);
+    res.json(shapeCustomerResponse(customer));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error updating customer.' });
   }
 });
 
-// Delete customer (and all their loans)
 router.delete('/:id', async (req, res) => {
   try {
-    const customer = await Customer.findByIdAndDelete(req.params.id);
+    const customer = await Customer.findById(req.params.id);
     if (!customer) return res.status(404).json({ message: 'Customer not found.' });
+
+    if (customer.profileImageFileId) {
+      await deleteProfileImage(customer.profileImageFileId);
+    }
+
+    await Customer.findByIdAndDelete(req.params.id);
     await Loan.deleteMany({ customerId: req.params.id });
+
     res.json({ message: 'Customer and associated loans deleted.' });
   } catch (err) {
     console.error(err);

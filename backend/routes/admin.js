@@ -3,6 +3,8 @@ const authMiddleware = require('../middleware/auth');
 const { migrateCustomerProfileImages, migrateLoanDocuments, cleanupOldFields } = require('../scripts/migrateImagesToPcloud');
 const { uploadBase64ToPcloud, getPublicLink } = require('../utils/pcloud');
 const pcloudConfig = require('../config/pcloud');
+const https = require('https');
+const dns = require('dns');
 
 const router = express.Router();
 router.use(authMiddleware);
@@ -45,14 +47,31 @@ router.post('/migrate-images', requireAdminSecret, async (req, res) => {
 });
 
 router.post('/test-pcloud', requireAdminSecret, async (req, res) => {
-  try {
+  const results = {};
+
+  dns.resolve4('api.pcloud.com', (err, addrs) => {
+    if (err) {
+      results.dns = { error: err.message };
+    } else {
+      results.dns = { ok: true, addresses: addrs };
+    }
+
     const testData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
-    const testFileId = await uploadBase64ToPcloud(testData, `test_${Date.now()}`, pcloudConfig.folders.profilePictures);
-    const testUrl = await getPublicLink(testFileId);
-    res.json({ ok: true, fileId: testFileId, url: testUrl });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message, config: { tokenSet: !!pcloudConfig.token, folder: pcloudConfig.folders.profilePictures } });
-  }
+
+    uploadBase64ToPcloud(testData, `test_${Date.now()}`, pcloudConfig.folders.profilePictures)
+      .then(fileId => {
+        results.upload = { ok: true, fileId };
+        return getPublicLink(fileId);
+      })
+      .then(url => {
+        results.publicLink = { ok: true, url };
+        res.json({ ok: true, pcloudConfig: { tokenSet: !!pcloudConfig.token, folder: pcloudConfig.folders.profilePictures }, results });
+      })
+      .catch(err => {
+        results.upload = { error: err.message };
+        res.status(500).json({ ok: false, pcloudConfig: { tokenSet: !!pcloudConfig.token, folder: pcloudConfig.folders.profilePictures }, results });
+      });
+  });
 });
 
 module.exports = router;

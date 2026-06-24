@@ -143,6 +143,7 @@ router.put('/:id', async (req, res) => {
     const customer = await Customer.findById(req.params.id);
     if (!customer) return res.status(404).json({ message: 'Customer not found.' });
 
+    const oldName = customer.name;
     const updatableFields = [
       'name', 'address', 'temporaryAddress', 'monthlySalary', 'cellNumbers',
       'guarantor', 'profileImage', 'idProofType', 'idProofNumber',
@@ -155,6 +156,14 @@ router.put('/:id', async (req, res) => {
     });
 
     await customer.save();
+
+    if (req.body.name !== undefined && req.body.name !== oldName) {
+      await Loan.updateMany(
+        { customerId: customer._id },
+        { $set: { customerName: req.body.name } }
+      );
+    }
+
     res.json(customer);
   } catch (err) {
     console.error(err);

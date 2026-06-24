@@ -18,6 +18,25 @@ const pcloudConfig = require('../config/pcloud');
 const router = express.Router();
 const roundMoney = (v) => +Number(v || 0).toFixed(2);
 
+async function buildLoanResponse(loan) {
+  const obj = typeof loan.toObject === 'function' ? loan.toObject() : { ...loan };
+  if (obj.documents && Array.isArray(obj.documents)) {
+    obj.documents = await Promise.all(
+      obj.documents.map(async (doc) => {
+        if (doc.fileId) {
+          try {
+            return { ...doc, url: await getPublicLink(doc.fileId) };
+          } catch {
+            return { ...doc, url: '' };
+          }
+        }
+        return doc;
+      })
+    );
+  }
+  return obj;
+}
+
 router.use(authMiddleware);
 
 // Create loan (requires customerId)
@@ -118,7 +137,8 @@ router.get('/', async (req, res) => {
     for (const loan of loans) {
       recalculateSchedule(loan);
     }
-    res.json(loans);
+    const shapedLoans = await Promise.all(loans.map(buildLoanResponse));
+    res.json(shapedLoans);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error fetching loans.' });
@@ -249,8 +269,8 @@ router.get('/:id', async (req, res) => {
     const loan = await Loan.findById(req.params.id).lean();
     if (!loan) return res.status(404).json({ message: 'Loan not found.' });
     recalculateSchedule(loan);
-    // In-memory return only, no save needed
-    res.json(loan);
+    const shapedLoan = await buildLoanResponse(loan);
+    res.json(shapedLoan);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error fetching loan.' });
@@ -450,7 +470,6 @@ router.post('/:id/documents', async (req, res) => {
     const filename = `doc_${loan._id}_${Date.now()}_${safeName.split('.')[0]}`;
 
     let fileId;
-    let pubUrl = '';
     try {
       fileId = await uploadBase64ToPcloud(
         data,
@@ -458,7 +477,6 @@ router.post('/:id/documents', async (req, res) => {
         pcloudConfig.folders.documents,
         false
       );
-      pubUrl = await getPublicLink(fileId);
     } catch (err) {
       console.error('pcloud document upload failed:', err.message);
       return res.status(500).json({ message: 'Failed to upload document to storage.' });
@@ -468,18 +486,21 @@ router.post('/:id/documents', async (req, res) => {
       name,
       type,
       fileId,
-      url: pubUrl,
       uploadedAt: new Date(),
     });
     await loan.save();
 
     const savedDoc = loan.documents[loan.documents.length - 1];
+    let docUrl = '';
+    try {
+      docUrl = await getPublicLink(fileId);
+    } catch { /* ignore */ }
     res.status(201).json({
       _id: savedDoc._id,
       name: savedDoc.name,
       type: savedDoc.type,
       fileId: savedDoc.fileId,
-      url: savedDoc.url,
+      url: docUrl,
       uploadedAt: savedDoc.uploadedAt,
     });
   } catch (err) {

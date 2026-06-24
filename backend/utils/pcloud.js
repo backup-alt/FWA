@@ -77,11 +77,13 @@ async function uploadToPcloud(buffer, filename, folderId) {
     const FormData = require('form-data');
     const formData = new FormData();
     formData.append('file', buffer, { filename });
-    formData.append('folderid', folderId);
+    if (folderId) formData.append('folderid', folderId);
     formData.append('renameifexists', 1);
 
+    const uploadUrl = `${API_BASE}/uploadfile?access_token=${TOKEN}${folderId ? `&folderid=${folderId}` : ''}`;
+
     const response = await axios.post(
-      `${API_BASE}/uploadfile?access_token=${TOKEN}`,
+      uploadUrl,
       formData,
       {
         headers: formData.getHeaders(),

@@ -2,7 +2,6 @@ const express = require('express');
 const authMiddleware = require('../middleware/auth');
 const { migrateCustomerProfileImages, migrateLoanDocuments, cleanupOldFields } = require('../scripts/migrateImagesToPcloud');
 const { uploadBase64ToPcloud, getPublicLink, getPubLink } = require('../utils/pcloud');
-const { getFileFromCacheOrPcloud } = require('../middleware/fileProxy');
 const pcloudConfig = require('../config/pcloud');
 const https = require('https');
 const dns = require('dns');
@@ -62,17 +61,10 @@ router.post('/test-pcloud', requireAdminSecret, async (req, res) => {
     uploadBase64ToPcloud(testData, `test_${Date.now()}`, pcloudConfig.folders.profilePictures)
       .then(fileId => {
         results.upload = { ok: true, fileId };
-        return getPublicLink(fileId);
+        return getPubLink(fileId);
       })
       .then(url => {
         results.publicLink = { ok: true, url };
-        return getFileFromCacheOrPcloud(results.upload.fileId, 'png');
-      })
-      .then(cachePath => {
-        results.download = { ok: true, cachePath };
-        const fs = require('fs');
-        const stats = fs.statSync(cachePath);
-        results.download.size = stats.size;
         res.json({ ok: true, pcloudConfig: { tokenSet: !!pcloudConfig.token, folder: pcloudConfig.folders.profilePictures }, results });
       })
       .catch(err => {

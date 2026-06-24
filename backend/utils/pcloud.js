@@ -249,7 +249,6 @@ module.exports = {
   generateFileId,
   getExtensionFromMimeType,
   pcloudConfig,
-  getFileFromCacheOrPcloud,
   checkServer,
   getFileMetadata,
 };

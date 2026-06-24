@@ -91,6 +91,7 @@ async function migrateLoanDocuments() {
   let migrated = 0;
   let skipped = 0;
   let errors = 0;
+  const errorDetails = [];
 
   for (const loan of loans) {
     const docUpdates = [];
@@ -128,6 +129,7 @@ async function migrateLoanDocuments() {
         }
       } catch (err) {
         console.error(`    [ERROR] Failed to migrate document ${doc._id}:`, err.message);
+        errorDetails.push({ docId: doc._id.toString(), docName: doc.name, error: err.message });
         errors++;
       }
     }
@@ -146,7 +148,7 @@ async function migrateLoanDocuments() {
   }
 
   console.log(`\nLoan documents migration complete: ${migrated} migrated, ${skipped} skipped, ${errors} errors (of ${totalDocs} total)`);
-  return { migrated, skipped, errors, total: totalDocs };
+  return { migrated, skipped, errors, total: totalDocs, errorDetails };
 }
 
 async function cleanupOldFields() {

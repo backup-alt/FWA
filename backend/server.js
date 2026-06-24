@@ -7,6 +7,7 @@ const authRoutes = require('./routes/auth');
 const loanRoutes = require('./routes/loans');
 const customerRoutes = require('./routes/customers');
 const fileRoutes = require('./routes/files');
+const adminRoutes = require('./routes/admin');
 const systemRoutes = require('./routes/system');
 
 const app = express();
@@ -40,6 +41,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/files', fileRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/system', systemRoutes);
 
 // Health check endpoint (useful for Render)

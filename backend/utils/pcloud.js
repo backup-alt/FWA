@@ -168,61 +168,33 @@ async function deleteFromPcloud(fileId) {
 }
 
 async function downloadFromPcloud(fileId, localPath) {
+  const dir = path.dirname(localPath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
   try {
-    const linkResponse = await axios.get(
-      `${API_BASE}/getfilelink?fileid=${fileId}&access_token=${TOKEN}`,
-      { timeout: 30000 }
+    const response = await axios.get(
+      `${API_BASE}/downloadfile?fileid=${fileId}&access_token=${TOKEN}`,
+      {
+        responseType: 'arraybuffer',
+        timeout: 60000,
+      }
     );
 
-    if (linkResponse.data.result !== 0) {
-      throw new Error(`getfilelink failed: ${linkResponse.data.error || linkResponse.data.result}`);
+    const buffer = Buffer.from(response.data);
+    if (buffer.length < 100) {
+      throw new Error(`downloadfile returned too small a response (${buffer.length} bytes): ${buffer.toString('utf8').substring(0, 100)}`);
     }
 
-    const downloadUrl = linkResponse.data.url;
-
-    let response;
-    try {
-      response = await axios.get(downloadUrl, {
-        responseType: 'arraybuffer',
-        timeout: 60000,
-        maxRedirects: 5,
-      });
-
-      const buffer = Buffer.from(response.data);
-      if (buffer.length < 100 || !buffer[0]) {
-        throw new Error(`Download returned invalid data (${buffer.length} bytes)`);
-      }
-
-      const dir = path.dirname(localPath);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-
-      fs.writeFileSync(localPath, buffer);
-      return localPath;
-    } catch (downloadErr) {
-      console.error(`pcloud CDN download failed: ${downloadErr.message}`);
-      const apiDownloadUrl = `https://api.pcloud.com/downloadfile?fileid=${fileId}&access_token=${TOKEN}`;
-      response = await axios.get(apiDownloadUrl, {
-        responseType: 'arraybuffer',
-        timeout: 60000,
-      });
-
-      const buffer = Buffer.from(response.data);
-      if (buffer.length < 100) {
-        throw new Error(`API direct download also returned invalid data (${buffer.length} bytes)`);
-      }
-
-      const dir = path.dirname(localPath);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-
-      fs.writeFileSync(localPath, buffer);
-      return localPath;
-    }
+    fs.writeFileSync(localPath, buffer);
+    return localPath;
   } catch (err) {
     console.error('pcloud download error:', err.message);
+    if (err.response) {
+      console.error('Response status:', err.response.status);
+      console.error('Response data:', JSON.stringify(err.response.data).substring(0, 200));
+    }
     throw err;
   }
 }

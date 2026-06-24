@@ -139,7 +139,9 @@ async function getPublicLink(fileId) {
     );
 
     if (response.data.result === 0) {
-      return response.data.url;
+      const host = response.data.hosts?.[0] || 'u.pcloud.link';
+      const filePath = response.data.path || `/${fileId}`;
+      return `https://${host}${filePath}`;
     } else {
       throw new Error(`pcloud getfilelink failed: ${response.data.error}`);
     }

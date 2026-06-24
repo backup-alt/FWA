@@ -12,18 +12,24 @@ const pcloudConfig = require('../config/pcloud');
 const router = express.Router();
 router.use(authMiddleware);
 
-function buildProxyUrl(fileId, ext = 'jpg') {
-  if (!fileId) return '';
-  const base = process.env.API_BASE_URL || '';
-  return `${base}/api/files/${fileId}?ext=${ext}`;
-}
-
-function shapeCustomerResponse(customer) {
+async function shapeCustomerResponse(customer) {
   if (!customer) return customer;
   const obj = typeof customer.toObject === 'function' ? customer.toObject() : { ...customer };
   const fileId = obj.profileImageFileId || '';
-  const proxyUrl = fileId ? buildProxyUrl(fileId, 'jpg') : '';
-  obj.profileImage = obj.profileImageUrl || proxyUrl || '';
+
+  if (obj.profileImageUrl) {
+    obj.profileImage = obj.profileImageUrl;
+  } else if (fileId) {
+    try {
+      const { getPublicLink } = require('../utils/pcloud');
+      const directUrl = await getPublicLink(fileId);
+      obj.profileImage = directUrl;
+    } catch {
+      obj.profileImage = '';
+    }
+  } else {
+    obj.profileImage = '';
+  }
   return obj;
 }
 
@@ -93,7 +99,8 @@ router.post('/', async (req, res) => {
     });
 
     await customer.save();
-    res.status(201).json(shapeCustomerResponse(customer));
+    const shapedCustomer = await shapeCustomerResponse(customer);
+    res.status(201).json(shapedCustomer);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error creating customer.' });
@@ -159,9 +166,9 @@ router.get('/', async (req, res) => {
       loanMap[agg._id?.toString()] = agg;
     });
 
-    const result = customers.map(c => {
+    const result = await Promise.all(customers.map(async c => {
       const agg = loanMap[c._id.toString()] || {};
-      const shaped = shapeCustomerResponse(c);
+      const shaped = await shapeCustomerResponse(c);
       return {
         ...shaped,
         loanCount: agg.loanCount || 0,
@@ -172,7 +179,7 @@ router.get('/', async (req, res) => {
         bikeCount: agg.bikeCount || 0,
         carCount: agg.carCount || 0,
       };
-    });
+    }));
 
     res.json(result);
   } catch (err) {
@@ -188,8 +195,9 @@ router.get('/:id', async (req, res) => {
 
     const loans = await Loan.find({ customerId: customer._id }).sort({ createdAt: -1 }).lean();
 
+    const shapedCustomer = await shapeCustomerResponse(customer);
     res.json({
-      customer: shapeCustomerResponse(customer),
+      customer: shapedCustomer,
       loans,
     });
   } catch (err) {
@@ -260,7 +268,8 @@ router.put('/:id', async (req, res) => {
       );
     }
 
-    res.json(shapeCustomerResponse(customer));
+    const shapedCustomer = await shapeCustomerResponse(customer);
+    res.json(shapedCustomer);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error updating customer.' });

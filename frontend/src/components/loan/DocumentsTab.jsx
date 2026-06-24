@@ -1,39 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useToast } from '@/context/ToastContext';
 import { Modal } from '@/components/ui/Modal';
 import { CloudArrowUpIcon, TrashIcon, ArrowDownTrayIcon, DocumentTextIcon, EyeIcon } from '@heroicons/react/24/outline';
 
-const API_BASE = (() => {
-  const url = import.meta.env.VITE_API_URL;
-  if (!url) return '';
-  if (typeof window !== 'undefined' &&
-      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-    return '';
-  }
-  return url;
-})();
-
-function getExtensionFromDoc(doc) {
-  if (!doc) return 'bin';
-  if (doc.name && doc.name.includes('.')) {
-    const ext = doc.name.split('.').pop();
-    if (ext && /^[a-z0-9]+$/i.test(ext)) return ext.toLowerCase();
-  }
-  if (doc.type && doc.type.includes('/')) {
-    return doc.type.split('/')[1].toLowerCase();
-  }
-  return 'bin';
-}
-
-function getAuthHeaders() {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
 export function buildDocProxyUrl(doc) {
-  if (!doc || !doc.fileId) return '';
-  const ext = getExtensionFromDoc(doc);
-  return `${API_BASE}/api/files/${doc.fileId}?ext=${ext}`;
+  return doc?.url || '';
 }
 
 export function DocumentsTab({ loanId, documents = [], onUpload, onDelete }) {
@@ -41,16 +12,6 @@ export function DocumentsTab({ loanId, documents = [], onUpload, onDelete }) {
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [previewDoc, setPreviewDoc] = useState(null);
-  const previewUrlRef = useRef(null);
-
-  useEffect(() => {
-    return () => {
-      if (previewUrlRef.current) {
-        URL.revokeObjectURL(previewUrlRef.current);
-        previewUrlRef.current = null;
-      }
-    };
-  }, []);
 
   const handleFiles = async (files) => {
     if (!files || files.length === 0) return;
@@ -117,75 +78,41 @@ export function DocumentsTab({ loanId, documents = [], onUpload, onDelete }) {
 
   const isImage = (type) => type?.startsWith('image/');
 
-  const handlePreview = async (doc) => {
-    try {
-      if (previewUrlRef.current) {
-        URL.revokeObjectURL(previewUrlRef.current);
-        previewUrlRef.current = null;
-      }
-      const url = buildDocProxyUrl(doc);
-      if (!url) {
-        showToast('Document file is not available', 'error');
-        return;
-      }
-      const res = await fetch(url, { headers: getAuthHeaders() });
-      if (!res.ok) throw new Error('Failed to fetch document');
-      const blob = await res.blob();
-      const objUrl = URL.createObjectURL(blob);
-      previewUrlRef.current = objUrl;
-      setPreviewDoc({ ...doc, _blobUrl: objUrl });
-    } catch (err) {
-      showToast(err.message || 'Failed to load preview', 'error');
+  const handlePreview = (doc) => {
+    const url = doc.url;
+    if (!url) {
+      showToast('Document file is not available', 'error');
+      return;
     }
+    setPreviewDoc({ ...doc, _blobUrl: url });
   };
 
   const handleClosePreview = () => {
-    if (previewUrlRef.current) {
-      URL.revokeObjectURL(previewUrlRef.current);
-      previewUrlRef.current = null;
-    }
     setPreviewDoc(null);
   };
 
-  const handleDownload = async (doc) => {
-    try {
-      const url = buildDocProxyUrl(doc);
-      if (!url) {
-        showToast('Document file is not available', 'error');
-        return;
-      }
-      const res = await fetch(url, { headers: getAuthHeaders() });
-      if (!res.ok) throw new Error('Failed to fetch document');
-      const blob = await res.blob();
-      const a = document.createElement('a');
-      const objUrl = URL.createObjectURL(blob);
-      a.href = objUrl;
-      a.download = doc.name || 'document';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(objUrl), 5000);
-    } catch (err) {
-      showToast(err.message || 'Failed to download', 'error');
+  const handleDownload = (doc) => {
+    const url = doc.url;
+    if (!url) {
+      showToast('Document file is not available', 'error');
+      return;
     }
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = doc.name || 'document';
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
-  const handleViewFull = async (doc) => {
-    try {
-      const url = buildDocProxyUrl(doc);
-      if (!url) {
-        showToast('Document file is not available', 'error');
-        return;
-      }
-      const res = await fetch(url, { headers: getAuthHeaders() });
-      if (!res.ok) throw new Error('Failed to fetch document');
-      const blob = await res.blob();
-      const objUrl = URL.createObjectURL(blob);
-      window.open(objUrl, '_blank', 'noopener,noreferrer');
-      setTimeout(() => URL.revokeObjectURL(objUrl), 60000);
-    } catch (err) {
-      showToast(err.message || 'Failed to open document', 'error');
+  const handleViewFull = (doc) => {
+    const url = doc.url;
+    if (!url) {
+      showToast('Document file is not available', 'error');
+      return;
     }
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -324,30 +251,6 @@ export function DocumentsTab({ loanId, documents = [], onUpload, onDelete }) {
 }
 
 function ThumbnailImage({ doc, url }) {
-  const [src, setSrc] = useState(null);
-  useEffect(() => {
-    let revoked = false;
-    let blobUrl = null;
-    (async () => {
-      try {
-        if (!url) return;
-        const res = await fetch(url, { headers: getAuthHeaders() });
-        if (!res.ok) return;
-        const blob = await res.blob();
-        blobUrl = URL.createObjectURL(blob);
-        if (!revoked) setSrc(blobUrl);
-      } catch (e) {
-        // ignore
-      }
-    })();
-    return () => {
-      revoked = true;
-      if (blobUrl) URL.revokeObjectURL(blobUrl);
-    };
-  }, [url]);
-  return src ? (
-    <img src={src} alt={doc.name} className="w-full h-full object-cover" />
-  ) : (
-    <DocumentTextIcon className="h-12 w-12 text-gray-400" />
-  );
+  if (!url) return <DocumentTextIcon className="h-12 w-12 text-gray-400" />;
+  return <img src={url} alt={doc.name} className="w-full h-full object-cover" />;
 }

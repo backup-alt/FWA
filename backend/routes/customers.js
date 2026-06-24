@@ -38,8 +38,8 @@ async function uploadProfileImage(base64Data) {
     pcloudConfig.folders.profilePictures,
     true
   );
-  const { getPublicLink } = require('../utils/pcloud');
-  const url = await getPublicLink(fileId);
+  const { getPubLink } = require('../utils/pcloud');
+  const url = await getPubLink(fileId);
   return { fileId, url };
 }
 

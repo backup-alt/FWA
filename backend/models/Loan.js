@@ -44,6 +44,7 @@ const documentSchema = new mongoose.Schema(
     name: { type: String, required: true },
     type: { type: String, required: true }, // mime type
     fileId: { type: String, default: '' }, // pcloud file id
+    url: { type: String, default: '' }, // public URL for direct access
     uploadedAt: { type: Date, default: Date.now },
   }
 );

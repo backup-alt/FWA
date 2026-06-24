@@ -149,6 +149,23 @@ async function getPublicLink(fileId) {
   }
 }
 
+async function getPubLink(fileId) {
+  try {
+    const response = await axios.get(
+      `${API_BASE}/getfilepublink?fileid=${fileId}&access_token=${TOKEN}`
+    );
+
+    if (response.data.result === 0) {
+      return response.data.publink;
+    } else {
+      throw new Error(`pcloud getfilepublink failed: ${response.data.error}`);
+    }
+  } catch (err) {
+    console.error('pcloud getfilepublink error:', err.message);
+    throw err;
+  }
+}
+
 async function deleteFromPcloud(fileId) {
   try {
     const response = await axios.get(
@@ -223,6 +240,7 @@ function generateFileId() {
 module.exports = {
   uploadToPcloud,
   getPublicLink,
+  getPubLink,
   deleteFromPcloud,
   downloadFromPcloud,
   compressImage,
@@ -231,4 +249,7 @@ module.exports = {
   generateFileId,
   getExtensionFromMimeType,
   pcloudConfig,
+  getFileFromCacheOrPcloud,
+  checkServer,
+  getFileMetadata,
 };

@@ -10,6 +10,7 @@ const {
 const {
   uploadBase64ToPcloud,
   deleteFromPcloud,
+  getPubLink,
 } = require('../utils/pcloud');
 const { getFileFromCacheOrPcloud, getMimeTypeFromExtension } = require('../middleware/fileProxy');
 const pcloudConfig = require('../config/pcloud');
@@ -449,6 +450,7 @@ router.post('/:id/documents', async (req, res) => {
     const filename = `doc_${loan._id}_${Date.now()}_${safeName.split('.')[0]}`;
 
     let fileId;
+    let pubUrl = '';
     try {
       fileId = await uploadBase64ToPcloud(
         data,
@@ -456,6 +458,7 @@ router.post('/:id/documents', async (req, res) => {
         pcloudConfig.folders.documents,
         false
       );
+      pubUrl = await getPubLink(fileId);
     } catch (err) {
       console.error('pcloud document upload failed:', err.message);
       return res.status(500).json({ message: 'Failed to upload document to storage.' });
@@ -465,6 +468,7 @@ router.post('/:id/documents', async (req, res) => {
       name,
       type,
       fileId,
+      url: pubUrl,
       uploadedAt: new Date(),
     });
     await loan.save();
@@ -475,6 +479,7 @@ router.post('/:id/documents', async (req, res) => {
       name: savedDoc.name,
       type: savedDoc.type,
       fileId: savedDoc.fileId,
+      url: savedDoc.url,
       uploadedAt: savedDoc.uploadedAt,
     });
   } catch (err) {

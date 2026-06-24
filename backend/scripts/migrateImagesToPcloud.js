@@ -13,7 +13,7 @@ async function migrateCustomerProfileImages() {
       { profileImage: { $exists: true, $ne: '' } },
       { profileImageFileId: { $exists: false } },
     ]
-  });
+  }).lean();
 
   console.log(`Found ${customers.length} customers with profile images to migrate`);
 
@@ -37,9 +37,9 @@ async function migrateCustomerProfileImages() {
         continue;
       }
 
-      console.log(`  Migrating profile image for customer ${customer._id} (${customer.name})...`);
-
       if (existingBase64 && existingBase64.startsWith('data:')) {
+        console.log(`  Migrating profile image for customer ${customer._id} (${customer.name})...`);
+
         const filename = `profile_${customer._id}_${Date.now()}`;
         const fileId = await uploadBase64ToPcloud(
           existingBase64,
@@ -49,19 +49,21 @@ async function migrateCustomerProfileImages() {
 
         const url = await getPublicLink(fileId);
 
-        customer.profileImageFileId = fileId;
-        customer.profileImageUrl = url;
-        customer.profileImage = undefined;
-
-        await customer.save();
+        await Customer.updateOne(
+          { _id: customer._id },
+          {
+            $set: { profileImageFileId: fileId, profileImageUrl: url },
+            $unset: { profileImage: 1 }
+          }
+        );
 
         console.log(`    -> Uploaded to pcloud, fileId: ${fileId}`);
         migrated++;
       } else if (existingBase64 && !existingBase64.startsWith('data:')) {
-        customer.profileImageFileId = '';
-        customer.profileImageUrl = existingBase64;
-        customer.profileImage = undefined;
-        await customer.save();
+        await Customer.updateOne(
+          { _id: customer._id },
+          { $set: { profileImageUrl: existingBase64, profileImageFileId: '' }, $unset: { profileImage: 1 } }
+        );
         migrated++;
       } else {
         skipped++;
@@ -81,7 +83,7 @@ async function migrateLoanDocuments() {
 
   const loans = await Loan.find({
     'documents.0': { $exists: true }
-  });
+  }).lean();
 
   console.log(`Found ${loans.length} loans with documents`);
 
@@ -91,7 +93,7 @@ async function migrateLoanDocuments() {
   let errors = 0;
 
   for (const loan of loans) {
-    let loanDocCount = 0;
+    const docUpdates = [];
 
     for (const doc of loan.documents) {
       totalDocs++;
@@ -115,13 +117,12 @@ async function migrateLoanDocuments() {
             pcloudConfig.folders.documents
           );
 
-          doc.fileId = fileId;
-          doc.data = undefined;
-          loanDocCount++;
+          docUpdates.push({ docId: doc._id.toString(), fileId, clearData: true });
+          console.log(`    -> Uploaded to pcloud, fileId: ${fileId}`);
+          migrated++;
         } else if (doc.data && !hasBase64) {
-          doc.fileId = '';
-          doc.data = undefined;
-          loanDocCount++;
+          docUpdates.push({ docId: doc._id.toString(), clearData: true });
+          migrated++;
         } else {
           skipped++;
         }
@@ -131,12 +132,17 @@ async function migrateLoanDocuments() {
       }
     }
 
-    if (loanDocCount > 0) {
-      await loan.save();
-      console.log(`    Saved loan ${loan._id} with ${loanDocCount} documents migrated`);
+    if (docUpdates.length > 0) {
+      for (const upd of docUpdates) {
+        const updateOps = { $set: { 'documents.$.fileId': upd.fileId || '' } };
+        if (upd.clearData) updateOps.$unset = { 'documents.$.data': 1 };
+        await Loan.updateOne(
+          { _id: loan._id, 'documents._id': upd.docId },
+          updateOps
+        );
+      }
+      console.log(`    Updated ${docUpdates.length} documents for loan ${loan._id}`);
     }
-
-    migrated += loanDocCount;
   }
 
   console.log(`\nLoan documents migration complete: ${migrated} migrated, ${skipped} skipped, ${errors} errors (of ${totalDocs} total)`);

@@ -74,25 +74,25 @@ async function compressImage(buffer, maxSizeMB = 5) {
 
 async function uploadToPcloud(buffer, filename, folderId) {
   try {
-    const formData = new (require('form-data'))();
+    const FormData = require('form-data');
+    const formData = new FormData();
     formData.append('file', buffer, { filename });
     formData.append('folderid', folderId);
     formData.append('renameifexists', 1);
 
-    const uploadUrl = `${API_BASE}/fileops/upload_file?access_token=${TOKEN}&folderid=${folderId}`;
-
     const response = await axios.post(
-      uploadUrl,
+      `${API_BASE}/uploadfile?access_token=${TOKEN}`,
       formData,
       {
         headers: formData.getHeaders(),
         maxBodyLength: Infinity,
         maxContentLength: Infinity,
+        timeout: 60000,
       }
     );
 
     if (response.data.result === 0) {
-      return response.data.fileid;
+      return response.data.fileids[0];
     } else {
       throw new Error(`pcloud upload failed: ${response.data.error}`);
     }
@@ -101,6 +101,31 @@ async function uploadToPcloud(buffer, filename, folderId) {
       throw new Error(`pcloud upload failed with status ${err.response.status}: ${JSON.stringify(err.response.data)}`);
     }
     console.error('pcloud upload error:', err.message);
+    throw err;
+  }
+}
+
+async function checkServer() {
+  try {
+    const response = await axios.get(`${API_BASE}/currentserver?access_token=${TOKEN}`, { timeout: 10000 });
+    return response.data;
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+async function getFileMetadata(fileId) {
+  try {
+    const response = await axios.get(
+      `${API_BASE}/stat?fileid=${fileId}&access_token=${TOKEN}`
+    );
+    if (response.data.result === 0) {
+      return response.data.metadata;
+    } else {
+      throw new Error(response.data.error);
+    }
+  } catch (err) {
+    console.error('pcloud stat error:', err.message);
     throw err;
   }
 }

@@ -17,13 +17,10 @@ async function shapeCustomerResponse(customer) {
   const obj = typeof customer.toObject === 'function' ? customer.toObject() : { ...customer };
   const fileId = obj.profileImageFileId || '';
 
-  if (obj.profileImageUrl) {
-    obj.profileImage = obj.profileImageUrl;
-  } else if (fileId) {
+  if (fileId) {
     try {
       const { getPublicLink } = require('../utils/pcloud');
-      const directUrl = await getPublicLink(fileId);
-      obj.profileImage = directUrl;
+      obj.profileImage = await getPublicLink(fileId);
     } catch {
       obj.profileImage = '';
     }
@@ -35,7 +32,7 @@ async function shapeCustomerResponse(customer) {
 
 async function uploadProfileImage(base64Data) {
   if (!base64Data || !base64Data.startsWith('data:')) {
-    return { fileId: '', url: '' };
+    return { fileId: '' };
   }
   const filename = `profile_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const fileId = await uploadBase64ToPcloud(
@@ -44,9 +41,7 @@ async function uploadProfileImage(base64Data) {
     pcloudConfig.folders.profilePictures,
     true
   );
-  const { getPubLink } = require('../utils/pcloud');
-  const url = await getPubLink(fileId);
-  return { fileId, url };
+  return { fileId };
 }
 
 async function deleteProfileImage(fileId) {
@@ -70,19 +65,15 @@ router.post('/', async (req, res) => {
     }
 
     let profileImageFileId = '';
-    let profileImageUrl = '';
 
     if (profileImage && profileImage.startsWith('data:')) {
       try {
         const uploaded = await uploadProfileImage(profileImage);
         profileImageFileId = uploaded.fileId;
-        profileImageUrl = uploaded.url;
       } catch (err) {
         console.error('Profile image upload failed:', err.message);
         return res.status(500).json({ message: 'Failed to upload profile image.' });
       }
-    } else if (profileImage && /^https?:\/\//.test(profileImage)) {
-      profileImageUrl = profileImage;
     }
 
     const customer = new Customer({
@@ -93,7 +84,6 @@ router.post('/', async (req, res) => {
       cellNumbers: (cellNumbers || []).filter(c => c.number),
       guarantor,
       profileImageFileId,
-      profileImageUrl,
       idProofType,
       idProofNumber,
     });
@@ -239,7 +229,6 @@ router.put('/:id', async (req, res) => {
           await deleteProfileImage(customer.profileImageFileId);
         }
         customer.profileImageFileId = '';
-        customer.profileImageUrl = '';
       } else if (incoming.startsWith('data:')) {
         let uploaded;
         try {
@@ -253,9 +242,6 @@ router.put('/:id', async (req, res) => {
           await deleteProfileImage(customer.profileImageFileId);
         }
         customer.profileImageFileId = uploaded.fileId;
-        customer.profileImageUrl = uploaded.url;
-      } else if (/^https?:\/\//.test(incoming)) {
-        customer.profileImageUrl = incoming;
       }
     }
 

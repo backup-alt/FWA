@@ -24,7 +24,6 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
@@ -44,7 +43,6 @@ app.use('/api/files', fileRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/system', systemRoutes);
 
-// Health check endpoint (useful for Render)
 app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'Vehicle Finance API is running' });
 });

@@ -214,22 +214,11 @@ export function DocumentsTab({ loanId, documents = [], onUpload, onDelete }) {
         <div className={`flex justify-center bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden ${previewDoc?.type === 'application/pdf' ? 'h-[80vh]' : 'p-2'}`}>
           {previewDoc && previewDoc._blobUrl && (
             previewDoc.type === 'application/pdf' ? (
-              <object
-                data={previewDoc._blobUrl}
-                type="application/pdf"
-                className="w-full h-full border-0"
+              <iframe
+                src={previewDoc._blobUrl}
                 title={previewDoc.name}
-              >
-                <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-4">
-                  <p>Your browser does not support inline PDFs.</p>
-                  <button
-                    onClick={() => handleDownload(previewDoc)}
-                    className="inline-flex items-center rounded bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500"
-                  >
-                    Download PDF
-                  </button>
-                </div>
-              </object>
+                className="w-full h-full border-0 bg-white"
+              />
             ) : (
               <img src={previewDoc._blobUrl} alt={previewDoc.name} className="max-w-full max-h-[70vh] object-contain" />
             )

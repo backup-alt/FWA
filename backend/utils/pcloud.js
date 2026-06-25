@@ -135,10 +135,10 @@ async function getFileMetadata(fileId) {
 async function getPublicLink(fileId, folderCode) {
   try {
     const code = folderCode || pcloudConfig.publinkCode?.profilePictures || pcloudConfig.publinkCode?.documents;
-    const endpoint = code
-      ? `${API_BASE}/getpublinkdownload?code=${code}&fileid=${fileId}&access_token=${TOKEN}`
-      : `${API_BASE}/getfilelink?fileid=${fileId}&access_token=${TOKEN}`;
-
+    if (!code) {
+      throw new Error('No pcloud folder code configured');
+    }
+    const endpoint = `${API_BASE}/getpublinkdownload?code=${code}&fileid=${fileId}&access_token=${TOKEN}`;
     const response = await axios.get(endpoint);
 
     if (response.data.result === 0) {

@@ -1,7 +1,7 @@
 const express = require('express');
 const authMiddleware = require('../middleware/auth');
 const { migrateCustomerProfileImages, migrateLoanDocuments, cleanupOldFields } = require('../scripts/migrateImagesToPcloud');
-const { uploadBase64ToPcloud, getPublicLink, getPubLink } = require('../utils/pcloud');
+const { uploadBase64ToPcloud, getPublicLink, getDirectPubLink } = require('../utils/pcloud');
 const pcloudConfig = require('../config/pcloud');
 const https = require('https');
 const dns = require('dns');
@@ -61,7 +61,7 @@ router.post('/test-pcloud', requireAdminSecret, async (req, res) => {
     uploadBase64ToPcloud(testData, `test_${Date.now()}`, pcloudConfig.folders.profilePictures)
       .then(fileId => {
         results.upload = { ok: true, fileId };
-        return getPubLink(fileId);
+        return getDirectPubLink(fileId);
       })
       .then(url => {
         results.publicLink = { ok: true, url };
@@ -98,7 +98,6 @@ router.post('/cleanup-root-files', requireAdminSecret, async (req, res) => {
 });
 
 router.post('/backfill-doc-urls', requireAdminSecret, async (req, res) => {
-  const { getPubLink } = require('../utils/pcloud');
   const Loan = require('../models/Loan');
 
   try {
@@ -112,7 +111,7 @@ router.post('/backfill-doc-urls', requireAdminSecret, async (req, res) => {
       for (const doc of loan.documents) {
         if (doc.fileId && !doc.url) {
           try {
-            const pubUrl = await getPubLink(doc.fileId);
+            const pubUrl = await getDirectPubLink(doc.fileId);
             await Loan.updateOne(
               { _id: loan._id, 'documents._id': doc._id.toString() },
               { $set: { 'documents.$.url': pubUrl } }

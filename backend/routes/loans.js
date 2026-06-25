@@ -25,7 +25,7 @@ async function buildLoanResponse(loan) {
       obj.documents.map(async (doc) => {
         if (doc.fileId) {
           try {
-            return { ...doc, url: await getPublicLink(doc.fileId, pcloudConfig.publinkCode.documents) };
+            return { ...doc, url: await getPublicLink(doc.fileId) };
           } catch {
             return { ...doc, url: '' };
           }
@@ -493,7 +493,7 @@ router.post('/:id/documents', async (req, res) => {
     const savedDoc = loan.documents[loan.documents.length - 1];
     let docUrl = '';
     try {
-      docUrl = await getPublicLink(fileId, pcloudConfig.publinkCode.documents);
+      docUrl = await getPublicLink(fileId);
     } catch { /* ignore */ }
     res.status(201).json({
       _id: savedDoc._id,

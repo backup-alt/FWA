@@ -136,12 +136,12 @@ function getBackendBaseUrl() {
   return process.env.BACKEND_PUBLIC_URL || `http://localhost:${process.env.PORT || 5000}`;
 }
 
-async function getPublicLink(fileId, folderCode) {
+async function getPublicLink(fileId) {
   if (!fileId) return '';
   return `${getBackendBaseUrl()}/api/files/${fileId}`;
 }
 
-async function getPubLink(fileId) {
+async function getDirectPubLink(fileId) {
   try {
     const response = await axios.get(
       `${API_BASE}/getfilepublink?fileid=${fileId}&access_token=${TOKEN}`
@@ -153,7 +153,7 @@ async function getPubLink(fileId) {
       throw new Error(`pcloud getfilepublink failed: ${response.data.error}`);
     }
   } catch (err) {
-    console.error('pcloud getfilepublink error:', err.message);
+    console.error('pcloud getDirectPubLink error:', err.message);
     throw err;
   }
 }
@@ -246,7 +246,7 @@ function generateFileId() {
 module.exports = {
   uploadToPcloud,
   getPublicLink,
-  getPubLink,
+  getDirectPubLink,
   deleteFromPcloud,
   downloadFromPcloud,
   compressImage,

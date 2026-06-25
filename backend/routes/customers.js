@@ -20,7 +20,7 @@ async function shapeCustomerResponse(customer) {
   if (fileId) {
     try {
       const { getPublicLink } = require('../utils/pcloud');
-      obj.profileImage = await getPublicLink(fileId, pcloudConfig.publinkCode.profilePictures);
+      obj.profileImage = await getPublicLink(fileId);
     } catch {
       obj.profileImage = '';
     }

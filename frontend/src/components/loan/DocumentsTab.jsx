@@ -237,12 +237,6 @@ export function DocumentsTab({ loanId, documents = [], onUpload, onDelete }) {
         </div>
         {previewDoc && (
           <div className="mt-3 flex justify-end gap-2">
-            <button
-              onClick={() => handleViewFull(previewDoc)}
-              className="text-sm text-primary-600 hover:underline"
-            >
-              Open in new tab
-            </button>
           </div>
         )}
       </Modal>

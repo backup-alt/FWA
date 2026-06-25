@@ -132,21 +132,24 @@ async function getFileMetadata(fileId) {
   }
 }
 
-async function getPublicLink(fileId) {
+async function getPublicLink(fileId, folderCode) {
   try {
-    const response = await axios.get(
-      `${API_BASE}/getfilelink?fileid=${fileId}&access_token=${TOKEN}`
-    );
+    const code = folderCode || pcloudConfig.publinkCode?.profilePictures || pcloudConfig.publinkCode?.documents;
+    const endpoint = code
+      ? `${API_BASE}/getpublinkdownload?code=${code}&fileid=${fileId}&access_token=${TOKEN}`
+      : `${API_BASE}/getfilelink?fileid=${fileId}&access_token=${TOKEN}`;
+
+    const response = await axios.get(endpoint);
 
     if (response.data.result === 0) {
       const host = response.data.hosts?.[0] || 'u.pcloud.link';
       const filePath = response.data.path || `/${fileId}`;
       return `https://${host}${filePath}`;
     } else {
-      throw new Error(`pcloud getfilelink failed: ${response.data.error}`);
+      throw new Error(`pcloud link failed: ${response.data.error}`);
     }
   } catch (err) {
-    console.error('pcloud getfilelink error:', err.message);
+    console.error('pcloud getPublicLink error:', err.message);
     throw err;
   }
 }

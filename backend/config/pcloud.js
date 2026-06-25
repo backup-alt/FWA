@@ -6,5 +6,9 @@ module.exports = {
   },
   baseUrl: 'https://api.pcloud.com',
   cacheDir: process.env.PCLOUD_CACHE_DIR || './cache/files',
-  cacheTTL: parseInt(process.env.PCLOUD_CACHE_TTL || '3600000', 10), // 1 hour default
+  cacheTTL: parseInt(process.env.PCLOUD_CACHE_TTL || '3600000', 10),
+  publinkCode: {
+    profilePictures: process.env.PCLOUD_PUBLINK_CODE_PROFILE_PICTURES || '',
+    documents: process.env.PCLOUD_PUBLINK_CODE_DOCUMENTS || '',
+  },
 };

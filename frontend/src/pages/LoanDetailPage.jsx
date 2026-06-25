@@ -37,6 +37,179 @@ const statusColors = {
   Completed: 'success',
 };
 
+function EditLoanForm({ loan, onSubmit, onCancel, isSubmitting }) {
+  const [formData, setFormData] = useState({
+    make: loan.make || '',
+    model: loan.model || '',
+    regNo: loan.regNo || '',
+    loanAccountNumber: loan.loanAccountNumber || '',
+    loanAmount: loan.loanAmount ?? '',
+    installmentPeriod: loan.installmentPeriod ?? '',
+    installmentPeriodUnit: loan.installmentPeriodUnit || 'Months',
+    interestRate: loan.interestRate ?? '',
+    rcStatus: loan.rcDetails?.status || '',
+    rcPaidThrough: loan.rcDetails?.paidThrough || '',
+    rcChequeNumber: loan.rcDetails?.chequeNumber || '',
+    rcAmount: loan.rcDetails?.amount ?? '',
+    noc: loan.noc || '',
+    insurance: loan.insurance || '',
+    keyStatus: loan.keyStatus || '',
+    salesDoneBy: loan.salesDoneBy || '',
+    chequesReceived: loan.chequesReceived?.length ? loan.chequesReceived : [{ chequeNumber: '', bank: '' }],
+  });
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleChequeChange = (index, field, value) => {
+    const updated = [...formData.chequesReceived];
+    updated[index] = { ...updated[index], [field]: value };
+    setFormData(prev => ({ ...prev, chequesReceived: updated }));
+  };
+
+  const addCheque = () => {
+    setFormData(prev => ({
+      ...prev,
+      chequesReceived: [...prev.chequesReceived, { chequeNumber: '', bank: '' }]
+    }));
+  };
+
+  const removeCheque = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      chequesReceived: prev.chequesReceived.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const submitData = {
+      make: formData.make || undefined,
+      model: formData.model || undefined,
+      regNo: formData.regNo || undefined,
+      loanAccountNumber: formData.loanAccountNumber || undefined,
+      loanAmount: formData.loanAmount !== '' ? Number(formData.loanAmount) : undefined,
+      installmentPeriod: formData.installmentPeriod !== '' ? Number(formData.installmentPeriod) : undefined,
+      installmentPeriodUnit: formData.installmentPeriodUnit || undefined,
+      interestRate: formData.interestRate !== '' ? Number(formData.interestRate) : undefined,
+      rcDetails: {
+        status: formData.rcStatus || undefined,
+        paidThrough: formData.rcPaidThrough || undefined,
+        chequeNumber: formData.rcChequeNumber || undefined,
+        amount: formData.rcAmount !== '' ? Number(formData.rcAmount) : undefined,
+      },
+      noc: formData.noc || undefined,
+      insurance: formData.insurance || undefined,
+      keyStatus: formData.keyStatus || undefined,
+      salesDoneBy: formData.salesDoneBy || undefined,
+      chequesReceived: formData.chequesReceived.filter(c => c.chequeNumber).map(c => ({
+        chequeNumber: c.chequeNumber,
+        bank: c.bank || undefined,
+      })),
+    };
+    onSubmit(submitData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+      <div>
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Vehicle</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <Input label="Make" value={formData.make} onChange={(e) => handleChange('make', e.target.value)} />
+          <Input label="Model" value={formData.model} onChange={(e) => handleChange('model', e.target.value)} />
+        </div>
+      </div>
+
+      <div>
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Loan Info</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <Input label="Registration No." value={formData.regNo} onChange={(e) => handleChange('regNo', e.target.value)} />
+          <Input label="Loan Account No." value={formData.loanAccountNumber} onChange={(e) => handleChange('loanAccountNumber', e.target.value)} />
+          <Input label="Loan Amount (L.AMT)" type="number" value={formData.loanAmount} onChange={(e) => handleChange('loanAmount', e.target.value)} />
+          <Input label="Interest Rate (% per month)" type="number" step="0.01" value={formData.interestRate} onChange={(e) => handleChange('interestRate', e.target.value)} />
+          <Input label="Installment Period" type="number" value={formData.installmentPeriod} onChange={(e) => handleChange('installmentPeriod', e.target.value)} />
+          <Select
+            label="Period Unit"
+            value={formData.installmentPeriodUnit}
+            onChange={(e) => handleChange('installmentPeriodUnit', e.target.value)}
+            options={[
+              { value: 'Days', label: 'Days' },
+              { value: 'Weeks', label: 'Weeks' },
+              { value: 'Months', label: 'Months' },
+              { value: 'Years', label: 'Years' },
+            ]}
+          />
+        </div>
+      </div>
+
+      <div>
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">RC Details</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <Input label="RC Status / Note" value={formData.rcStatus} onChange={(e) => handleChange('rcStatus', e.target.value)} />
+          <Input label="RC Paid Through" value={formData.rcPaidThrough} onChange={(e) => handleChange('rcPaidThrough', e.target.value)} />
+          <Input label="RC Cheque Number" value={formData.rcChequeNumber} onChange={(e) => handleChange('rcChequeNumber', e.target.value)} />
+          <Input label="RC Amount" type="number" value={formData.rcAmount} onChange={(e) => handleChange('rcAmount', e.target.value)} />
+        </div>
+      </div>
+
+      <div>
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Other Details</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <Input label="NOC" value={formData.noc} onChange={(e) => handleChange('noc', e.target.value)} />
+          <Input label="Insurance Status" value={formData.insurance} onChange={(e) => handleChange('insurance', e.target.value)} />
+          <Input label="Key Status" value={formData.keyStatus} onChange={(e) => handleChange('keyStatus', e.target.value)} />
+          <Input label="Sales Done By" value={formData.salesDoneBy} onChange={(e) => handleChange('salesDoneBy', e.target.value)} />
+        </div>
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Cheques Received</h4>
+          <button type="button" onClick={addCheque} className="text-xs text-primary-600 hover:underline">
+            + Add Cheque
+          </button>
+        </div>
+        <div className="space-y-3">
+          {formData.chequesReceived.map((cheque, index) => (
+            <div key={index} className="flex gap-2 items-start">
+              <input
+                type="text"
+                value={cheque.chequeNumber}
+                onChange={(e) => handleChequeChange(index, 'chequeNumber', e.target.value)}
+                placeholder="Cheque Number"
+                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              />
+              <input
+                type="text"
+                value={cheque.bank}
+                onChange={(e) => handleChequeChange(index, 'bank', e.target.value)}
+                placeholder="Bank"
+                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              />
+              {formData.chequesReceived.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeCheque(index)}
+                  className="px-2 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                  title="Remove"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button>
+        <Button type="submit" loading={isSubmitting}>Save Changes</Button>
+      </div>
+    </form>
+  );
+}
+
 function EditCustomerForm({ customer, onSubmit, onCancel, isSubmitting }) {
   const [formData, setFormData] = useState({
     customerName: customer.name || '',
@@ -216,6 +389,7 @@ export function LoanDetailPage() {
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [showRestructureModal, setShowRestructureModal] = useState(false);
   const [showEditCustomerModal, setShowEditCustomerModal] = useState(false);
+  const [showEditLoanModal, setShowEditLoanModal] = useState(false);
   const [savingInstallment, setSavingInstallment] = useState(null);
   const [activeTab, setActiveTab] = useState('schedule');
 
@@ -262,6 +436,13 @@ export function LoanDetailPage() {
     await updateCustomer.mutateAsync({ id: loan.customerId, data });
     showToast('Customer updated successfully', 'success');
     setShowEditCustomerModal(false);
+    refetch();
+  };
+
+  const handleUpdateLoan = async (data) => {
+    await updateLoan.mutateAsync({ id, data });
+    showToast('Loan updated successfully', 'success');
+    setShowEditLoanModal(false);
     refetch();
   };
 
@@ -485,19 +666,29 @@ export function LoanDetailPage() {
       {activeTab === 'client' && customer && (
         <div className="space-y-6">
           <Card padding="">
-            <CardHeader 
-              className="px-5 pt-5 mb-0" 
-              title="Customer Details" 
+            <CardHeader
+              className="px-5 pt-5 mb-0"
+              title="Customer Details"
               subtitle="Vehicle, documentation, customer, and loan terms"
               action={
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowEditCustomerModal(true)}
-                >
-                  <PencilIcon className="h-4 w-4 mr-1.5" />
-                  Edit
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowEditLoanModal(true)}
+                  >
+                    <PencilIcon className="h-4 w-4 mr-1.5" />
+                    Edit Loan
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowEditCustomerModal(true)}
+                  >
+                    <PencilIcon className="h-4 w-4 mr-1.5" />
+                    Edit Customer
+                  </Button>
+                </div>
               }
             />
             <CardContent className="p-5">
@@ -577,6 +768,15 @@ export function LoanDetailPage() {
         size="lg"
       >
         <EditCustomerForm customer={customer} onSubmit={handleUpdateCustomer} onCancel={() => setShowEditCustomerModal(false)} isSubmitting={updateCustomer.isPending} />
+      </Modal>
+
+      <Modal
+        isOpen={showEditLoanModal}
+        onClose={() => setShowEditLoanModal(false)}
+        title="Edit Loan Details"
+        size="xl"
+      >
+        <EditLoanForm loan={loan} onSubmit={handleUpdateLoan} onCancel={() => setShowEditLoanModal(false)} isSubmitting={updateLoan.isPending} />
       </Modal>
     </div>
   );

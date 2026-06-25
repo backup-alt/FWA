@@ -183,17 +183,31 @@ async function downloadFromPcloud(fileId, localPath) {
   }
 
   try {
-    const response = await axios.get(
-      `${API_BASE}/downloadfile?fileid=${fileId}&access_token=${TOKEN}`,
-      {
-        responseType: 'arraybuffer',
-        timeout: 60000,
-      }
+    const linkResponse = await axios.get(
+      `${API_BASE}/getfilelink?fileid=${fileId}&access_token=${TOKEN}`
     );
+
+    if (linkResponse.data.result !== 0) {
+      throw new Error(`pcloud getfilelink failed: ${linkResponse.data.error}`);
+    }
+
+    const host = linkResponse.data.hosts?.[0];
+    const filePath = linkResponse.data.path;
+
+    if (!host || !filePath) {
+      throw new Error('pcloud getfilelink returned no host/path');
+    }
+
+    const downloadUrl = `https://${host}${filePath}`;
+
+    const response = await axios.get(downloadUrl, {
+      responseType: 'arraybuffer',
+      timeout: 60000,
+    });
 
     const buffer = Buffer.from(response.data);
     if (buffer.length < 100) {
-      throw new Error(`downloadfile returned too small a response (${buffer.length} bytes): ${buffer.toString('utf8').substring(0, 100)}`);
+      throw new Error(`download returned too small a response (${buffer.length} bytes): ${buffer.toString('utf8').substring(0, 100)}`);
     }
 
     fs.writeFileSync(localPath, buffer);

@@ -19,8 +19,8 @@ async function shapeCustomerResponse(customer) {
 
   if (fileId) {
     try {
-      const { getPublicLink } = require('../utils/pcloud');
-      obj.profileImage = await getPublicLink(fileId);
+      const { getProxyUrl } = require('../utils/pcloud');
+      obj.profileImage = await getProxyUrl(fileId);
     } catch {
       obj.profileImage = '';
     }

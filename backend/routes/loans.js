@@ -10,7 +10,7 @@ const {
 const {
   uploadBase64ToPcloud,
   deleteFromPcloud,
-  getPublicLink,
+  getProxyUrl,
 } = require('../utils/pcloud');
 const { getFileFromCacheOrPcloud, getMimeTypeFromExtension } = require('../middleware/fileProxy');
 const pcloudConfig = require('../config/pcloud');
@@ -25,7 +25,7 @@ async function buildLoanResponse(loan) {
       obj.documents.map(async (doc) => {
         if (doc.fileId) {
           try {
-            return { ...doc, url: await getPublicLink(doc.fileId) };
+            return { ...doc, url: await getProxyUrl(doc.fileId) };
           } catch {
             return { ...doc, url: '' };
           }
@@ -493,7 +493,7 @@ router.post('/:id/documents', async (req, res) => {
     const savedDoc = loan.documents[loan.documents.length - 1];
     let docUrl = '';
     try {
-      docUrl = await getPublicLink(fileId);
+      docUrl = await getProxyUrl(fileId);
     } catch { /* ignore */ }
     res.status(201).json({
       _id: savedDoc._id,

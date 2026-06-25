@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { downloadFromPcloud, getPublicLink } = require('../utils/pcloud');
+const { downloadFromPcloud } = require('../utils/pcloud');
 const pcloudConfig = require('../config/pcloud');
 
 const cacheDir = path.resolve(__dirname, '..', 'cache', 'files');

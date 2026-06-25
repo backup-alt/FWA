@@ -136,7 +136,7 @@ function getBackendBaseUrl() {
   return process.env.BACKEND_PUBLIC_URL || `http://localhost:${process.env.PORT || 5000}`;
 }
 
-async function getPublicLink(fileId) {
+async function getProxyUrl(fileId) {
   if (!fileId) return '';
   return `${getBackendBaseUrl()}/api/files/${fileId}`;
 }
@@ -245,7 +245,7 @@ function generateFileId() {
 
 module.exports = {
   uploadToPcloud,
-  getPublicLink,
+  getProxyUrl,
   getDirectPubLink,
   deleteFromPcloud,
   downloadFromPcloud,

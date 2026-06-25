@@ -1,7 +1,7 @@
 const express = require('express');
 const authMiddleware = require('../middleware/auth');
 const { migrateCustomerProfileImages, migrateLoanDocuments, cleanupOldFields } = require('../scripts/migrateImagesToPcloud');
-const { uploadBase64ToPcloud, getPublicLink, getDirectPubLink } = require('../utils/pcloud');
+const { uploadBase64ToPcloud, getDirectPubLink } = require('../utils/pcloud');
 const pcloudConfig = require('../config/pcloud');
 const https = require('https');
 const dns = require('dns');

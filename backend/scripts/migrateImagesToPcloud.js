@@ -2,7 +2,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const Customer = require('../models/Customer');
 const Loan = require('../models/Loan');
-const { uploadBase64ToPcloud, deleteFromPcloud, getPublicLink, base64ToBuffer } = require('../utils/pcloud');
+const { uploadBase64ToPcloud, deleteFromPcloud, getProxyUrl, base64ToBuffer } = require('../utils/pcloud');
 const pcloudConfig = require('../config/pcloud');
 
 async function migrateCustomerProfileImages() {
@@ -47,7 +47,7 @@ async function migrateCustomerProfileImages() {
           pcloudConfig.folders.profilePictures
         );
 
-        const url = await getPublicLink(fileId);
+        const url = await getProxyUrl(fileId);
 
         await Customer.updateOne(
           { _id: customer._id },

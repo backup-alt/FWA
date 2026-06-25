@@ -1,11 +1,9 @@
 const express = require('express');
 const path = require('path');
-const authMiddleware = require('../middleware/auth');
 const { getFileFromCacheOrPcloud, getMimeTypeFromExtension, cleanupExpiredCache, cacheDir } = require('../middleware/fileProxy');
 const fs = require('fs');
 
 const router = express.Router();
-router.use(authMiddleware);
 
 router.get('/:fileId', async (req, res) => {
   try {
@@ -42,7 +40,7 @@ router.get('/:fileId', async (req, res) => {
   }
 });
 
-router.post('/clear-cache', authMiddleware, async (req, res) => {
+router.post('/clear-cache', async (req, res) => {
   try {
     cleanupExpiredCache();
     const files = fs.readdirSync(cacheDir);

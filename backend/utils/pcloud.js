@@ -132,26 +132,13 @@ async function getFileMetadata(fileId) {
   }
 }
 
-async function getPublicLink(fileId, folderCode) {
-  try {
-    const code = folderCode || pcloudConfig.publinkCode?.profilePictures || pcloudConfig.publinkCode?.documents;
-    if (!code) {
-      throw new Error('No pcloud folder code configured');
-    }
-    const endpoint = `${API_BASE}/getpublinkdownload?code=${code}&fileid=${fileId}&access_token=${TOKEN}`;
-    const response = await axios.get(endpoint);
+function getBackendBaseUrl() {
+  return process.env.BACKEND_PUBLIC_URL || `http://localhost:${process.env.PORT || 5000}`;
+}
 
-    if (response.data.result === 0) {
-      const host = response.data.hosts?.[0] || 'u.pcloud.link';
-      const filePath = response.data.path || `/${fileId}`;
-      return `https://${host}${filePath}`;
-    } else {
-      throw new Error(`pcloud link failed: ${response.data.error}`);
-    }
-  } catch (err) {
-    console.error('pcloud getPublicLink error:', err.message);
-    throw err;
-  }
+async function getPublicLink(fileId, folderCode) {
+  if (!fileId) return '';
+  return `${getBackendBaseUrl()}/api/files/${fileId}`;
 }
 
 async function getPubLink(fileId) {

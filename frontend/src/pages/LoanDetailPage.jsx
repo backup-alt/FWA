@@ -41,11 +41,13 @@ function EditCustomerForm({ customer, onSubmit, onCancel, isSubmitting }) {
   const [formData, setFormData] = useState({
     customerName: customer.name || '',
     address: customer.address || '',
+    temporaryAddress: customer.temporaryAddress || '',
     monthlySalary: customer.monthlySalary || '',
     cellNumbers: customer.cellNumbers?.length ? customer.cellNumbers : [{ number: '' }],
     guarantor: customer.guarantor || { name: '', address: '' },
     idProofType: customer.idProofType || '',
     idProofNumber: customer.idProofNumber || '',
+    profileImage: customer.profileImage || '',
   });
 
   const handleChange = (field, value) => {
@@ -65,22 +67,68 @@ function EditCustomerForm({ customer, onSubmit, onCancel, isSubmitting }) {
     }));
   };
 
+  const handleProfileImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Image is too large (max 10MB)');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setFormData(prev => ({ ...prev, profileImage: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveProfileImage = () => {
+    setFormData(prev => ({ ...prev, profileImage: '' }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const submitData = {
       name: formData.customerName,
       address: formData.address,
+      temporaryAddress: formData.temporaryAddress || undefined,
       monthlySalary: formData.monthlySalary ? Number(formData.monthlySalary) : undefined,
       cellNumbers: formData.cellNumbers.filter(c => c.number).map(c => ({ number: c.number })),
       guarantor: formData.guarantor.name || formData.guarantor.address ? formData.guarantor : undefined,
       idProofType: formData.idProofType || undefined,
       idProofNumber: formData.idProofNumber || undefined,
+      profileImage: formData.profileImage || undefined,
     };
     onSubmit(submitData);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="flex items-center gap-4">
+        <div className="h-20 w-20 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+          {formData.profileImage ? (
+            <img src={formData.profileImage} alt="Profile" className="h-full w-full object-cover" />
+          ) : (
+            <span className="text-2xl font-semibold text-gray-400">
+              {formData.customerName?.charAt(0)?.toUpperCase() || '?'}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col gap-2">
+          <label className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 cursor-pointer">
+            {formData.profileImage ? 'Replace Photo' : 'Upload Photo'}
+            <input type="file" accept="image/*" className="hidden" onChange={handleProfileImageChange} />
+          </label>
+          {formData.profileImage && (
+            <button
+              type="button"
+              onClick={handleRemoveProfileImage}
+              className="text-xs text-red-600 hover:underline"
+            >
+              Remove Photo
+            </button>
+          )}
+        </div>
+      </div>
       <Input
         label="Customer Name"
         value={formData.customerName}
@@ -90,6 +138,11 @@ function EditCustomerForm({ customer, onSubmit, onCancel, isSubmitting }) {
         label="Address"
         value={formData.address}
         onChange={(e) => handleChange('address', e.target.value)}
+      />
+      <Input
+        label="Temporary Address"
+        value={formData.temporaryAddress}
+        onChange={(e) => handleChange('temporaryAddress', e.target.value)}
       />
       <Input
         label="Monthly Salary"

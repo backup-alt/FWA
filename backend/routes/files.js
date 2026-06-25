@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const { getFileFromCacheOrPcloud, getMimeTypeFromExtension, cleanupExpiredCache, cacheDir } = require('../middleware/fileProxy');
+const { getFileMetadata } = require('../utils/pcloud');
 const fs = require('fs');
 
 const router = express.Router();
@@ -14,6 +15,21 @@ router.get('/:fileId', async (req, res) => {
       return res.status(400).json({ message: 'fileId is required.' });
     }
 
+    let mimeType = getMimeTypeFromExtension(ext);
+    let originalName = '';
+
+    try {
+      const metadata = await getFileMetadata(fileId);
+      if (metadata?.contenttype) {
+        mimeType = metadata.contenttype;
+      }
+      if (metadata?.name) {
+        originalName = metadata.name;
+      }
+    } catch (metaErr) {
+      console.warn(`[fileProxy] metadata lookup failed for ${fileId}, using ext fallback:`, metaErr.message);
+    }
+
     const filePath = await getFileFromCacheOrPcloud(fileId, ext);
     const stats = fs.statSync(filePath);
     if (stats.size < 100) {
@@ -24,8 +40,8 @@ router.get('/:fileId', async (req, res) => {
       }
     }
 
-    const mimeType = getMimeTypeFromExtension(ext);
     res.setHeader('Content-Type', mimeType);
+    res.setHeader('Content-Disposition', `inline; filename="${originalName || fileId}"`);
     res.setHeader('Cache-Control', 'private, max-age=3600');
     res.sendFile(filePath, (err) => {
       if (err && !res.headersSent) {

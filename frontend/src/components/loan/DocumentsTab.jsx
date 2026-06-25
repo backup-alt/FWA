@@ -214,10 +214,11 @@ export function DocumentsTab({ loanId, documents = [], onUpload, onDelete }) {
         <div className={`flex justify-center bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden ${previewDoc?.type === 'application/pdf' ? 'h-[80vh]' : 'p-2'}`}>
           {previewDoc && previewDoc._blobUrl && (
             previewDoc.type === 'application/pdf' ? (
-              <iframe
+              <embed
                 src={previewDoc._blobUrl}
+                type="application/pdf"
                 title={previewDoc.name}
-                className="w-full h-full border-0 bg-white"
+                className="w-full h-full bg-white"
               />
             ) : (
               <img src={previewDoc._blobUrl} alt={previewDoc.name} className="max-w-full max-h-[70vh] object-contain" />

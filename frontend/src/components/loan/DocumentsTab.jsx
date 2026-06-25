@@ -84,7 +84,8 @@ export function DocumentsTab({ loanId, documents = [], onUpload, onDelete }) {
       showToast('Document file is not available', 'error');
       return;
     }
-    setPreviewDoc({ ...doc, _blobUrl: url });
+    const cacheBusted = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+    setPreviewDoc({ ...doc, _blobUrl: cacheBusted });
   };
 
   const handleClosePreview = () => {

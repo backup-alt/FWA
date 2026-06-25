@@ -42,7 +42,8 @@ router.get('/:fileId', async (req, res) => {
 
     res.setHeader('Content-Type', mimeType);
     res.setHeader('Content-Disposition', `inline; filename="${originalName || fileId}"`);
-    res.setHeader('Cache-Control', 'private, max-age=3600');
+    res.setHeader('Cache-Control', 'no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
     res.sendFile(filePath, (err) => {
       if (err && !res.headersSent) {
         res.status(500).json({ message: 'Error sending file.' });

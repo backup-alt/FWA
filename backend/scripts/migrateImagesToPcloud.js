@@ -44,7 +44,8 @@ async function migrateCustomerProfileImages() {
         const fileId = await uploadBase64ToPcloud(
           existingBase64,
           filename,
-          pcloudConfig.folders.profilePictures
+          pcloudConfig.folders.profilePictures,
+          0.5
         );
 
         const url = await getProxyUrl(fileId);

@@ -39,7 +39,7 @@ async function uploadProfileImage(base64Data) {
     base64Data,
     filename,
     pcloudConfig.folders.profilePictures,
-    true
+    0.5
   );
   return { fileId };
 }

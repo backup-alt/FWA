@@ -475,7 +475,7 @@ router.post('/:id/documents', async (req, res) => {
         data,
         filename,
         pcloudConfig.folders.documents,
-        false
+        5
       );
     } catch (err) {
       console.error('pcloud document upload failed:', err.message);

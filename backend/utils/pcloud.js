@@ -33,19 +33,19 @@ function base64ToBuffer(base64Data) {
   return { buffer, mimeType };
 }
 
-async function compressImage(buffer, maxSizeMB = 5) {
+async function compressImage(buffer, maxSizeMB = 5, targetFormat = 'webp') {
   const maxSizeBytes = maxSizeMB * 1024 * 1024;
 
   if (buffer.length <= maxSizeBytes) {
     return buffer;
   }
 
-  let quality = 90;
+  let quality = 85;
   let resultBuffer = buffer;
 
-  while (resultBuffer.length > maxSizeBytes && quality > 10) {
+  while (resultBuffer.length > maxSizeBytes && quality > 20) {
     resultBuffer = await sharp(buffer)
-      .jpeg({ quality })
+      [targetFormat]({ quality })
       .toBuffer();
 
     if (resultBuffer.length <= maxSizeBytes) {
@@ -56,15 +56,15 @@ async function compressImage(buffer, maxSizeMB = 5) {
 
   if (resultBuffer.length > maxSizeBytes) {
     const metadata = await sharp(buffer).metadata();
-    let width = metadata.width;
-    let height = metadata.height;
+    let width = metadata.width || 800;
+    let height = metadata.height || 800;
 
     while (resultBuffer.length > maxSizeBytes && width > 200 && height > 200) {
       width = Math.floor(width * 0.8);
       height = Math.floor(height * 0.8);
       resultBuffer = await sharp(buffer)
         .resize(width, height)
-        .jpeg({ quality: 80 })
+        [targetFormat]({ quality: 75 })
         .toBuffer();
     }
   }
@@ -222,14 +222,20 @@ async function downloadFromPcloud(fileId, localPath) {
   }
 }
 
-async function uploadBase64ToPcloud(base64Data, filename, folderId, compress = true) {
+async function uploadBase64ToPcloud(base64Data, filename, folderId, maxSizeMB = 5) {
   const { buffer, mimeType } = base64ToBuffer(base64Data);
 
+  const maxSizeBytes = maxSizeMB * 1024 * 1024;
+
   let finalBuffer = buffer;
-  if (compress && (mimeType.startsWith('image/') || mimeType === 'application/pdf')) {
+  if (mimeType.startsWith('image/') || mimeType === 'application/pdf') {
     if (mimeType.startsWith('image/')) {
-      finalBuffer = await compressImage(buffer, 5);
+      finalBuffer = await compressImage(buffer, maxSizeMB, 'webp');
     }
+  }
+
+  if (finalBuffer.length > maxSizeBytes) {
+    throw new Error(`Image too large (${(finalBuffer.length / 1024).toFixed(1)}KB). Max allowed is ${maxSizeMB}MB.`);
   }
 
   const ext = getExtensionFromMimeType(mimeType);

@@ -192,8 +192,8 @@ export function CustomerDetailPage() {
   const handleProfileImageChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 500 * 1024) {
-      showToast('Image must be smaller than 500KB', 'error');
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image is too large (max 5MB)', 'error');
       return;
     }
     const reader = new FileReader();

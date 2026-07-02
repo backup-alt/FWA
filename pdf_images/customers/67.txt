@@ -1,0 +1,19 @@
+Make              : TVS XL
+Model             : 2017
+Reg No            : TN 72 BX 3639
+Loan Amount       : 15000
+Finance Amount    : 13000
+RC                : Yes
+NOC               : Not Received
+Insurance         : No
+ID                : Yes
+Key               : No
+Sales Done By     : Ref: E777
+
+Customer Name     : Mani
+
+Address           :
+
+Call              : 9786941019, 9003826319
+
+Guarantor Number  : 9994659304

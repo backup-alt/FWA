@@ -1,0 +1,19 @@
+\Make              : Pulsar NS 160
+Model             : 2019
+Reg No            : TN 75 AL 5247
+Loan Amount       : 23000
+Finance Amount    : 20200
+RC                : Yes
+NOC               : Not Received (HDFC)
+Insurance         :
+ID                :
+Key               : 
+Sales Done By     : RC BOOK F75(changed from Ref: E754 → E276) 
+
+Customer Name     : Tharmaraj
+
+Address           :
+
+Call              : 6369229705, 9345140385
+
+Guarantor Number  : 9488589180, 9944817509

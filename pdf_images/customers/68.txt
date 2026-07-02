@@ -1,0 +1,19 @@
+Make              : Yamaha FZ V3
+Model             : 2019
+Reg No            : TN 72 CZ 3453
+Loan Amount       : 50000
+Finance Amount    : 44500
+RC                : Yes
+NOC               : Nil
+Insurance         : Not Received
+ID                : Yes
+Key               : Yes
+Sales Done By     : Ravi Kondankulam (Ref: E797)
+
+Customer Name     : Nallapan
+
+Address           :
+
+Call              : 9786611897
+
+Guarantor Number  :

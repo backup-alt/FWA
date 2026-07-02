@@ -1,0 +1,19 @@
+Make           : Honda Dio
+Model          : 2021
+Reg No         : TN 74 AZ 3966
+Loan Amount    : 25000
+Finance Amount : 25000
+RC             : Yes
+NOC            : Yes
+Insurance      :
+ID             :
+Key            :
+Sales Done By  : Ram Auto Finance
+
+Customer Name  : P ஸ்டிபன்
+
+Address        :
+
+Call           : 9600258199
+
+guarantor Number  : 8438228694

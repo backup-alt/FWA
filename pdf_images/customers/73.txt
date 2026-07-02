@@ -1,0 +1,19 @@
+Make              : Yamaha Ray Z
+Model             : 2015/5
+Reg No            : TN 74 AK 2649
+Loan Amount       : 19000
+Finance Amount    : 16600
+RC                : Yes
+NOC               : Yes
+Insurance         : Not Received
+ID                : Yes
+Key               : Yes
+Sales Done By     : Ref: E762 → E560 → E222 → D735 → D208
+
+Customer Name     : Muthu
+
+Address           :
+
+Call              : 9944028095
+
+Guarantor Number  :

@@ -1,0 +1,20 @@
+Make           : Bullet 350cc
+Model          : 2009/5
+Reg No         : TN 28 AZ 9524
+Loan Amount    : 75000
+Finance Amount : 67500
+RC             : Yes
+NOC            : Nil
+Insurance      : No
+ID             : Yes
+Key            :
+Sales Done By  : Ref: E618, E583
+
+Customer Name  : Mano Singh
+
+Address        :
+
+Reference      : (S.P. Selvam Sounds)
+
+Call           : 9688006272
+guarantor Number  : 9688006232

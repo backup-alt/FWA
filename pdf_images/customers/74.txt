@@ -1,0 +1,19 @@
+Make              : XL HD
+Model             : 2016
+Reg No            : TN 74 AP 4902
+Loan Amount       : 15000
+Finance Amount    : 13000
+RC                : Yes
+NOC               : Yes
+Insurance         : Not Received
+ID                : Yes
+Key               : No
+Sales Done By     : Ref: E925 → E692 → E478 → D284
+
+Customer Name     : Titus
+
+Address           :
+
+Call              : 9751505872
+
+Guarantor Number  :

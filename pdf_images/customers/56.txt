@@ -1,0 +1,19 @@
+Make              : Bajaj Platina
+Model             : 2019
+Reg No            : TN 74 AW 7479
+Loan Amount       : 18500
+Finance Amount    : 16150
+RC                : Yes
+NOC               : Received (Online NOC)
+Insurance         :
+ID                : Yes
+Key               :
+Sales Done By     :
+
+Customer Name     : மணிகண்டன்
+
+Address           :
+
+Call              : 9787589572
+
+Guarantor Number  : 9626344275

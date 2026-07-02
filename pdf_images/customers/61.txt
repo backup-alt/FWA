@@ -1,0 +1,37 @@
+Make              : Apache
+
+Model             : 2014/5
+
+Reg No            : TN 74 AH 2817
+
+Loan Amount       : 20000
+
+Finance Amount    : 17500
+
+RC                : Yes
+
+NOC               : Nil
+
+Insurance         : No
+
+ID                : Yes
+
+Key               : No
+
+Sales Done By     : Ref: C853 → E314 → E786
+
+
+
+Customer Name     : Ramasamy
+
+
+
+Address           :
+
+
+
+Call              : 9486223735
+
+
+
+Guarantor Number  : 8838665387

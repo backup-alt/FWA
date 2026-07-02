@@ -1,0 +1,19 @@
+Make           : Bajaj Discover
+Model          : 6/2011
+Reg No         : TN 75 F 4089
+Loan Amount    : 6000
+Finance Amount : 4900
+RC             : Yes
+NOC            : Yes
+Insurance      : No
+ID             : Yes
+Key            : No
+Sales Done By  :
+
+Customer Name  : Isravel
+
+Address        :
+
+Call           : 9443719713
+
+guarantor Number  : 7502150171

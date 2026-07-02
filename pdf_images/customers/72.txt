@@ -1,0 +1,19 @@
+Make              : Honda Dio
+Model             : 2016/7
+Reg No            : TN 75 Y 3670
+Loan Amount       : 17000
+Finance Amount    : 14800
+RC                : Yes
+NOC               : Nil
+Insurance         : No
+ID                : Yes
+Key               :
+Sales Done By     : Ref: D561, E458, E774
+
+Customer Name     : Ayyappan
+
+Address           :
+
+Call              : 9894621756
+
+Guarantor Number  : 9487933170

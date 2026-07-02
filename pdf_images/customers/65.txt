@@ -1,0 +1,19 @@
+Make              : Platina
+Model             : 2020
+Reg No            : TN 72 CZ 9252
+Loan Amount       : 40000
+Finance Amount    : 35500
+RC                :
+NOC               :
+Insurance         : Not Received
+ID                :
+Key               : No
+Sales Done By     : 
+
+Customer Name     : Venkatesh
+
+Address           :
+
+Call              : 7598353406, 9345072873,9843516137
+
+Guarantor Number  : 9715609169

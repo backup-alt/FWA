@@ -7,5 +7,4 @@ dist/
 build/
 *.pdf
 *.png
-*.txt
 bill-notes*.json

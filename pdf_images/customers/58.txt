@@ -1,0 +1,20 @@
+Make              : Ape Auto
+Model             : 2000
+Reg No            : TN 67 C 3369
+Loan Amount       : 40000
+Finance Amount    : 35500
+RC                : Yes
+NOC               : Nil
+Insurance         : Yes
+ID                : Yes
+Key               : No
+Sales Done By     : Ref: E160
+
+Customer Name     :மைக்கிள் ரஜினி
+
+Address           :
+
+Call              : 9786488790
+
+Guarantor Number  : 9445548790
+

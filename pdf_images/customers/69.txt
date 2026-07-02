@@ -1,0 +1,19 @@
+Make              : Apache 160 
+Model             : 2015
+Reg No            : TN 72 BZ 5451
+Loan Amount       : 23000
+Finance Amount    : 20200
+RC                : Yes
+NOC               : 
+Insurance         : Not Received
+ID                : Yes
+Key               : No
+Sales Done By     : Ref: E804 → E354
+
+Customer Name     : Manikandan Gopi
+
+Address           :
+
+Call              : 7603883915
+
+Guarantor Number  : 9108596691

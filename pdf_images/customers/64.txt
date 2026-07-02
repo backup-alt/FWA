@@ -1,0 +1,21 @@
+```txt id="0f2zcn"
+Make              : Yamaha FZ
+Model             : 2016
+Reg No            : TN 74 AM 7681
+Loan Amount       : 30000
+Finance Amount    : 26500
+RC                : Yes
+NOC               : Yes
+Insurance         : Not Received
+ID                : Yes
+Key               :
+Sales Done By     : Ref: E832
+
+Customer Name     : Murugesan
+
+Address           :
+
+Call              : 8695754510
+
+Guarantor Number  : 7708157797
+```

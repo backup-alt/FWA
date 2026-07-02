@@ -1,0 +1,19 @@
+Make              : Classic 350
+Model             : 2020
+Reg No            : TN 96 C 8384
+Loan Amount       : 75000
+Finance Amount    : 67500
+RC                : Yes
+NOC               : Nil
+Insurance         :
+ID                : Yes
+Key               :
+Sales Done By     : Ref: E776
+
+Customer Name     : ஜார்ஜ் கலின்
+
+Address           :
+
+Call              : 9500364543
+
+Guarantor Number  : 9865678108, 9092844448

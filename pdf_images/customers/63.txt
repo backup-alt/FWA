@@ -1,0 +1,19 @@
+Make              : Pul 150 ABS
+Model             : 2019
+Reg No            : TN 72 CZ 1936
+Loan Amount       : 45000
+Finance Amount    : 40000
+RC                : Yes
+NOC               : Yes (IndusInd Bank)
+Insurance         : Yes (1-11-2024)
+ID                : Yes
+Key               : No
+Sales Done By     : Ref: E784
+
+Customer Name     : Muthuraj
+
+Address           :
+
+Call              : 8248352582
+
+Guarantor Number  : 9715609169

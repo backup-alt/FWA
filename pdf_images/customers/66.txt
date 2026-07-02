@@ -1,0 +1,19 @@
+Make              : Honda Unicorn
+Model             : 2009/5
+Reg No            : TN 72 AD 1428
+Loan Amount       : 10000
+Finance Amount    : 8500
+RC                : Yes
+NOC               : Nil
+Insurance         : No
+ID                : Yes
+Key               :
+Sales Done By     : Ref: E469, E45, E795
+
+Customer Name     : Sadasivan
+
+Address           :
+
+Call              : 7598030975
+
+Guarantor Number  : 9626263830

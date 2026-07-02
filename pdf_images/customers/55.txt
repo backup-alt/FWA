@@ -1,0 +1,19 @@
+Make              : CT 110
+Model             : 2020
+Reg No            : TN 74 AW 8362
+Loan Amount       : 17000
+Finance Amount    : 14800
+RC                : Yes
+NOC               : Yes
+Insurance         :
+ID                : Yes
+Key               : Yes
+Sales Done By     :
+
+Customer Name     : S.பிரிட்டோ
+
+Address           :
+
+Call              : 9442010054
+
+Guarantor Number  : 

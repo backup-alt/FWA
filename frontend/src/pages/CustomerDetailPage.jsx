@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button';
 import { formatCurrency, formatDate } from '@/api';
 import bikeIcon from '../../../bike-svgrepo-com.svg';
 import carIcon from '../../../car-svgrepo-com.svg';
+import autoIcon from '../../../icons8-auto-rickshaw-50.png';
 
 const statusColors = {
   Active: 'info',
@@ -453,8 +454,10 @@ export function CustomerDetailPage() {
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         {loan.vehicleType === 'Bike' ? (
                           <img src={bikeIcon} alt="Bike" className="h-8 w-8 shrink-0" />
-                        ) : (
+                        ) : loan.vehicleType === 'Car' ? (
                           <img src={carIcon} alt="Car" className="h-8 w-8 shrink-0" />
+                        ) : (
+                          <img src={autoIcon} alt="Auto" className="h-8 w-8 shrink-0" />
                         )}
                         <div className="min-w-0">
                           <h3 className="font-semibold text-gray-900 dark:text-white truncate">

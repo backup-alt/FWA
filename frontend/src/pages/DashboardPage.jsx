@@ -16,6 +16,7 @@ const TABS = [
   { id: '', label: 'All' },
   { id: 'Bike', label: 'Bikes' },
   { id: 'Car', label: 'Cars' },
+  { id: 'Auto', label: 'Auto' },
   { id: 'pending', label: 'Pending Dues' },
 ];
 

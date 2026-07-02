@@ -26,7 +26,7 @@ const steps = [
 ];
 
 const schema = z.object({
-  vehicleType: z.enum(['Bike', 'Car'], { required_error: 'Vehicle type is required' }),
+  vehicleType: z.enum(['Bike', 'Car', 'Auto'], { required_error: 'Vehicle type is required' }),
   make: z.string().optional(),
   model: z.string().optional(),
   regNo: z.string().optional(),

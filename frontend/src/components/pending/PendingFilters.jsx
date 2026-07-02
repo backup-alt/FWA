@@ -12,6 +12,7 @@ export function PendingFilters({ filter, onFilterChange, onClear }) {
             { value: '', label: 'All Types' },
             { value: 'Bike', label: 'Bikes' },
             { value: 'Car', label: 'Cars' },
+            { value: 'Auto', label: 'Auto' },
           ]}
         />
 

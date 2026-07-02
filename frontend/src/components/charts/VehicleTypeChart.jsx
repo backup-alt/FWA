@@ -4,16 +4,19 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 const COLORS = {
   Bikes: '#0284c7',
   Cars: '#16a34a',
+  Auto: '#d97706',
 };
 
 export function VehicleTypeChart({ loans = [] }) {
   const bikeLoans = loans.filter(loan => loan.vehicleType === 'Bike').length;
   const carLoans = loans.filter(loan => loan.vehicleType === 'Car').length;
+  const autoLoans = loans.filter(loan => loan.vehicleType === 'Auto').length;
   const total = loans.length;
 
   const data = [
     { name: 'Bikes', value: bikeLoans, fill: COLORS.Bikes },
     { name: 'Cars', value: carLoans, fill: COLORS.Cars },
+    { name: 'Auto', value: autoLoans, fill: COLORS.Auto },
   ].filter(item => item.value > 0);
 
   return (
@@ -60,6 +63,7 @@ export function VehicleTypeChart({ loans = [] }) {
               {[
                 ['Bikes', bikeLoans],
                 ['Cars', carLoans],
+                ['Auto', autoLoans],
               ].map(([label, value]) => (
                 <div key={label} className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">

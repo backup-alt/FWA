@@ -68,7 +68,7 @@ export function PendingDuesTable({ dues, sortConfig, onSort, filter }) {
                   </NavLink>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={due.vehicleType === 'Bike' ? 'info' : 'success'}>
+                  <Badge variant={due.vehicleType === 'Bike' ? 'info' : due.vehicleType === 'Car' ? 'success' : 'warning'}>
                     {due.vehicleType}
                   </Badge>
                 </TableCell>

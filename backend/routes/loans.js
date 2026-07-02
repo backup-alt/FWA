@@ -145,6 +145,21 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Vehicle type counts
+router.get('/vehicle-type-counts', authMiddleware, async (req, res) => {
+  try {
+    const agg = await Loan.aggregate([
+      { $match: { status: 'Active' } },
+      { $group: { _id: '$vehicleType', count: { $sum: 1 } } },
+    ]);
+    const counts = {};
+    agg.forEach(({ _id, count }) => { if (_id) counts[_id] = count; });
+    res.json({ counts });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Pending dues
 router.get('/pending-dues', async (req, res) => {
   try {

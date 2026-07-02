@@ -30,6 +30,7 @@ export function VehicleDetailsStep({ form }) {
               options={[
                 { value: 'Bike', label: 'Bike' },
                 { value: 'Car', label: 'Car' },
+                { value: 'Auto', label: 'Auto' },
               ]}
               placeholder="Select vehicle type"
               error={errors.vehicleType?.message}

@@ -30,6 +30,7 @@ import { Loans } from '@/api';
 import { useQueryClient } from '@tanstack/react-query';
 import bikeIcon from '../../../bike-svgrepo-com.svg';
 import carIcon from '../../../car-svgrepo-com.svg';
+import autoIcon from '../../../icons8-auto-rickshaw-50.png';
 
 const statusColors = {
   Active: 'info',
@@ -325,8 +326,10 @@ export function LoanDetailPage() {
             <h1 className="truncate text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               {loan.vehicleType === 'Bike' ? (
                 <img src={bikeIcon} alt="Bike" className="h-8 w-8 shrink-0" />
-              ) : (
+              ) : loan.vehicleType === 'Car' ? (
                 <img src={carIcon} alt="Car" className="h-8 w-8 shrink-0" />
+              ) : (
+                <img src={autoIcon} alt="Auto" className="h-8 w-8 shrink-0" />
               )}
               <span>{loan.vehicleType} - {loan.make || ''} {loan.model || ''}</span>
             </h1>

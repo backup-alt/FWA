@@ -145,8 +145,18 @@ router.get('/', async (req, res) => {
               ]
             }
           },
+          autoRegNos: {
+            $push: {
+              $cond: [
+                { $eq: ['$vehicleType', 'Auto'] },
+                '$regNo',
+                '$$REMOVE'
+              ]
+            }
+          },
           bikeCount: { $sum: { $cond: [{ $eq: ['$vehicleType', 'Bike'] }, 1, 0] } },
           carCount: { $sum: { $cond: [{ $eq: ['$vehicleType', 'Car'] }, 1, 0] } },
+          autoCount: { $sum: { $cond: [{ $eq: ['$vehicleType', 'Auto'] }, 1, 0] } },
         },
       },
     ]);
@@ -166,8 +176,10 @@ router.get('/', async (req, res) => {
         activeLoans: agg.activeLoans || 0,
         bikeRegNos: (agg.bikeRegNos || []).filter(r => r),
         carRegNos: (agg.carRegNos || []).filter(r => r),
+        autoRegNos: (agg.autoRegNos || []).filter(r => r),
         bikeCount: agg.bikeCount || 0,
         carCount: agg.carCount || 0,
+        autoCount: agg.autoCount || 0,
       };
     }));
 

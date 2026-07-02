@@ -7,6 +7,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { formatCurrency, Loans } from '@/api';
 import { clsx } from 'clsx';
+import autoIcon from '../../../icons8-auto-rickshaw-50.png';
 
 const BikeIcon = () => (
   <svg viewBox="0 0 512 512" className="h-4 w-4" fill="currentColor">
@@ -81,9 +82,11 @@ function ReportTable({ title, data, type, icon: Icon, emptyMessage }) {
                       'inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium',
                       item.vehicleType === 'Bike'
                         ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                        : 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                        : item.vehicleType === 'Car'
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                        : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300'
                     )}>
-                      {item.vehicleType === 'Bike' ? <BikeIcon /> : <CarIcon />}
+                      {item.vehicleType === 'Bike' ? <BikeIcon /> : item.vehicleType === 'Car' ? <CarIcon /> : <img src={autoIcon} alt="Auto" className="h-4 w-4" />}
                       {item.vehicleType}
                     </span>
                   </td>

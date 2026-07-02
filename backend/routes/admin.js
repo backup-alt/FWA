@@ -134,4 +134,28 @@ router.post('/backfill-doc-urls', requireAdminSecret, async (req, res) => {
   }
 });
 
+router.post('/wipe-all', requireAdminSecret, async (req, res) => {
+  const Customer = require('../models/Customer');
+  const Loan = require('../models/Loan');
+
+  try {
+    const custCount = await Customer.countDocuments();
+    const loanCount = await Loan.countDocuments();
+
+    await Loan.deleteMany({});
+    const deletedLoans = await Loan.countDocuments();
+
+    await Customer.deleteMany({});
+    const deletedCustomers = await Customer.countDocuments();
+
+    res.json({
+      ok: true,
+      deleted: { customers: custCount - deletedCustomers, loans: loanCount - deletedLoans },
+      remaining: { customers: deletedCustomers, loans: deletedLoans },
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;

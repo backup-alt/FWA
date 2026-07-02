@@ -134,6 +134,62 @@ router.post('/backfill-doc-urls', requireAdminSecret, async (req, res) => {
   }
 });
 
+router.post('/import-customers', requireAdminSecret, async (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  const Customer = require('../models/Customer');
+
+  const CUSTOMERS_DIR = path.join(__dirname, '..', '..', 'pdf_images', 'customers');
+
+  function parseFile(filePath) {
+    const content = fs.readFileSync(filePath, 'utf8');
+    const lines = content.split('\n');
+    const data = {};
+    for (const line of lines) {
+      const match = line.match(/^\s*([A-Za-z][A-Za-z ]*?)\s*:\s*(.*?)\s*$/);
+      if (match) {
+        data[match[1].trim()] = match[2].trim();
+      }
+    }
+    const customerName = data['Customer Name'] || '';
+    const call = data['Call'] || '';
+    const guarantorRaw = data['guarantor Number'] || '';
+    const guarantorPhone = guarantorRaw.split(',').map(p => p.trim()).filter(Boolean)[0] || '';
+
+    return {
+      name: customerName,
+      cellNumbers: call ? [{ number: call }] : [],
+      guarantor: { name: '', address: '', mobile: guarantorPhone },
+      address: '',
+      temporaryAddress: '',
+      monthlySalary: 0,
+      idProofType: '',
+      idProofNumber: '',
+      profileImageFileId: '',
+      profileImageUrl: '',
+    };
+  }
+
+  try {
+    const files = fs.readdirSync(CUSTOMERS_DIR).filter(f => f.endsWith('.txt')).sort();
+    const results = [];
+    for (const file of files) {
+      try {
+        const data = parseFile(path.join(CUSTOMERS_DIR, file));
+        const customer = await Customer.create(data);
+        results.push({ file, _id: customer._id.toString(), name: data.name, phone: data.cellNumbers[0]?.number, guarantor: data.guarantor.mobile });
+      } catch (err) {
+        results.push({ file, error: err.message });
+      }
+    }
+    const imported = results.filter(r => r._id).length;
+    const failed = results.filter(r => r.error).length;
+    res.json({ ok: true, total: files.length, imported, failed, results });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 router.post('/wipe-all', requireAdminSecret, async (req, res) => {
   const Customer = require('../models/Customer');
   const Loan = require('../models/Loan');

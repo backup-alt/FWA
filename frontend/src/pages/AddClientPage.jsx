@@ -63,6 +63,7 @@ const schema = z.object({
   guarantor: z.object({
     name: z.string().optional(),
     address: z.string().optional(),
+    mobile: z.string().optional(),
   }).optional(),
   chequesReceived: z.array(z.object({
     chequeNumber: z.string().optional(),
@@ -110,7 +111,7 @@ export function AddClientPage() {
       loanStartDate: new Date().toISOString().split('T')[0],
       installmentPeriodUnit: 'Months',
       cellNumbers: [{ number: '' }],
-      guarantor: { name: '', address: '' },
+      guarantor: { name: '', address: '', mobile: '' },
       chequesReceived: [{ chequeNumber: '', bank: '', amount: 0 }],
       rcDetails: { status: '', paidThrough: '', chequeNumber: '', amount: 0 },
       profileImage: '',

@@ -14,6 +14,7 @@ const customerSchema = new mongoose.Schema(
     guarantor: {
       name: { type: String, default: '' },
       address: { type: String, default: '' },
+      mobile: { type: String, default: '' },
     },
     profileImageFileId: { type: String, default: '' },
     profileImageUrl: { type: String, default: '' },

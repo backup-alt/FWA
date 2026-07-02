@@ -12,7 +12,14 @@ export function GuarantorStep({ form }) {
           label="Guarantor Name"
           {...register('guarantor.name')}
         />
-        
+
+        <Input
+          label="Guarantor Mobile"
+          type="tel"
+          placeholder="Phone number"
+          {...register('guarantor.mobile')}
+        />
+
         <Input
           label="Guarantor Address"
           className="sm:col-span-2"

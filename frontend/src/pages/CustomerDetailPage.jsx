@@ -28,7 +28,7 @@ function EditCustomerForm({ customer, loans, onSubmit, onCancel, isSubmitting })
     temporaryAddress: customer.temporaryAddress || '',
     monthlySalary: customer.monthlySalary || '',
     cellNumbers: customer.cellNumbers?.length ? customer.cellNumbers : [{ number: '' }],
-    guarantor: customer.guarantor || { name: '', address: '' },
+    guarantor: { name: '', address: '', mobile: '', ...(customer.guarantor || {}) },
     idProofType: customer.idProofType || '',
     idProofNumber: customer.idProofNumber || '',
     vehicleType: firstLoan?.vehicleType || '',
@@ -61,7 +61,7 @@ function EditCustomerForm({ customer, loans, onSubmit, onCancel, isSubmitting })
       temporaryAddress: formData.temporaryAddress || undefined,
       monthlySalary: formData.monthlySalary ? Number(formData.monthlySalary) : undefined,
       cellNumbers: formData.cellNumbers.filter(c => c.number).map(c => ({ number: c.number })),
-      guarantor: formData.guarantor.name || formData.guarantor.address ? formData.guarantor : undefined,
+      guarantor: (formData.guarantor.name || formData.guarantor.address || formData.guarantor.mobile) ? formData.guarantor : undefined,
       idProofType: formData.idProofType || undefined,
       idProofNumber: formData.idProofNumber || undefined,
     };
@@ -123,7 +123,14 @@ function EditCustomerForm({ customer, loans, onSubmit, onCancel, isSubmitting })
           onChange={(e) => handleGuarantorChange('name', e.target.value)}
         />
         <Input
+          label="Guarantor Mobile"
+          type="tel"
+          value={formData.guarantor.mobile}
+          onChange={(e) => handleGuarantorChange('mobile', e.target.value)}
+        />
+        <Input
           label="Guarantor Address"
+          className="sm:col-span-2"
           value={formData.guarantor.address}
           onChange={(e) => handleGuarantorChange('address', e.target.value)}
         />
@@ -262,7 +269,7 @@ export function CustomerDetailPage() {
     ['Cell Numbers', (customer.cellNumbers || []).map(c => c.number).join(', ') || '-'],
     ['Monthly Salary', customer.monthlySalary ? formatCurrency(customer.monthlySalary) : '-'],
     ['ID Proof', customer.idProofType ? `${customer.idProofType}: ${customer.idProofNumber || '-'}` : '-'],
-    ['Guarantor', `${customer.guarantor?.name || '-'}${customer.guarantor?.address ? ` - ${customer.guarantor.address}` : ''}`],
+    ['Guarantor', `${customer.guarantor?.name || '-'}${customer.guarantor?.mobile ? ` - ${customer.guarantor.mobile}` : ''}${customer.guarantor?.address ? ` (${customer.guarantor.address})` : ''}`],
   ];
 
   return (

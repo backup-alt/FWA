@@ -10,7 +10,7 @@ ID                : Yes
 Key               :
 Sales Done By     : Ref: E776
 
-Customer Name     : ஜார்ஜ் கலின்
+Customer Name     : George Galin
 
 Address           :
 

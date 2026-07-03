@@ -10,7 +10,7 @@ ID                : Yes
 Key               : Yes
 Sales Done By     :
 
-Customer Name     : S.பிரிட்டோ
+Customer Name     : S.Brito
 
 Address           :
 

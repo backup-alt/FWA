@@ -10,7 +10,7 @@ ID                : Yes
 Key               :
 Sales Done By     :
 
-Customer Name     : மணிகண்டன்
+Customer Name     : Manikandan
 
 Address           :
 

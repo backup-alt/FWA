@@ -10,7 +10,7 @@ ID                : Yes
 Key               : No
 Sales Done By     : Ref: E763, E394 → D351 → D851
 
-Customer Name     : கோபால கிருஷ்ணன்
+Customer Name     : Gopala Krishnan
 
 Address           :
 

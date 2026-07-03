@@ -10,7 +10,7 @@ ID             :
 Key            :
 Sales Done By  : Ram Finance
 
-Customer Name  : கதிரேசன்
+Customer Name  : Kathiresan
 
 Address        :
 

@@ -223,9 +223,9 @@ export function AddClientPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Loan Amount</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(loanAmount)}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">L.AMT in the ledger</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Loan Disbursement (F.AMT)</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(financeAmount)}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Amount being given as loan</p>
           </CardContent>
         </Card>
         <Card>

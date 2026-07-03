@@ -86,7 +86,7 @@ export function VehicleDetailsStep({ form }) {
         />
         
         <Input
-          label="Finance Amount (F.AMT) *"
+          label="Loan Disbursement Amount (F.AMT) *"
           type="number"
           placeholder="0"
           error={errors.financeAmount?.message}

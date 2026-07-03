@@ -1,2 +1,37 @@
-| eeereere | TE
-Mega ihe THe
+Make              : Bajaj Auto
+Model             : 2000
+Registration No.  : TN 74 D 2811
+
+Loan Amount       : ₹20,000
+Finance Amount    : ₹17,500
+Installment       : ₹2,400 × 10
+Interest Rate     : 2.00%
+
+RC                : Yes
+NOC               : NIL
+Insurance         : Yes
+ID                :
+Key               :
+
+Sales Done By     : Join F18
+
+Customer Name     : Thusai
+Address           : 
+
+Cell Number       : 9442468159
+Guarantor Number  :
+
+Status            : Completed (Settlement amount ₹2,00 paid on party - 2-3-2026, Ref: F228)
+
+Installments:
+
+1. Due ₹2,400 | Due: 14-03-2025 | Received: ₹2,400 | Paid: 20-03-2025
+2. Due ₹2,400 | Due: 14-04-2025 | Received: ₹2,300 | Paid: 26-04-2025
+3. Due ₹2,400 | Due: 14-05-2025 | Received: ₹2,500 | Paid: 23-05-2025
+4. Due ₹2,400 | Due: 14-06-2025 | Received: ₹2,400 | Paid: 15-07-2025
+5. Due ₹2,400 | Due: 14-07-2025 | Received: ₹1,100 + ₹1,300 | Paid: 15-07-2025 + 1-9-2025
+6. Due ₹2,400 | Due: 14-08-2025 | Received: ₹1,100 + ₹1,300 | Paid: 1-9-2025 & 3-10-2025
+7. Due ₹2,400 | Due: 14-09-2025 | Received: ₹1,200 + ₹1,200 | Paid: 3-10-2025 & 14-10-2025
+8. Due ₹2,400 | Due: 14-10-2025 | Received: ₹1800+600 | Paid:04-11-25 + 16-3-25
+9. Due ₹2,400 | Due: 14-11-2025 | Received: ₹2400 | Paid: 16-12-2025
+10. Due ₹2,400 | Due: 14-12-2025 | Received: ₹4,800 | Paid: 20-01-2026

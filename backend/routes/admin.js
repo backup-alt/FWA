@@ -375,15 +375,13 @@ router.post('/import-customers', requireAdminSecret, async (req, res) => {
         }
 
         if (createLoans && loanData && loanData.loanAmount > 0 && loanData.installmentPeriod > 0 && loanData.installmentPeriodUnit) {
-          const isLast = true;
           const interestAmount = +(loanData.financeAmount * (loanData.interestRate / 100) * loanData.installmentPeriod).toFixed(2);
           const totalPayable = loanData.financeAmount + interestAmount;
-          const lastInst = loanData.installments[loanData.installments.length - 1];
-          const computedDueAmount = loanData.installments.map(i => i.dueAmount);
-          const allDueSum = computedDueAmount.reduce((a, b) => a + b, 0);
-          let lastAdjusted = lastInst.dueAmount + (totalPayable - allDueSum);
-          if (lastInst) {
-            loanData.installments[loanData.installments.length - 1].dueAmount = +lastAdjusted.toFixed(2);
+          const allDueSum = loanData.installments.reduce((a, i) => a + (i.dueAmount || 0), 0);
+          if (loanData.installments.length > 0) {
+            const lastIdx = loanData.installments.length - 1;
+            const lastAdjusted = +(totalPayable - allDueSum).toFixed(2);
+            loanData.installments[lastIdx].dueAmount = +((loanData.installments[lastIdx].dueAmount || 0) + lastAdjusted).toFixed(2);
           }
 
           const loanPayload = {
@@ -407,7 +405,7 @@ router.post('/import-customers', requireAdminSecret, async (req, res) => {
             salesDoneBy: loanData.salesDoneBy,
             installments: loanData.installments,
             interestAmount,
-            emiAmount: monthlyDue,
+            emiAmount: loanData.monthlyDue || (loanData.installments[0]?.dueAmount || 0),
             outstandingPrincipal: Math.max(loanData.loanAmount + interestAmount - loanData.installments.reduce((sum, i) => sum + (i.amountReceived || 0), 0), 0),
             totalPaid: loanData.installments.reduce((sum, i) => sum + (i.amountReceived || 0), 0),
             status: loanData.isCompleted ? 'Completed' : 'Active',

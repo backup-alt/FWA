@@ -62,6 +62,9 @@ router.post('/', async (req, res) => {
       installmentPeriod,
       installmentPeriodUnit,
       interestRate,
+      providedInstallments,
+      providedStatus,
+      providedCompletedAt,
     } = req.body;
 
     if (!customerId) {
@@ -79,13 +82,28 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const { installments, emiAmount, interestAmount } = generateInstallmentSchedule({
-      principal: loanAmount,
-      interestRate,
-      installmentPeriod,
-      installmentPeriodUnit,
-      loanStartDate,
-    });
+    let installments, emiAmount, interestAmount, totalPayable, totalPaid;
+    if (Array.isArray(providedInstallments) && providedInstallments.length > 0) {
+      installments = providedInstallments;
+      const sumOfDues = installments.reduce((a, i) => a + (Number(i.dueAmount) || 0), 0);
+      totalPayable = sumOfDues;
+      interestAmount = +(sumOfDues - Number(financeAmount || 0)).toFixed(2);
+      emiAmount = +(installments[0]?.dueAmount || 0);
+      totalPaid = installments.reduce((a, i) => a + (Number(i.amountReceived) || 0), 0);
+    } else {
+      const result = generateInstallmentSchedule({
+        principal: loanAmount,
+        interestRate,
+        installmentPeriod,
+        installmentPeriodUnit,
+        loanStartDate,
+      });
+      installments = result.installments;
+      emiAmount = result.emiAmount;
+      interestAmount = result.interestAmount;
+      totalPayable = result.totalPayable;
+      totalPaid = 0;
+    }
 
     const loan = new Loan({
       customerId,
@@ -111,9 +129,10 @@ router.post('/', async (req, res) => {
       interestAmount,
       emiAmount,
       installments,
-      outstandingPrincipal: loanAmount + interestAmount,
-      totalPaid: 0,
-      status: 'Active',
+      outstandingPrincipal: Math.max(totalPayable - totalPaid, 0),
+      totalPaid,
+      status: providedStatus || 'Active',
+      completedAt: providedStatus === 'Completed' ? (providedCompletedAt || new Date()) : null,
     });
 
     await loan.save();

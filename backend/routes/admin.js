@@ -379,6 +379,8 @@ router.post('/import-customers', requireAdminSecret, async (req, res) => {
         if (createLoans && loanData && loanData.loanAmount > 0 && loanData.installmentPeriod > 0 && loanData.installmentPeriodUnit) {
           const interestAmount = +(loanData.financeAmount * (loanData.interestRate / 100) * loanData.installmentPeriod).toFixed(2);
           const allDueSum = loanData.installments.reduce((a, i) => a + (i.dueAmount || 0), 0);
+          const firstInst = loanData.installments[0];
+          const emiAmountValue = loanData.monthlyDue || (firstInst ? firstInst.dueAmount : 0) || 0;
           const loanPayload = {
             customerId: customer._id,
             customerName: customer.name,
@@ -400,7 +402,7 @@ router.post('/import-customers', requireAdminSecret, async (req, res) => {
             salesDoneBy: loanData.salesDoneBy,
             installments: loanData.installments,
             interestAmount,
-            emiAmount: loanData.monthlyDue || (loanData.installments[0]?.dueAmount || 0),
+            emiAmount: emiAmountValue,
             outstandingPrincipal: Math.max(allDueSum - loanData.installments.reduce((sum, i) => sum + (i.amountReceived || 0), 0), 0),
             totalPaid: loanData.installments.reduce((sum, i) => sum + (i.amountReceived || 0), 0),
             status: loanData.isCompleted ? 'Completed' : 'Active',

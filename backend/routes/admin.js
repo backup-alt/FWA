@@ -134,21 +134,6 @@ router.post('/backfill-doc-urls', requireAdminSecret, async (req, res) => {
   }
 });
 
-router.post('/debug-file', requireAdminSecret, async (req, res) => {
-  const fs = require('fs');
-  const path = require('path');
-  const { filename } = req.body || {};
-  const filePath = path.join(__dirname, '..', '..', 'pdf_images', 'customers', filename || '53.txt');
-  try {
-    const buf = fs.readFileSync(filePath);
-    const hex = buf.toString('hex');
-    const text = buf.toString('utf8');
-    res.json({ ok: true, size: buf.length, hex: hex, text: text });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
 router.post('/import-customers', requireAdminSecret, async (req, res) => {
   const fs = require('fs');
   const path = require('path');
@@ -157,9 +142,7 @@ router.post('/import-customers', requireAdminSecret, async (req, res) => {
   const CUSTOMERS_DIR = path.join(__dirname, '..', '..', 'pdf_images', 'customers');
 
   function parseFile(filePath) {
-    const buf = fs.readFileSync(filePath);
-    let content = buf.toString('utf8');
-    content = content.replace(/^\uFEFF/, '');
+    const content = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
     const lines = content.split('\n');
     const data = {};
     for (const line of lines) {

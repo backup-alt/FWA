@@ -206,7 +206,8 @@ function parseFile(filePath) {
   const installmentField = get('Installment');
   let monthlyDue = 0;
   let installmentPeriod = 0;
-  const installmentMatch = installmentField.match(/(\d+(?:\.\d+)?)\s*[×x*]\s*(\d+)/i);
+  const cleanedInstallment = String(installmentField).replace(/[₹$,\s]/g, '');
+  const installmentMatch = cleanedInstallment.match(/(\d+(?:\.\d+)?)\s*[×x*]\s*(\d+)/i);
   if (installmentMatch) {
     monthlyDue = Number(installmentMatch[1]);
     installmentPeriod = Number(installmentMatch[2]);

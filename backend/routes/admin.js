@@ -143,7 +143,7 @@ router.post('/debug-file', requireAdminSecret, async (req, res) => {
     const buf = fs.readFileSync(filePath);
     const hex = buf.toString('hex');
     const text = buf.toString('utf8');
-    res.json({ ok: true, size: buf.length, hex: hex.substring(0, 400), text: text.substring(0, 200) });
+    res.json({ ok: true, size: buf.length, hex: hex, text: text });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }

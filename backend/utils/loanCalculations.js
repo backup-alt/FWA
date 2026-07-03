@@ -22,14 +22,16 @@ function calculateFlatEMI(principal, ratePercent, period) {
 }
 
 function generateInstallmentSchedule({
+  principal,
   financeAmount,
   interestRate,
   installmentPeriod,
   installmentPeriodUnit = 'Months',
   loanStartDate,
 }) {
+  const effectivePrincipal = principal ?? financeAmount;
   const { totalInterest, totalPayable, emi } = calculateFlatEMI(
-    financeAmount,
+    effectivePrincipal,
     interestRate,
     installmentPeriod
   );

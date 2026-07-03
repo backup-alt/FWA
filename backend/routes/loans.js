@@ -73,14 +73,14 @@ router.post('/', async (req, res) => {
       return res.status(404).json({ message: 'Customer not found.' });
     }
 
-    if (!vehicleType || !financeAmount || !installmentPeriod || interestRate === undefined || !loanStartDate) {
+    if (!vehicleType || !loanAmount || !installmentPeriod || interestRate === undefined || !loanStartDate) {
       return res.status(400).json({
-        message: 'vehicleType, financeAmount, installmentPeriod, interestRate, and loanStartDate are required.',
+        message: 'vehicleType, loanAmount, installmentPeriod, interestRate, and loanStartDate are required.',
       });
     }
 
     const { installments, emiAmount, interestAmount } = generateInstallmentSchedule({
-      financeAmount,
+      principal: loanAmount,
       interestRate,
       installmentPeriod,
       installmentPeriodUnit,
@@ -111,7 +111,7 @@ router.post('/', async (req, res) => {
       interestAmount,
       emiAmount,
       installments,
-      outstandingPrincipal: financeAmount + interestAmount,
+      outstandingPrincipal: loanAmount + interestAmount,
       totalPaid: 0,
       status: 'Active',
     });
@@ -333,7 +333,7 @@ router.put('/:id', async (req, res) => {
       }
 
       const { installments: newInstallments, emiAmount, interestAmount } = generateInstallmentSchedule({
-        financeAmount: loan.financeAmount,
+        principal: loan.loanAmount,
         interestRate: newRate,
         installmentPeriod: newPeriod,
         installmentPeriodUnit: newUnit,

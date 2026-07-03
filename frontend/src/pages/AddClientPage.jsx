@@ -126,13 +126,12 @@ export function AddClientPage() {
   const interestRate = Number(watchedValues.interestRate || 0);
   const installmentPeriod = Number(watchedValues.installmentPeriod || 0);
 
-  // Flat monthly interest: interestRate% of financeAmount, fixed every installment
-  const monthlyInterest = financeAmount && interestRate
-    ? +(financeAmount * (interestRate / 100)).toFixed(2)
+  const monthlyInterest = loanAmount && interestRate
+    ? +(loanAmount * (interestRate / 100)).toFixed(2)
     : 0;
   const interestAmount = +(monthlyInterest * installmentPeriod).toFixed(2);
-  const monthlyDue = financeAmount && installmentPeriod
-    ? +((financeAmount / installmentPeriod) + monthlyInterest).toFixed(2)
+  const monthlyDue = loanAmount && installmentPeriod
+    ? +((loanAmount / installmentPeriod) + monthlyInterest).toFixed(2)
     : 0;
 
   const hasAnyValue = (obj = {}) =>
@@ -223,9 +222,9 @@ export function AddClientPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Loan Disbursement (F.AMT)</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(financeAmount)}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Amount being given as loan</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Loan Amount (L.AMT)</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(loanAmount)}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Principal for EMI calculation</p>
           </CardContent>
         </Card>
         <Card>

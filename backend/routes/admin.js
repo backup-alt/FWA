@@ -140,7 +140,7 @@ router.post('/import-customers', requireAdminSecret, async (req, res) => {
   const Customer = require('../models/Customer');
 
   const CUSTOMERS_DIR = path.join(__dirname, '..', '..', 'pdf_images', 'customers');
-  const { startFile = 51, endFile = 75 } = req.body || {};
+  const { startFile = 51, endFile = 75, mode = 'upsert' } = req.body || {};
 
   function parseFile(filePath) {
     const content = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
@@ -171,17 +171,8 @@ router.post('/import-customers', requireAdminSecret, async (req, res) => {
     };
   }
 
-  function hasNonAscii(str) {
-    return /[^\x00-\x7F]/.test(str);
-  }
-
   try {
     const deletedTamil = await Customer.deleteMany({ name: { $regex: /[^\x00-\x7F]/ } });
-    const existingCustomers = await Customer.find({}, 'cellNumbers').lean();
-    const existingPhones = new Set();
-    existingCustomers.forEach(c => {
-      (c.cellNumbers || []).forEach(n => { if (n.number) existingPhones.add(n.number); });
-    });
 
     const startNum = parseInt(startFile, 10);
     const endNum = parseInt(endFile, 10);
@@ -193,28 +184,54 @@ router.post('/import-customers', requireAdminSecret, async (req, res) => {
       .map(n => `${n}.txt`);
 
     const results = [];
+    let created = 0;
+    let updated = 0;
+    let skipped = 0;
+    let failed = 0;
+
     for (const file of files) {
       try {
         const data = parseFile(path.join(CUSTOMERS_DIR, file));
         const phone = data.cellNumbers[0]?.number;
-        if (phone && existingPhones.has(phone)) {
-          results.push({ file, skipped: true, reason: 'duplicate phone', phone, name: data.name });
+
+        if (!phone) {
+          results.push({ file, skipped: true, reason: 'no phone in file', name: data.name });
+          skipped++;
           continue;
         }
-        const customer = await Customer.create(data);
-        if (phone) existingPhones.add(phone);
-        results.push({ file, _id: customer._id.toString(), name: data.name, phone, guarantor: data.guarantor.mobile });
+
+        const existing = await Customer.findOne({ 'cellNumbers.number': phone });
+
+        if (existing && mode === 'skip') {
+          results.push({ file, skipped: true, reason: 'duplicate phone', phone, name: data.name });
+          skipped++;
+          continue;
+        }
+
+        if (existing) {
+          existing.name = data.name;
+          existing.cellNumbers = data.cellNumbers;
+          existing.guarantor = data.guarantor;
+          await existing.save();
+          results.push({ file, _id: existing._id.toString(), action: 'updated', name: data.name, phone });
+          updated++;
+        } else {
+          const customer = await Customer.create(data);
+          results.push({ file, _id: customer._id.toString(), action: 'created', name: data.name, phone });
+          created++;
+        }
       } catch (err) {
         results.push({ file, error: err.message });
+        failed++;
       }
     }
-    const imported = results.filter(r => r._id).length;
-    const skipped = results.filter(r => r.skipped).length;
-    const failed = results.filter(r => r.error).length;
+
     res.json({
       ok: true,
+      mode,
       total: files.length,
-      imported,
+      created,
+      updated,
       skipped,
       failed,
       deletedTamil: deletedTamil.deletedCount,

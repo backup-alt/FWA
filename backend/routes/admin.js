@@ -297,6 +297,7 @@ function parseFile(filePath) {
       installmentPeriod,
       installmentPeriodUnit: 'Months',
       loanStartDate,
+      monthlyDue,
       rcDetails: rc ? { status: rc, paidThrough: '', chequeNumber: '', amount: 0 } : undefined,
       noc: noc || '',
       insurance: insurance || '',
@@ -376,14 +377,7 @@ router.post('/import-customers', requireAdminSecret, async (req, res) => {
 
         if (createLoans && loanData && loanData.loanAmount > 0 && loanData.installmentPeriod > 0 && loanData.installmentPeriodUnit) {
           const interestAmount = +(loanData.financeAmount * (loanData.interestRate / 100) * loanData.installmentPeriod).toFixed(2);
-          const totalPayable = loanData.financeAmount + interestAmount;
           const allDueSum = loanData.installments.reduce((a, i) => a + (i.dueAmount || 0), 0);
-          if (loanData.installments.length > 0) {
-            const lastIdx = loanData.installments.length - 1;
-            const lastAdjusted = +(totalPayable - allDueSum).toFixed(2);
-            loanData.installments[lastIdx].dueAmount = +((loanData.installments[lastIdx].dueAmount || 0) + lastAdjusted).toFixed(2);
-          }
-
           const loanPayload = {
             customerId: customer._id,
             customerName: customer.name,
@@ -406,7 +400,7 @@ router.post('/import-customers', requireAdminSecret, async (req, res) => {
             installments: loanData.installments,
             interestAmount,
             emiAmount: loanData.monthlyDue || (loanData.installments[0]?.dueAmount || 0),
-            outstandingPrincipal: Math.max(loanData.loanAmount + interestAmount - loanData.installments.reduce((sum, i) => sum + (i.amountReceived || 0), 0), 0),
+            outstandingPrincipal: Math.max(allDueSum - loanData.installments.reduce((sum, i) => sum + (i.amountReceived || 0), 0), 0),
             totalPaid: loanData.installments.reduce((sum, i) => sum + (i.amountReceived || 0), 0),
             status: loanData.isCompleted ? 'Completed' : 'Active',
             completedAt: loanData.isCompleted ? (loanData.closureDate || new Date()) : null,

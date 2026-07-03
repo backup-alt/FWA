@@ -63,6 +63,16 @@ function calculatePosition(buttonRect, panelHeight, panelWidth) {
   return { top, left };
 }
 
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+const MONTH_ABBR = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
 export function DatePicker({
   value,
   onChange,
@@ -76,7 +86,7 @@ export function DatePicker({
   const [open, setOpen] = useState(false);
   const [viewMonth, setViewMonth] = useState(selectedDate || new Date());
   const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
-  const [yearPicker, setYearPicker] = useState(false);
+  const [view, setView] = useState('days');
   const scrollTargetRef = useRef(null);
 
   useEffect(() => {
@@ -91,11 +101,10 @@ export function DatePicker({
 
   const currentYear = getYear(new Date());
   const viewYear = getYear(viewMonth);
-  const years = Array.from({ length: 21 }, (_, i) => currentYear - 10 + i);
-  const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
-  ];
+  const years = useMemo(() => {
+    const start = currentYear - 10;
+    return Array.from({ length: 21 }, (_, i) => start + i);
+  }, [currentYear]);
 
   const recalculatePosition = useCallback(() => {
     if (!buttonRef.current) return;
@@ -129,7 +138,7 @@ export function DatePicker({
     const panelWidth = 288;
     setPanelPosition(calculatePosition(rect, panelHeight, panelWidth));
     setOpen(true);
-    setYearPicker(false);
+    setView('days');
   };
 
   const selectDate = (date) => {
@@ -143,14 +152,13 @@ export function DatePicker({
   };
 
   const handleYearChange = (year) => {
-    const newDate = new Date(year, viewMonth.getMonth(), 1);
-    setViewMonth(newDate);
-    setYearPicker(false);
+    setViewMonth(new Date(year, viewMonth.getMonth(), 1));
+    setView('days');
   };
 
   const handleMonthChange = (monthIdx) => {
-    const newDate = new Date(viewYear, monthIdx, 1);
-    setViewMonth(newDate);
+    setViewMonth(new Date(viewYear, monthIdx, 1));
+    setView('days');
   };
 
   return (
@@ -181,75 +189,45 @@ export function DatePicker({
             style={{ top: panelPosition.top, left: panelPosition.left }}
             onMouseDown={event => event.stopPropagation()}
           >
-            <div className="mb-3 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => yearPicker ? setYearPicker(false) : setViewMonth(month => subMonths(month, 1))}
-                className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200"
-                aria-label={yearPicker ? 'Close year picker' : 'Previous month'}
-              >
-                <ChevronLeftIcon className="h-5 w-5" />
-              </button>
-
-              {yearPicker ? (
-                <div className="flex gap-1 flex-wrap justify-center max-w-full">
-                  {years.map(y => (
-                    <button
-                      key={y}
-                      type="button"
-                      onClick={() => handleYearChange(y)}
-                      className={clsx(
-                        'w-12 rounded-lg py-1.5 text-sm font-medium transition',
-                        y === viewYear
-                          ? 'bg-primary-600 text-white'
-                          : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700'
-                      )}
-                    >
-                      {y}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-1">
+            {view === 'days' && (
+              <>
+                <div className="mb-2 flex items-center justify-between">
                   <button
                     type="button"
-                    onClick={() => setYearPicker(true)}
-                    className="text-sm font-bold text-gray-900 hover:text-primary-600 dark:text-white dark:hover:text-primary-400 cursor-pointer"
+                    onClick={() => setViewMonth(month => subMonths(month, 1))}
+                    className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                    aria-label="Previous month"
                   >
-                    {format(viewMonth, 'yyyy')}
+                    <ChevronLeftIcon className="h-5 w-5" />
                   </button>
-                  <div className="flex gap-1">
-                    {months.map((m, idx) => (
-                      <button
-                        key={m}
-                        type="button"
-                        onClick={() => handleMonthChange(idx)}
-                        className={clsx(
-                          'w-6 rounded text-xs font-medium transition p-0.5',
-                          format(viewMonth, 'MMMM') === m
-                            ? 'text-primary-600 dark:text-primary-400 font-bold'
-                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                        )}
-                      >
-                        {m.slice(0, 1)}
-                      </button>
-                    ))}
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setView('months')}
+                      className="rounded-md px-2 py-1 text-sm font-semibold text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                    >
+                      {format(viewMonth, 'MMM')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setView('years')}
+                      className="rounded-md px-2 py-1 text-sm font-semibold text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                    >
+                      {format(viewMonth, 'yyyy')}
+                    </button>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setViewMonth(month => addMonths(month, 1))}
+                    className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                    aria-label="Next month"
+                  >
+                    <ChevronRightIcon className="h-5 w-5" />
+                  </button>
                 </div>
-              )}
 
-              <button
-                type="button"
-                onClick={() => yearPicker ? setYearPicker(false) : setViewMonth(month => addMonths(month, 1))}
-                className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200"
-                aria-label={yearPicker ? 'Close year picker' : 'Next month'}
-              >
-                <ChevronRightIcon className="h-5 w-5" />
-              </button>
-            </div>
-
-            {!yearPicker && (
-              <>
                 <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
                   {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
                     <div key={day} className="py-1">{day}</div>
@@ -281,28 +259,119 @@ export function DatePicker({
                     );
                   })}
                 </div>
+
+                <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3 dark:border-gray-700">
+                  <button
+                    type="button"
+                    onClick={() => selectDate(new Date())}
+                    className="rounded-lg px-3 py-1.5 text-sm font-medium text-primary-700 hover:bg-primary-50 dark:text-primary-300 dark:hover:bg-gray-700"
+                  >
+                    Today
+                  </button>
+                  {allowClear && (
+                    <button
+                      type="button"
+                      onClick={clearDate}
+                      className="rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
               </>
             )}
 
-            {!yearPicker && (
-              <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3 dark:border-gray-700">
-                <button
-                  type="button"
-                  onClick={() => selectDate(new Date())}
-                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-primary-700 hover:bg-primary-50 dark:text-primary-300 dark:hover:bg-gray-700"
-                >
-                  Today
-                </button>
-                {allowClear && (
+            {view === 'months' && (
+              <>
+                <div className="mb-2 flex items-center justify-between">
                   <button
                     type="button"
-                    onClick={clearDate}
-                    className="rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                    onClick={() => setViewMonth(d => new Date(d.getFullYear() - 1, d.getMonth(), 1))}
+                    className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                    aria-label="Previous year"
                   >
-                    Clear
+                    <ChevronLeftIcon className="h-5 w-5" />
                   </button>
-                )}
-              </div>
+                  <button
+                    type="button"
+                    onClick={() => setView('years')}
+                    className="rounded-md px-2 py-1 text-sm font-semibold text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                  >
+                    {viewYear}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMonth(d => new Date(d.getFullYear() + 1, d.getMonth(), 1))}
+                    className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                    aria-label="Next year"
+                  >
+                    <ChevronRightIcon className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {MONTH_NAMES.map((name, idx) => {
+                    const isCurrent = viewMonth.getMonth() === idx;
+                    return (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={() => handleMonthChange(idx)}
+                        className={clsx(
+                          'rounded-lg py-2.5 text-sm font-medium transition',
+                          isCurrent
+                            ? 'bg-primary-600 text-white'
+                            : 'text-gray-700 hover:bg-primary-50 hover:text-primary-700 dark:text-gray-200 dark:hover:bg-gray-700'
+                        )}
+                      >
+                        {MONTH_ABBR[idx]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {view === 'years' && (
+              <>
+                <div className="mb-2 flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setViewMonth(d => new Date(d.getFullYear() - 21, d.getMonth(), 1))}
+                    className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                    aria-label="Previous years"
+                  >
+                    <ChevronLeftIcon className="h-5 w-5" />
+                  </button>
+                  <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {years[0]} - {years[years.length - 1]}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setViewMonth(d => new Date(d.getFullYear() + 21, d.getMonth(), 1))}
+                    className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                    aria-label="Next years"
+                  >
+                    <ChevronRightIcon className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                  {years.map(y => (
+                    <button
+                      key={y}
+                      type="button"
+                      onClick={() => handleYearChange(y)}
+                      className={clsx(
+                        'rounded-lg py-2.5 text-sm font-medium transition',
+                        y === viewYear
+                          ? 'bg-primary-600 text-white'
+                          : 'text-gray-700 hover:bg-primary-50 hover:text-primary-700 dark:text-gray-200 dark:hover:bg-gray-700'
+                      )}
+                    >
+                      {y}
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </div>,

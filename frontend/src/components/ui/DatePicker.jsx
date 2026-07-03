@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   addMonths,
   eachDayOfInterval,
@@ -30,6 +30,39 @@ function toInputDate(date) {
   return format(date, 'yyyy-MM-dd');
 }
 
+function getScrollableAncestor(element) {
+  if (!element) return window;
+  let current = element.parentElement;
+  while (current) {
+    const style = window.getComputedStyle(current);
+    const overflowY = style.getPropertyValue('overflow-y');
+    const overflowX = style.getPropertyValue('overflow-x');
+    const isScrollableY = overflowY === 'auto' || overflowY === 'scroll';
+    const isScrollableX = overflowX === 'auto' || overflowX === 'scroll';
+    if ((isScrollableY && current.scrollHeight > current.clientHeight) ||
+        (isScrollableX && current.scrollWidth > current.clientWidth)) {
+      return current;
+    }
+    current = current.parentElement;
+  }
+  return window;
+}
+
+function calculatePosition(buttonRect, panelHeight, panelWidth) {
+  const spaceBelow = window.innerHeight - buttonRect.bottom;
+  const spaceAbove = buttonRect.top;
+  const openAbove = spaceBelow < panelHeight + 16 && spaceAbove > spaceBelow;
+
+  let left = buttonRect.left;
+  if (left + panelWidth > window.innerWidth - 16) {
+    left = window.innerWidth - panelWidth - 16;
+  }
+  if (left < 16) left = 16;
+
+  const top = openAbove ? buttonRect.top - panelHeight - 8 : buttonRect.bottom + 8;
+  return { top, left };
+}
+
 export function DatePicker({
   value,
   onChange,
@@ -44,6 +77,7 @@ export function DatePicker({
   const [viewMonth, setViewMonth] = useState(selectedDate || new Date());
   const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
   const [yearPicker, setYearPicker] = useState(false);
+  const scrollTargetRef = useRef(null);
 
   useEffect(() => {
     if (selectedDate) setViewMonth(selectedDate);
@@ -63,25 +97,37 @@ export function DatePicker({
     'July', 'August', 'September', 'October', 'November', 'December',
   ];
 
+  const recalculatePosition = useCallback(() => {
+    if (!buttonRef.current) return;
+    const panelHeight = 340;
+    const panelWidth = 288;
+    const rect = buttonRef.current.getBoundingClientRect();
+    setPanelPosition(calculatePosition(rect, panelHeight, panelWidth));
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    recalculatePosition();
+    const scrollEl = scrollTargetRef.current || window;
+    const scrollEvent = () => recalculatePosition();
+    scrollEl.addEventListener('scroll', scrollEvent, { passive: true });
+    window.addEventListener('resize', recalculatePosition);
+    return () => {
+      scrollEl.removeEventListener('scroll', scrollEvent);
+      window.removeEventListener('resize', recalculatePosition);
+    };
+  }, [open, recalculatePosition]);
+
   const openCalendar = () => {
     if (disabled) return;
     const rect = buttonRef.current?.getBoundingClientRect();
-    if (rect) {
-      const panelHeight = 340;
-      const panelWidth = 288;
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const spaceAbove = rect.top;
-      const openAbove = spaceBelow < panelHeight && spaceAbove > spaceBelow;
+    if (!rect) return;
 
-      let left = rect.left;
-      if (left + panelWidth > window.innerWidth - 16) {
-        left = window.innerWidth - panelWidth - 16;
-      }
-      if (left < 16) left = 16;
+    scrollTargetRef.current = getScrollableAncestor(buttonRef.current);
 
-      const top = openAbove ? rect.top - panelHeight - 8 : rect.bottom + 8;
-      setPanelPosition({ top, left });
-    }
+    const panelHeight = 340;
+    const panelWidth = 288;
+    setPanelPosition(calculatePosition(rect, panelHeight, panelWidth));
     setOpen(true);
     setYearPicker(false);
   };

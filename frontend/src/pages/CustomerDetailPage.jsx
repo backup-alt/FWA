@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/Button';
 import { formatCurrency, formatDate } from '@/api';
 import bikeIcon from '../../../bike-svgrepo-com.svg';
 import carIcon from '../../../car-svgrepo-com.svg';
-import autoIcon from '../../../icons8-auto-rickshaw-50.png';
+const autoIcon = '/FWA/icons8-auto-rickshaw-50.png';
 
 const statusColors = {
   Active: 'info',

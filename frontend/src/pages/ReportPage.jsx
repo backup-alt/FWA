@@ -7,7 +7,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { formatCurrency, Loans } from '@/api';
 import { clsx } from 'clsx';
-import autoIcon from '../../../icons8-auto-rickshaw-50.png';
+const autoIcon = '/FWA/icons8-auto-rickshaw-50.png';
 
 const BikeIcon = () => (
   <svg viewBox="0 0 512 512" className="h-4 w-4" fill="currentColor">

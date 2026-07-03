@@ -30,7 +30,7 @@ import { Loans } from '@/api';
 import { useQueryClient } from '@tanstack/react-query';
 import bikeIcon from '../../../bike-svgrepo-com.svg';
 import carIcon from '../../../car-svgrepo-com.svg';
-import autoIcon from '../../../icons8-auto-rickshaw-50.png';
+const autoIcon = '/FWA/icons8-auto-rickshaw-50.png';
 
 const statusColors = {
   Active: 'info',

@@ -140,6 +140,7 @@ router.post('/import-customers', requireAdminSecret, async (req, res) => {
   const Customer = require('../models/Customer');
 
   const CUSTOMERS_DIR = path.join(__dirname, '..', '..', 'pdf_images', 'customers');
+  const { startFile = 51, endFile = 75 } = req.body || {};
 
   function parseFile(filePath) {
     const content = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
@@ -170,21 +171,55 @@ router.post('/import-customers', requireAdminSecret, async (req, res) => {
     };
   }
 
+  function hasNonAscii(str) {
+    return /[^\x00-\x7F]/.test(str);
+  }
+
   try {
-    const files = fs.readdirSync(CUSTOMERS_DIR).filter(f => f.endsWith('.txt')).sort();
+    const deletedTamil = await Customer.deleteMany({ name: { $regex: /[^\x00-\x7F]/ } });
+    const existingCustomers = await Customer.find({}, 'cellNumbers').lean();
+    const existingPhones = new Set();
+    existingCustomers.forEach(c => {
+      (c.cellNumbers || []).forEach(n => { if (n.number) existingPhones.add(n.number); });
+    });
+
+    const startNum = parseInt(startFile, 10);
+    const endNum = parseInt(endFile, 10);
+    const files = fs.readdirSync(CUSTOMERS_DIR)
+      .filter(f => f.endsWith('.txt'))
+      .map(f => parseInt(f.replace('.txt', ''), 10))
+      .filter(n => !isNaN(n) && n >= startNum && n <= endNum)
+      .sort((a, b) => a - b)
+      .map(n => `${n}.txt`);
+
     const results = [];
     for (const file of files) {
       try {
         const data = parseFile(path.join(CUSTOMERS_DIR, file));
+        const phone = data.cellNumbers[0]?.number;
+        if (phone && existingPhones.has(phone)) {
+          results.push({ file, skipped: true, reason: 'duplicate phone', phone, name: data.name });
+          continue;
+        }
         const customer = await Customer.create(data);
-        results.push({ file, _id: customer._id.toString(), name: data.name, phone: data.cellNumbers[0]?.number, guarantor: data.guarantor.mobile });
+        if (phone) existingPhones.add(phone);
+        results.push({ file, _id: customer._id.toString(), name: data.name, phone, guarantor: data.guarantor.mobile });
       } catch (err) {
         results.push({ file, error: err.message });
       }
     }
     const imported = results.filter(r => r._id).length;
+    const skipped = results.filter(r => r.skipped).length;
     const failed = results.filter(r => r.error).length;
-    res.json({ ok: true, total: files.length, imported, failed, results });
+    res.json({
+      ok: true,
+      total: files.length,
+      imported,
+      skipped,
+      failed,
+      deletedTamil: deletedTamil.deletedCount,
+      results,
+    });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }

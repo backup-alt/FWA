@@ -142,8 +142,9 @@ router.post('/import-customers', requireAdminSecret, async (req, res) => {
   const CUSTOMERS_DIR = path.join(__dirname, '..', '..', 'pdf_images', 'customers');
 
   function parseFile(filePath) {
-    const raw = fs.readFileSync(filePath, { encoding: 'utf8', flag: 'r' });
-    const content = raw.replace(/^\uFEFF/, '');
+    const buf = fs.readFileSync(filePath);
+    let content = buf.toString('utf8');
+    content = content.replace(/^\uFEFF/, '');
     const lines = content.split('\n');
     const data = {};
     for (const line of lines) {

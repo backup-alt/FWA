@@ -23,19 +23,43 @@ export function VehicleDetailsStep({ form }) {
         <Controller
           name="vehicleType"
           control={control}
-          render={({ field }) => (
-            <Select
-              {...field}
-              label="Vehicle Type *"
-              options={[
-                { value: 'Bike', label: 'Bike' },
-                { value: 'Car', label: 'Car' },
-                { value: 'Auto', label: 'Auto' },
-              ]}
-              placeholder="Select vehicle type"
-              error={errors.vehicleType?.message}
-            />
-          )}
+          render={({ field }) => {
+            const isCustom = !['Bike', 'Car', 'Auto'].includes(field.value);
+            return (
+              <div>
+                <Select
+                  {...field}
+                  label="Vehicle Type *"
+                  options={[
+                    { value: 'Bike', label: 'Bike' },
+                    { value: 'Car', label: 'Car' },
+                    { value: 'Auto', label: 'Auto' },
+                    { value: '__custom__', label: 'Other (type custom)' },
+                  ]}
+                  placeholder="Select vehicle type"
+                  error={errors.vehicleType?.message}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '__custom__') {
+                      field.onChange('');
+                    } else {
+                      field.onChange(value);
+                    }
+                  }}
+                  value={isCustom ? '__custom__' : field.value}
+                />
+                {isCustom && (
+                  <Input
+                    label="Custom Vehicle Type"
+                    placeholder="e.g. Tractor, JCB, Tanker"
+                    value={field.value}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    className="mt-2"
+                  />
+                )}
+              </div>
+            );
+          }}
         />
         
         <Controller

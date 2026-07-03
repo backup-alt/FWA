@@ -103,7 +103,19 @@ router.get('/', async (req, res) => {
     let customers = await Customer.find().sort({ createdAt: -1 }).lean();
     let customerIds = null;
 
-    if (search && searchType === 'regNo') {
+    if (search && searchType === 'name') {
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escapedSearch, 'i');
+      customers = customers.filter(c => regex.test(c.name || ''));
+    } else if (search && searchType === 'phone') {
+      const phoneDigits = String(search).replace(/\D/g, '');
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escapedSearch, 'i');
+      customers = customers.filter(c => {
+        const numbers = (c.cellNumbers || []).map(cell => String(cell.number || ''));
+        return numbers.some(n => regex.test(n) || (phoneDigits && n.replace(/\D/g, '').includes(phoneDigits)));
+      });
+    } else if (search && searchType === 'regNo') {
       const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const matchingLoans = await Loan.find({
         regNo: { $regex: escapedSearch, $options: 'i' }

@@ -63,7 +63,6 @@ const loanSchema = new mongoose.Schema(
 
     vehicleType: {
       type: String,
-      enum: ['Bike', 'Car', 'Auto'],
       required: true,
     },
     make: { type: String, default: '' },

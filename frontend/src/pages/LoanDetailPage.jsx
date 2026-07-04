@@ -320,9 +320,16 @@ export function LoanDetailPage() {
   }
 
   const installments = loan.installments || [];
-  const pendingInstallments = installments.filter(
-    inst => inst.status && inst.status !== 'Paid' && inst.status !== 'Cancelled'
-  );
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const pendingInstallments = installments.filter(inst => {
+    if (!inst.status || inst.status === 'Paid' || inst.status === 'Cancelled') return false;
+    if (loan.status === 'Closed' || loan.status === 'Completed') return false;
+    if (!inst.dueDate) return false;
+    const due = new Date(inst.dueDate);
+    if (Number.isNaN(due.getTime())) return false;
+    return due <= today;
+  });
   const scheduleLoan = { ...loan, installments };
 
   const tabs = [

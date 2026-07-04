@@ -7,6 +7,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { formatCurrency, Loans } from '@/api';
 import { clsx } from 'clsx';
+import { useToast } from '@/context/ToastContext';
 const autoIcon = '/FWA/icons8-auto-rickshaw-50.png';
 
 const BikeIcon = () => (
@@ -131,6 +132,7 @@ function ReportTable({ title, data, type, icon: Icon, emptyMessage }) {
 }
 
 export function ReportPage() {
+  const { showToast } = useToast();
   const [mode, setMode] = useState('single');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedRange, setSelectedRange] = useState({ start: new Date(), end: null });
@@ -371,11 +373,23 @@ export function ReportPage() {
   };
 
   const downloadReport = (type = 'all') => {
-    if (!reportData) return;
-    const htmlContent = generateHtmlContent(type);
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
+    if (!reportData) {
+      showToast('Please generate a report first', 'error');
+      return;
+    }
+    try {
+      const htmlContent = generateHtmlContent(type);
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        showToast('Please allow popups to download the report', 'error');
+        return;
+      }
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+    } catch (err) {
+      console.error('Download error:', err);
+      showToast('Failed to generate report. Please try again.', 'error');
+    }
   };
 
   const downloadPendingDues = () => downloadReport('due');
@@ -478,9 +492,9 @@ export function ReportPage() {
                   </div>
                 </div>
 
-                {(reportData.paid?.data?.length > 0 || reportData.due?.data?.length > 0) && (
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Download:</span>
+                {reportData && (
+                  <div className="flex flex-wrap items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Download:</span>
                     <Button onClick={downloadPendingDues} variant="outline" size="sm" className="flex items-center gap-1 text-orange-600 border-orange-300 hover:bg-orange-50">
                       <ArrowDownTrayIcon className="h-4 w-4" />
                       Pending Dues

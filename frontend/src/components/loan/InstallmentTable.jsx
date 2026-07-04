@@ -19,61 +19,17 @@ function hasActivity(inst) {
 }
 
 function normalizeInstallments(installments = []) {
-  const normalized = installments
+  return installments
     .map((inst) => ({
       ...inst,
       baseDueAmount: Number(inst.dueAmount || 0),
-      dueAmount: roundMoney(Number(inst.dueAmount || 0) - Number(inst.adjustment || 0)),
+      dueAmount: Number(inst.dueAmount || 0),
       adjustment: Number(inst.adjustment || 0),
-      pendingAmount: 0,
-      shortfallAmount: 0,
-      extraAmount: 0,
+      pendingAmount: Number(inst.pendingAmount || 0),
+      shortfallAmount: Number(inst.shortfallAmount || 0),
+      extraAmount: Number(inst.extraAmount || 0),
     }))
     .sort((a, b) => a.sNo - b.sNo);
-
-  let carry = 0;
-  let pendingPlaced = false;
-  const now = new Date();
-
-  normalized.forEach((inst) => {
-    const dueAmount = roundMoney(inst.dueAmount);
-    const received = roundMoney(inst.amountReceived);
-    const acted = hasActivity(inst);
-    const isPastDue = new Date(inst.dueDate) < now;
-
-    if (acted) {
-      if (received <= 0) {
-        carry = roundMoney(carry + dueAmount);
-      } else {
-        carry = roundMoney(carry + dueAmount - received);
-        if (received < dueAmount) {
-          inst.shortfallAmount = roundMoney(dueAmount - received);
-        }
-        if (carry < 0) {
-          inst.extraAmount = Math.abs(carry);
-        }
-      }
-      pendingPlaced = false;
-    } else {
-      if (!pendingPlaced) {
-        if (carry > 0) inst.pendingAmount = carry;
-        else if (carry < 0) inst.extraAmount = Math.abs(carry);
-        pendingPlaced = true;
-      }
-      if (isPastDue) {
-        carry = roundMoney(carry + dueAmount);
-        pendingPlaced = false;
-      }
-    }
-  });
-
-  if (!pendingPlaced && normalized.length > 0) {
-    const last = normalized[normalized.length - 1];
-    if (carry > 0) last.pendingAmount = carry;
-    else if (carry < 0) last.extraAmount = Math.abs(carry);
-  }
-
-  return normalized;
 }
 
 function todayInputValue() {

@@ -70,8 +70,19 @@ export function InstallmentRow({
         <span className="font-medium">{data.sNo}</span>
       </td>
       <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-        <div>
-          <div className="font-medium">{formatCurrency(data.dueAmount)}</div>
+        {editing ? (
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            value={localDueAmount}
+            onChange={e => setLocalDueAmount(e.target.value)}
+            className="w-28 rounded border border-gray-300 px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800"
+            disabled={isLocked}
+          />
+        ) : (
+          <div>
+            <div className="font-medium">{formatCurrency(data.baseDueAmount || data.dueAmount)}</div>
             {(() => {
               const carriedPending = Number(data.pendingAmount || 0);
               const shortfall = Number(data.shortfallAmount || 0);
@@ -87,7 +98,8 @@ export function InstallmentRow({
               }
               return null;
             })()}
-        </div>
+          </div>
+        )}
       </td>
       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
         {editing ? (

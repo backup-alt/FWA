@@ -230,7 +230,7 @@ router.put('/:id', async (req, res) => {
 
     const scalarFields = [
       'name', 'address', 'temporaryAddress', 'monthlySalary',
-      'idProofType', 'idProofNumber',
+      'idProofType', 'idProofNumber', 'idStatus',
     ];
     scalarFields.forEach(field => {
       if (req.body[field] !== undefined) {

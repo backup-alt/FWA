@@ -42,7 +42,7 @@ export function Select({
       )}
 
       <Listbox value={value || ''} onChange={handleChange} disabled={disabled}>
-        <div className="relative">
+        <div className="relative" style={{ overflow: 'visible' }}>
           <Listbox.Button
             ref={ref}
             onBlur={() => {
@@ -77,7 +77,7 @@ export function Select({
             leaveFrom="transform opacity-100 scale-100"
             leaveTo="transform opacity-0 scale-95"
           >
-            <Listbox.Options className="absolute z-50 mt-1.5 max-h-60 w-full overflow-auto rounded-xl bg-white dark:bg-gray-800 py-1.5 shadow-xl ring-1 ring-gray-200 dark:ring-gray-700 focus:outline-none text-sm">
+            <Listbox.Options className="absolute z-[60] mt-1.5 max-h-60 w-full overflow-auto rounded-xl bg-white dark:bg-gray-800 py-1.5 shadow-xl ring-1 ring-gray-200 dark:ring-gray-700 focus:outline-none text-sm">
               {options.length === 0 ? (
                 <div className="px-3 py-2 text-gray-500 dark:text-gray-400">
                   No options available

@@ -559,6 +559,7 @@ export function LoanDetailPage() {
                   ['Insurance Status', loan.insurance || '-'],
                   ['Key Status', loan.keyStatus || '-'],
                   ['ID Proof', customer.idProofType ? `${customer.idProofType} - ${customer.idProofNumber || ''}` : '-'],
+                  ['ID Status', customer.idStatus || '-'],
                   ['Sales Done By', loan.salesDoneBy || '-'],
                   ['Cheques Received', (loan.chequesReceived || []).length > 0 ? loan.chequesReceived.map(c => `${c.chequeNumber}${c.bank ? ` (${c.bank})` : ''}`).join(', ') : '-'],
                   ['Status', loan.status || '-'],

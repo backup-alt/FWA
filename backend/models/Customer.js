@@ -20,6 +20,11 @@ const customerSchema = new mongoose.Schema(
     profileImageUrl: { type: String, default: '' },
     idProofType: { type: String, default: '' },
     idProofNumber: { type: String, default: '' },
+    idStatus: {
+      type: String,
+      enum: ['Yes', 'No', ''],
+      default: '',
+    },
   },
   { timestamps: true }
 );

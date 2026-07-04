@@ -32,6 +32,7 @@ function EditCustomerForm({ customer, loans, onSubmit, onCancel, isSubmitting })
     guarantor: { name: '', address: '', mobile: '', ...(customer.guarantor || {}) },
     idProofType: customer.idProofType || '',
     idProofNumber: customer.idProofNumber || '',
+    idStatus: customer.idStatus || '',
     vehicleType: firstLoan?.vehicleType || '',
     make: firstLoan?.make || '',
     model: firstLoan?.model || '',
@@ -65,6 +66,7 @@ function EditCustomerForm({ customer, loans, onSubmit, onCancel, isSubmitting })
       guarantor: (formData.guarantor.name || formData.guarantor.address || formData.guarantor.mobile) ? formData.guarantor : undefined,
       idProofType: formData.idProofType || undefined,
       idProofNumber: formData.idProofNumber || undefined,
+      idStatus: formData.idStatus || undefined,
     };
     const loanData = firstLoan ? {
       vehicleType: formData.vehicleType,
@@ -146,6 +148,16 @@ function EditCustomerForm({ customer, loans, onSubmit, onCancel, isSubmitting })
           label="ID Proof Number"
           value={formData.idProofNumber}
           onChange={(e) => handleChange('idProofNumber', e.target.value)}
+        />
+        <Select
+          label="ID Status"
+          value={formData.idStatus}
+          onChange={(value) => handleChange('idStatus', value)}
+          options={[
+            { value: '', label: 'Select' },
+            { value: 'Yes', label: 'Yes' },
+            { value: 'No', label: 'No' },
+          ]}
         />
       </div>
 
@@ -270,6 +282,7 @@ export function CustomerDetailPage() {
     ['Cell Numbers', (customer.cellNumbers || []).map(c => c.number).join(', ') || '-'],
     ['Monthly Salary', customer.monthlySalary ? formatCurrency(customer.monthlySalary) : '-'],
     ['ID Proof', customer.idProofType ? `${customer.idProofType}: ${customer.idProofNumber || '-'}` : '-'],
+    ['ID Status', customer.idStatus || '-'],
     ['Guarantor', `${customer.guarantor?.name || '-'}${customer.guarantor?.mobile ? ` - ${customer.guarantor.mobile}` : ''}${customer.guarantor?.address ? ` (${customer.guarantor.address})` : ''}`],
   ];
 

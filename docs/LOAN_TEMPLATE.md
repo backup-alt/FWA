@@ -4,7 +4,48 @@ This document defines the exact MongoDB JSON structure for a **Loan** document i
 
 ---
 
-## 1. Top-level Loan Document
+## 1. Customer Document
+
+```json
+{
+  "_id": "<Mongo ObjectId>",
+  "name": "John Raj",
+  "address": "123 Main St, City",
+  "temporaryAddress": "",
+  "monthlySalary": 15000,
+  "cellNumbers": [
+    { "number": "9442026327" }
+  ],
+  "guarantor": {
+    "name": "",
+    "address": "",
+    "mobile": ""
+  },
+  "profileImageFileId": "",
+  "profileImageUrl": "",
+  "idProofType": "Aadhar",
+  "idProofNumber": "XXXX-XXXX-XXXX",
+  "idStatus": "Yes",
+  "createdAt": "2025-03-17T00:00:00.000Z",
+  "updatedAt": "2026-05-30T00:00:00.000Z"
+}
+```
+
+### Customer field rules
+
+| Field | Type | Values | Notes |
+|---|---|---|---|
+| `name` | String | required | Customer full name |
+| `idStatus` | String | `"Yes"`, `"No"`, `""` | Indicates whether customer has valid ID proof |
+| `idProofType` | String | free text | e.g. "Aadhar", "PAN", "Driving License" |
+| `idProofNumber` | String | free text | The ID number |
+| `cellNumbers` | Array of `{ number: String }` | required | Phone numbers — use object format, not plain strings |
+
+**Important:** `cellNumbers` must be an array of objects like `[{ number: "9442026327" }]`, NOT an array of plain strings like `["9442026327"]`. Plain string arrays will cause validation errors on loan close.
+
+---
+
+## 2. Top-level Loan Document
 
 ```json
 {

@@ -63,6 +63,7 @@ export function ReportDownload({ className = '' }) {
     const formatDateStr = (date) => {
       if (!date) return '';
       const d = new Date(date);
+      if (isNaN(d.getTime())) return '';
       return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     };
 
@@ -178,10 +179,11 @@ export function ReportDownload({ className = '' }) {
 
   const displayDate = useMemo(() => {
     if (mode === 'single') {
+      if (!selectedDate || isNaN(selectedDate.getTime())) return 'N/A';
       return selectedDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     } else {
-      const start = selectedRange.start.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-      const end = selectedRange.end ? selectedRange.end.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Select end date';
+      const start = selectedRange.start ? (isNaN(selectedRange.start.getTime()) ? 'N/A' : selectedRange.start.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })) : 'N/A';
+      const end = selectedRange.end ? (isNaN(selectedRange.end.getTime()) ? 'N/A' : selectedRange.end.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })) : 'Select end date';
       return `${start} - ${end}`;
     }
   }, [mode, selectedDate, selectedRange]);

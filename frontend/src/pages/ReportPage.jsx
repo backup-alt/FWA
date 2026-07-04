@@ -103,11 +103,11 @@ function ReportTable({ title, data, type, icon: Icon, emptyMessage }) {
                     #{item.sNo}
                   </td>
                   <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
-                    {item.dueDate ? new Date(item.dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                    {item.dueDate ? (() => { const d = new Date(item.dueDate); return isNaN(d.getTime()) ? '-' : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); })() : '-'}
                   </td>
                   {type === 'paid' && (
                     <td className="py-3 px-4 text-green-600 dark:text-green-400 font-medium">
-                      {item.dateReceived ? new Date(item.dateReceived).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                      {item.dateReceived ? (() => { const d = new Date(item.dateReceived); return isNaN(d.getTime()) ? '-' : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); })() : '-'}
                     </td>
                   )}
                   {type === 'due' && (
@@ -222,6 +222,7 @@ export function ReportPage() {
   const formatDisplayDate = (date) => {
     if (!date) return 'N/A';
     const d = new Date(date);
+    if (isNaN(d.getTime())) return 'N/A';
     return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   };
 
@@ -383,10 +384,11 @@ export function ReportPage() {
 
   const displayDate = useMemo(() => {
     if (mode === 'single') {
+      if (!selectedDate || isNaN(selectedDate.getTime())) return 'N/A';
       return selectedDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     } else {
-      const start = selectedRange.start.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-      const end = selectedRange.end ? selectedRange.end.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Select end date';
+      const start = selectedRange.start ? (isNaN(selectedRange.start.getTime()) ? 'N/A' : selectedRange.start.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })) : 'N/A';
+      const end = selectedRange.end ? (isNaN(selectedRange.end.getTime()) ? 'N/A' : selectedRange.end.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })) : 'Select end date';
       return `${start} - ${end}`;
     }
   }, [mode, selectedDate, selectedRange]);

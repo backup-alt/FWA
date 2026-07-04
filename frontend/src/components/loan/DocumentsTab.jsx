@@ -197,7 +197,7 @@ export function DocumentsTab({ loanId, documents = [], onUpload, onDelete }) {
                     {doc.name}
                   </p>
                   <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
-                    {new Date(doc.uploadedAt).toLocaleDateString()}
+                    {(() => { const d = new Date(doc.uploadedAt); return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString(); })()}
                   </p>
                 </div>
               </div>

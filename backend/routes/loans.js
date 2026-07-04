@@ -223,20 +223,23 @@ router.get('/report', async (req, res) => {
       const address = loan.address || customer.address || '';
 
       for (const installment of loan.installments || []) {
-        // Convert dates to YYYY-MM-DD string for comparison
-        const dueDateObj = new Date(installment.dueDate);
-        const dueDateStr = dueDateObj.toISOString().split('T')[0];
+        let dueDateStr = null;
+        if (installment.dueDate) {
+          const dueDateObj = new Date(installment.dueDate);
+          if (!Number.isNaN(dueDateObj.getTime())) {
+            dueDateStr = dueDateObj.toISOString().split('T')[0];
+          }
+        }
 
         let receivedDateStr = null;
         if (installment.dateReceived) {
           const receivedDateObj = new Date(installment.dateReceived);
-          receivedDateStr = receivedDateObj.toISOString().split('T')[0];
+          if (!Number.isNaN(receivedDateObj.getTime())) {
+            receivedDateStr = receivedDateObj.toISOString().split('T')[0];
+          }
         }
 
-        // Check if due date falls in the selected range
-        const isDueInRange = dueDateStr >= startStr && dueDateStr <= endStr;
-
-        // Check if payment was received in the selected range
+        const isDueInRange = dueDateStr && dueDateStr >= startStr && dueDateStr <= endStr;
         const isPaidInRange = receivedDateStr && receivedDateStr >= startStr && receivedDateStr <= endStr;
 
         const commonData = {
@@ -265,10 +268,12 @@ router.get('/report', async (req, res) => {
           paidInstallments.push(commonData);
         }
 
-        // For due installments: show all unpaid installments due on or before endDate
-        if (dueDateStr <= endStr && installment.status !== 'Paid') {
+        if (dueDateStr && dueDateStr <= endStr && installment.status !== 'Paid') {
+          const dueDateObj = new Date(installment.dueDate);
           const today = new Date();
-          const daysOverdue = Math.floor((today - dueDateObj) / (1000 * 60 * 60 * 24));
+          const daysOverdue = Number.isNaN(dueDateObj.getTime())
+            ? 0
+            : Math.floor((today - dueDateObj) / (1000 * 60 * 60 * 24));
           dueInstallments.push({
             ...commonData,
             daysOverdue: daysOverdue > 0 ? daysOverdue : 0,

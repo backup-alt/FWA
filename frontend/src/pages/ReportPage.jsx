@@ -156,14 +156,14 @@ export function ReportPage() {
       try {
         const today = formatDateString(new Date());
         const data = await Loans.report(today, today);
-        if (data) {
+        if (data && (data.paid || data.due)) {
           setReportData(data);
         } else {
-          setReportData({ paid: { data: [] }, due: { data: [] } });
+          setReportData({ paid: { count: 0, total: 0, data: [] }, due: { count: 0, total: 0, data: [] } });
         }
       } catch (err) {
         console.error(err);
-        setReportData({ paid: { data: [] }, due: { data: [] } });
+        setReportData({ paid: { count: 0, total: 0, data: [] }, due: { count: 0, total: 0, data: [] } });
       } finally {
         setLoading(false);
       }
@@ -207,15 +207,22 @@ export function ReportPage() {
         endDateStr = selectedRange.end ? formatDateString(selectedRange.end) : formatDateString(selectedRange.start);
       }
 
+      console.log('Generating report for range:', startDateStr, 'to', endDateStr);
       const data = await Loans.report(startDateStr, endDateStr);
-      if (data) {
+      console.log('Report data received:', data);
+      if (data && (data.paid || data.due)) {
         setReportData(data);
+        const dueCount = data.due?.count || 0;
+        const paidCount = data.paid?.count || 0;
+        showToast(`Report loaded: ${dueCount} due, ${paidCount} paid`, 'success');
       } else {
-        setReportData({ paid: { data: [] }, due: { data: [] } });
+        setReportData({ paid: { count: 0, total: 0, data: [] }, due: { count: 0, total: 0, data: [] } });
+        showToast('No data returned from server', 'warning');
       }
     } catch (err) {
-      console.error(err);
-      setReportData({ paid: { data: [] }, due: { data: [] } });
+      console.error('Generate report error:', err);
+      setReportData({ paid: { count: 0, total: 0, data: [] }, due: { count: 0, total: 0, data: [] } });
+      showToast(err.message || 'Failed to generate report', 'error');
     } finally {
       setLoading(false);
     }

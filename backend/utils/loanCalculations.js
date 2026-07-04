@@ -138,27 +138,8 @@ function recalculateSchedule(loan) {
 
         // Handle overpayment logically by adjusting future unacted installments
         if (carry < 0) {
-          const surplus = Math.abs(carry);
+          inst.extraAmount = Math.abs(carry);
           carry = 0;
-          
-          const subsequent = installments.slice(idx + 1);
-          const count = subsequent.length;
-          
-          if (count > 0) {
-            const baseShare = roundMoney(surplus / count);
-            let distributed = 0;
-            
-            subsequent.forEach((uInst, uIdx) => {
-              if (uIdx === count - 1) {
-                uInst.adjustment = roundMoney((uInst.adjustment || 0) + surplus - distributed);
-              } else {
-                uInst.adjustment = roundMoney((uInst.adjustment || 0) + baseShare);
-                distributed = roundMoney(distributed + baseShare);
-              }
-            });
-          } else {
-            inst.extraAmount = surplus;
-          }
         }
       }
       pendingPlaced = false;
@@ -198,7 +179,7 @@ function recalculateSchedule(loan) {
   loan.outstandingPrincipal = Math.max(roundMoney(scheduledTotal - loan.totalPaid), 0);
 
   const nextOpen = installments.find((inst) => inst.status !== 'Paid' && inst.status !== 'Cancelled');
-  loan.emiAmount = nextOpen ? roundMoney((nextOpen.dueAmount || 0) - (nextOpen.adjustment || 0)) : 0;
+  loan.emiAmount = nextOpen ? roundMoney(nextOpen.dueAmount || 0) : 0;
 
   // Never auto-change status of a Closed loan
   if (loan.status !== 'Closed') {

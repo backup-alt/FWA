@@ -47,6 +47,7 @@ const schema = z.object({
   insurance: z.string().optional(),
   idProofType: z.string().optional(),
   idProofNumber: z.string().optional(),
+  idStatus: z.string().optional(),
   keyStatus: z.string().optional(),
   salesDoneBy: z.string().optional(),
   
@@ -163,6 +164,7 @@ export function AddClientPage() {
           profileImage: data.profileImage || '',
           idProofType: data.idProofType || '',
           idProofNumber: data.idProofNumber || '',
+          idStatus: data.idStatus || '',
         });
         cId = customer._id;
       }

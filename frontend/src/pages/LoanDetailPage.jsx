@@ -320,7 +320,9 @@ export function LoanDetailPage() {
   }
 
   const installments = loan.installments || [];
-  const pendingInstallments = installments.filter(installment => installment.status !== 'Paid');
+  const pendingInstallments = installments.filter(
+    inst => inst.status && inst.status !== 'Paid' && inst.status !== 'Cancelled'
+  );
   const scheduleLoan = { ...loan, installments };
 
   const tabs = [

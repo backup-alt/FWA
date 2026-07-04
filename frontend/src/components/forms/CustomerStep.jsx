@@ -163,6 +163,17 @@ export function CustomerStep({ form, control }) {
             {...register('monthlySalary')}
           />
 
+          <Select
+            label="ID Status"
+            value={watch('idStatus') || ''}
+            onChange={(value) => setValue('idStatus', value)}
+            options={[
+              { value: '', label: 'Select' },
+              { value: 'Yes', label: 'Yes' },
+              { value: 'No', label: 'No' },
+            ]}
+          />
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Contact Numbers

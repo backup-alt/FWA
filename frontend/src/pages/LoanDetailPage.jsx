@@ -259,6 +259,7 @@ export function LoanDetailPage() {
       await closeLoan.mutateAsync({ id, data });
       showToast('Loan closed successfully', 'success');
       setShowCloseModal(false);
+      refetch();
     } catch (err) {
       showToast(err?.message || 'Failed to close loan', 'error');
     }

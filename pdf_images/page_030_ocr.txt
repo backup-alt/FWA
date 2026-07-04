@@ -1,90 +1,41 @@
-— > —— nde See ria Gicaeet Cae Ye “= Yn NE TF corey :
-j A] Ls | le. a roe li is Sia i a fe: ee L_ [ais | te | oa ch = ee
-/ ( if :
-} ~ i i 4 - z  / 7 Imm q
-A \p } i Br 29 5 a) M ~ M cs - % < Ke
-y Ss i] +4 0 f =< U © n Ps QIp K .
-S ‘ 8 R : ane pe e iS eC o f
-R ~~: aa a AS LY _ P 5 > 9
-8 ela] | X e —
-EP? | see See
-——— _ es es ee NO, lf
-or — SS r= — |
-as Sa A : 4 v 19 :
-os by Wy OD | — el Lae ey AE .
-| | et ee cee
-5 ‘ bh Dp
-OF © ace N R
-¥ : 0 0 \) b>
-t 0 nae nO
-fs) rT) FA
-V O
-) S
-0 g FP
-& . ke
-e—-—- 7 F 4 d 7 i » Q te iS eee ss \h q j ,, le, p
-ro S) 5 > | i Y % 5 >
-a 3 3 : 0 ks BD 5 Uns pe th ‘ 5 re } aS S ; cb 5 s Pb ~
-9 29 _9 > VN r ~p 5 48, > j Jp dn) dh) . 5 {=
-: \ 4 I > bd es « x ~ , 3 Sy = - i pe
-wt PS dy > > ana 5S a { x
-SS ON . a e > by yn % p
-z cS | k > F | S
-Ap tl Pi Rk kT To wm Pde wR I. - | ' ty fe T ' \
-- ai | ~ Pf REPRE EE F . s fs 9 :
-, \ . ds Ww b » | - % \ N \ fb q Vy
-d 2 ha = 4 de i) > 4 os = It { 9 wo ip is y wv
-ii ie Tok 3 ™ Svyn 7 7 3 > Fe wd ~ ss F. 4
-aa n°. R i ¢ = os SN - - D>
-Z e - be fe OR ee OR RO » LI fe IS -
-“TEE RTPRRASTTTRE TPIT PPT TT
-ae 2 id . 5 . \ : 1 S Re tp [0 =
-SS . Im ¢ —
-' ; S CG YE hs a © , >
-a . ‘ ‘ b E ¢ _ p q ~~ oN va ana SS - OF S >
-: \ ' ~ 4 = ° ,. r ANS EN I BA P 1 3
-ea ne fe go gh ds > qe & fy iw hh bp poh pf bh
-E ¢ b [F K v S ot } F
-— . pe is RO te fe lS S ae ke vp Rae : S
-me AA Ls ae PR pelt SPS] i Ghelpnpicfery ta qa Jay je yeep yom
-Na awed aed dey Tee Poe el oe ee iit ee eee
-i By) = P y - ESS gS ne ee ee mes! |e le D
-| k hf = | :
-{ | 9 b BD bh ‘
-) ! ai L ? | q dg Y °
-o (,\ ¢ I ( ( : - ‘3
-> G > Pp HT Op q | ,
-Z di b , NN bp bp MY 2 ¥ Re |2 | «
-= i ‘ Kr) fe RP B OP e 5 5 p
-| 5 E CC BR O & ; A
-Zz = x
-2
-» IX
-29 bs oO WW w y N : |
-bp Q g R b bm ? iM |
-. F ree ¢ » ke 4 » id |
-r) N y\ DB)
-o.
-J ¢
-; (J)
-7 bead oe, N iD
-— Pe bp B
-: S
-ee ee ee ee ee ee ee eee ee
-&
-Ke) IZ 3)
-B ry (OW _ |
-YD
-9 > iH
-a) | . : db Co OD }
-" \ * 5 oO enti Bec: te ve
-| b sh
-SSR ERENT ARR Se pet bs.
-. a a eT a a 6
-~~ =e = Ge
-a, uy \)) e 2 _ v \ , )
-z ia - \* Wo . } bs XX)
-fi .f ee Ss
-3 \ . ) - o = : ? t )
-5 Maoh) ’ i
-, __bx3 IO :
+Make              : Yamaha Fascino
+Model             : 2018
+Registration No.  : TN 74 AT 7575
+
+Loan Amount       : ₹35,000
+Finance Amount    : ₹31,000
+Installment       : ₹3,620 × 12
+Interest Rate     : 2%
+
+RC                : Yes
+NOC               : Yes
+Insurance         : No
+ID                : Yes
+Key               : Yes
+
+Sales Done By     : Ref → D545, E180, E748
+
+Customer Name     :Karthik, S/o Gangadharan
+Address           : Vattakottai
+
+Cell Number       : 7502074301
+Guarantor Name: Gangadharan
+Guarantor Number  : 8098618662
+
+Status            : Completed
+
+Installments:
+
+1. Due ₹3620 | Due: 17-03-2025 | Received: ₹3600 | Paid: 24-03-2025
+2. Due ₹3620 | Due: 17-04-2025 | Received: | Paid:
+3. Due ₹3620 | Due: 17-05-2025 | Received: | Paid:
+4. Due ₹3620 | Due: 17-06-2025 | Received: | Paid:
+5. Due ₹3620 | Due: 17-07-2025 | Received: | Paid:
+6. Due ₹3620 | Due: 17-08-2025 | Received: | Paid:
+7. Due ₹3620 | Due: 17-09-2025 | Received: | Paid:
+8. Due ₹3620 | Due: 17-10-2025 | Received: | Paid:
+9. Due ₹3620 | Due: 17-11-2025 | Received: | Paid:
+10. Due ₹3620 | Due: 17-12-2025 | Received: | Paid:
+11. Due ₹3620 | Due: 17-01-2026 | Received: | Paid:
+12. Due ₹3620 | Due: 17-02-2026 | Received: | Paid:
+

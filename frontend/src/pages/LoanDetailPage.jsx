@@ -16,6 +16,7 @@ import { useCustomer, useUpdateCustomer } from '@/hooks/useCustomers';
 import { useToast } from '@/context/ToastContext';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { InstallmentTable } from '@/components/loan/InstallmentTable';
 import { PeriodEditor } from '@/components/loan/PeriodEditor';
 import { CloseLoanModal } from '@/components/loan/CloseLoanModal';
@@ -47,6 +48,7 @@ function EditCustomerForm({ customer, onSubmit, onCancel, isSubmitting }) {
     guarantor: { name: '', address: '', mobile: '', ...(customer.guarantor || {}) },
     idProofType: customer.idProofType || '',
     idProofNumber: customer.idProofNumber || '',
+    idStatus: customer.idStatus || '',
     profileImage: customer.profileImage || '',
   });
 
@@ -96,6 +98,7 @@ function EditCustomerForm({ customer, onSubmit, onCancel, isSubmitting }) {
       guarantor: (formData.guarantor.name || formData.guarantor.address || formData.guarantor.mobile) ? formData.guarantor : undefined,
       idProofType: formData.idProofType || undefined,
       idProofNumber: formData.idProofNumber || undefined,
+      idStatus: formData.idStatus || undefined,
       profileImage: formData.profileImage || undefined,
     };
     onSubmit(submitData);
@@ -196,6 +199,16 @@ function EditCustomerForm({ customer, onSubmit, onCancel, isSubmitting }) {
           label="ID Proof Number"
           value={formData.idProofNumber}
           onChange={(e) => handleChange('idProofNumber', e.target.value)}
+        />
+        <Select
+          label="ID Status"
+          value={formData.idStatus}
+          onChange={(value) => handleChange('idStatus', value)}
+          options={[
+            { value: '', label: 'Select' },
+            { value: 'Yes', label: 'Yes' },
+            { value: 'No', label: 'No' },
+          ]}
         />
       </div>
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">

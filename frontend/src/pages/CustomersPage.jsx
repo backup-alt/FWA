@@ -33,6 +33,8 @@ const CarIcon = () => (
   </svg>
 );
 
+const autoIcon = '/FWA/icons8-auto-rickshaw-50.png';
+
 export function CustomersPage() {
   const [query, setQuery] = useState('');
   const [searchType, setSearchType] = useState('name');
@@ -49,7 +51,8 @@ export function CustomersPage() {
   const renderRegNumbers = (customer) => {
     const bikeRegs = customer.bikeRegNos || [];
     const carRegs = customer.carRegNos || [];
-    const totalVehicles = bikeRegs.length + carRegs.length;
+    const autoRegs = customer.autoRegNos || [];
+    const totalVehicles = bikeRegs.length + carRegs.length + autoRegs.length;
 
     if (totalVehicles === 0) {
       return <span className="text-xs text-gray-400 dark:text-gray-500">No vehicles</span>;
@@ -66,6 +69,12 @@ export function CustomersPage() {
         {carRegs.map((reg, idx) => (
           <span key={`car-${idx}`} className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded text-xs font-medium">
             <CarIcon />
+            {reg}
+          </span>
+        ))}
+        {autoRegs.map((reg, idx) => (
+          <span key={`auto-${idx}`} className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded text-xs font-medium">
+            <img src={autoIcon} alt="Auto" className="h-4 w-4" />
             {reg}
           </span>
         ))}
@@ -203,6 +212,12 @@ export function CustomersPage() {
                           <span className="inline-flex items-center gap-0.5 text-green-600 dark:text-green-400" title={`${customer.carCount} Car loan(s)`}>
                             <CarIcon />
                             <span className="text-xs font-bold">{customer.carCount}</span>
+                          </span>
+                        )}
+                        {customer.autoCount > 0 && (
+                          <span className="inline-flex items-center gap-0.5 text-orange-600 dark:text-orange-400" title={`${customer.autoCount} Auto loan(s)`}>
+                            <img src={autoIcon} alt="Auto" className="h-4 w-4" />
+                            <span className="text-xs font-bold">{customer.autoCount}</span>
                           </span>
                         )}
                       </div>

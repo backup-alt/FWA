@@ -82,7 +82,6 @@ export function CloseLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
             value={reason}
             onChange={handleReasonChange}
             placeholder="Select reason"
-            disabled={isAlreadyClosed}
           />
 
           <div>
@@ -94,7 +93,6 @@ export function CloseLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
               value={amountReceived}
               onChange={(e) => setAmountReceived(e.target.value)}
               placeholder="0.00"
-              disabled={isAlreadyClosed}
             />
             {reason === 'Full Prepayment' && outstandingPrincipal > 0 && !isAlreadyClosed && (
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -111,7 +109,6 @@ export function CloseLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
               value={closureDate}
               onChange={setClosureDate}
               maxDate={new Date()}
-              disabled={isAlreadyClosed}
             />
           </div>
 

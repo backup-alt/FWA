@@ -655,6 +655,17 @@ router.put('/:id/close', async (req, res) => {
       return true;
     });
 
+    // Normalize legacy cellNumbers format (string array → object array)
+    if (Array.isArray(loan.cellNumbers)) {
+      loan.cellNumbers = loan.cellNumbers
+        .map((c) => {
+          if (typeof c === 'string') return { number: c };
+          if (c && typeof c === 'object' && c.number) return { number: c.number };
+          return null;
+        })
+        .filter(Boolean);
+    }
+
     // Mark all non-paid installments as Cancelled
     loan.installments.forEach((inst) => {
       if (inst.status !== 'Paid') {

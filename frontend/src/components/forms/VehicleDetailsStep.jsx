@@ -24,11 +24,11 @@ export function VehicleDetailsStep({ form }) {
           name="vehicleType"
           control={control}
           render={({ field }) => {
-            const isCustom = !['Bike', 'Car', 'Auto'].includes(field.value);
+            const isCustom = field.value && !['Bike', 'Car', 'Auto'].includes(field.value);
+            const selectValue = isCustom ? '__custom__' : (field.value || '');
             return (
               <div>
                 <Select
-                  {...field}
                   label="Vehicle Type *"
                   options={[
                     { value: 'Bike', label: 'Bike' },
@@ -38,15 +38,15 @@ export function VehicleDetailsStep({ form }) {
                   ]}
                   placeholder="Select vehicle type"
                   error={errors.vehicleType?.message}
-                  onChange={(e) => {
-                    const value = e.target.value;
+                  value={selectValue}
+                  onChange={(value) => {
                     if (value === '__custom__') {
                       field.onChange('');
                     } else {
                       field.onChange(value);
                     }
                   }}
-                  value={isCustom ? '__custom__' : field.value}
+                  onBlur={field.onBlur}
                 />
                 {isCustom && (
                   <Input
@@ -110,7 +110,7 @@ export function VehicleDetailsStep({ form }) {
         />
         
         <Input
-          label="Loan Disbursement Amount (F.AMT) *"
+          label="Finance Amount (F.AMT) *"
           type="number"
           placeholder="0"
           error={errors.financeAmount?.message}

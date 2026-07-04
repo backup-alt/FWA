@@ -642,6 +642,19 @@ router.put('/:id/close', async (req, res) => {
       });
     }
 
+    // Remove legacy phantom installments (dueAmount=0, dueDate=null, sNo > installmentPeriod)
+    const period = loan.installmentPeriod || 0;
+    loan.installments = loan.installments.filter((inst) => {
+      if (
+        inst.sNo > period &&
+        (Number(inst.dueAmount) || 0) === 0 &&
+        !inst.dueDate
+      ) {
+        return false;
+      }
+      return true;
+    });
+
     // Mark all non-paid installments as Cancelled
     loan.installments.forEach((inst) => {
       if (inst.status !== 'Paid') {
@@ -663,8 +676,8 @@ router.put('/:id/close', async (req, res) => {
     await loan.save();
     res.json(loan);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error closing loan.' });
+    console.error('Close loan error:', err);
+    res.status(500).json({ message: err.message || 'Server error closing loan.' });
   }
 });
 

@@ -4,8 +4,8 @@ const mongoose = require('mongoose');
 const installmentSchema = new mongoose.Schema(
   {
     sNo: { type: Number, required: true },
-    dueAmount: { type: Number, required: true },
-    dueDate: { type: Date, required: true },
+    dueAmount: { type: Number, default: 0 },
+    dueDate: { type: Date, default: null },
     amountReceived: { type: Number, default: 0 },
     dateReceived: { type: Date, default: null },
     sign: { type: String, default: '' },

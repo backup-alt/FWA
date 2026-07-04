@@ -614,21 +614,39 @@ router.delete('/:id/documents/:docId', async (req, res) => {
   }
 });
 
-// Close loan
+// Close loan / update closure info
 router.put('/:id/close', async (req, res) => {
   try {
     const loan = await Loan.findById(req.params.id);
     if (!loan) return res.status(404).json({ message: 'Loan not found.' });
-    if (loan.status === 'Closed') {
-      return res.status(400).json({ message: 'Loan is already closed.' });
-    }
 
     const {
       closureReason,
       closureRemarks = '',
       amountReceived = 0,
       closureDate,
+      updateOnly = false,
     } = req.body;
+
+    if (loan.status === 'Closed' || loan.status === 'Completed') {
+      if (updateOnly) {
+        if (closureReason !== undefined) {
+          loan.closureInfo.reason = closureReason;
+        }
+        if (closureRemarks !== undefined) {
+          loan.closureInfo.remarks = closureRemarks;
+        }
+        if (amountReceived !== undefined) {
+          loan.closureInfo.amountReceived = Number(amountReceived) || 0;
+        }
+        if (closureDate !== undefined) {
+          loan.closureInfo.closureDate = closureDate ? new Date(closureDate) : loan.closureInfo.closureDate;
+        }
+        await loan.save();
+        return res.json(loan);
+      }
+      return res.status(400).json({ message: 'Loan is already closed. Use updateOnly=true to update closure info.' });
+    }
 
     if (!closureReason) {
       return res.status(400).json({ message: 'closureReason is required.' });

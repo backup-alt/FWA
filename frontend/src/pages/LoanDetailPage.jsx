@@ -269,12 +269,13 @@ export function LoanDetailPage() {
 
   const handleCloseLoan = async (data) => {
     try {
+      const isUpdate = data.updateOnly;
       await closeLoan.mutateAsync({ id, data });
-      showToast('Loan closed successfully', 'success');
+      showToast(isUpdate ? 'Closure details updated' : 'Loan closed successfully', 'success');
       setShowCloseModal(false);
       refetch();
     } catch (err) {
-      showToast(err?.message || 'Failed to close loan', 'error');
+      showToast(err?.message || 'Failed to update closure details', 'error');
     }
   };
 
@@ -391,7 +392,17 @@ export function LoanDetailPage() {
 
       {loan.status === 'Closed' && loan.closureInfo && (
         <div className="rounded-lg bg-gray-50 border border-gray-200 p-4 dark:bg-gray-800 dark:border-gray-700">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Loan Closed</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Loan Closed</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowCloseModal(true)}
+              className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+            >
+              <PencilIcon className="h-4 w-4" />
+            </Button>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <p className="text-gray-500 dark:text-gray-400">Reason</p>

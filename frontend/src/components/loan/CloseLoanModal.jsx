@@ -15,6 +15,8 @@ const REASONS = [
 ];
 
 export function CloseLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan }) {
+  const isAlreadyClosed = loan?.status === 'Closed' || loan?.status === 'Completed';
+
   const [reason, setReason] = useState('Full Prepayment');
   const [remarks, setRemarks] = useState('');
   const [amountReceived, setAmountReceived] = useState('');
@@ -24,10 +26,20 @@ export function CloseLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
   const outstandingPrincipal = loan?.outstandingPrincipal || 0;
 
   useEffect(() => {
-    if (isOpen && outstandingPrincipal > 0) {
-      setAmountReceived(outstandingPrincipal.toString());
+    if (isOpen) {
+      if (isAlreadyClosed && loan?.closureInfo) {
+        setReason(loan.closureInfo.reason || 'Full Prepayment');
+        setRemarks(loan.closureInfo.remarks || '');
+        setAmountReceived(loan.closureInfo.amountReceived?.toString() || '');
+        setClosureDate(loan.closureInfo.closureDate ? formatDateInput(new Date(loan.closureInfo.closureDate)) : formatDateInput(new Date()));
+      } else {
+        setReason('Full Prepayment');
+        setRemarks('');
+        setAmountReceived(outstandingPrincipal > 0 ? outstandingPrincipal.toString() : '');
+        setClosureDate(formatDateInput(new Date()));
+      }
     }
-  }, [isOpen, outstandingPrincipal]);
+  }, [isOpen, isAlreadyClosed, loan, outstandingPrincipal]);
 
   const handleReasonChange = (newReason) => {
     setReason(newReason);
@@ -44,12 +56,16 @@ export function CloseLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
 
   const handleConfirmYes = () => {
     setShowConfirmModal(false);
-    onConfirm({
+    const payload = {
       closureReason: reason,
       closureRemarks: remarks,
       amountReceived: Number(amountReceived) || 0,
       closureDate: closureDate || new Date().toISOString(),
-    });
+    };
+    if (isAlreadyClosed) {
+      payload.updateOnly = true;
+    }
+    onConfirm(payload);
   };
 
   const handleCancel = () => {
@@ -58,7 +74,7 @@ export function CloseLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} title="Close Loan">
+      <Modal isOpen={isOpen} onClose={onClose} title={isAlreadyClosed ? 'Edit Closure Details' : 'Close Loan'}>
         <form onSubmit={(e) => { e.preventDefault(); handleOpenConfirm(); }} className="space-y-4">
           <Select
             label="Closure Reason"
@@ -66,19 +82,21 @@ export function CloseLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
             value={reason}
             onChange={handleReasonChange}
             placeholder="Select reason"
+            disabled={isAlreadyClosed}
           />
 
           <div>
             <Input
-              label={`Amount Received at Closure (₹)${reason === 'Full Prepayment' ? ' - Full Payoff Amount' : ''}`}
+              label={`Amount Received at Closure (₹)${reason === 'Full Prepayment' && !isAlreadyClosed ? ' - Full Payoff Amount' : ''}`}
               type="number"
               step="0.01"
               min="0"
               value={amountReceived}
               onChange={(e) => setAmountReceived(e.target.value)}
               placeholder="0.00"
+              disabled={isAlreadyClosed}
             />
-            {reason === 'Full Prepayment' && outstandingPrincipal > 0 && (
+            {reason === 'Full Prepayment' && outstandingPrincipal > 0 && !isAlreadyClosed && (
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Full payoff amount: {formatCurrency(outstandingPrincipal)}
               </p>
@@ -93,12 +111,13 @@ export function CloseLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
               value={closureDate}
               onChange={setClosureDate}
               maxDate={new Date()}
+              disabled={isAlreadyClosed}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Remarks (Optional)
+              Remarks
             </label>
             <textarea
               value={remarks}
@@ -114,53 +133,95 @@ export function CloseLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
               Cancel
             </Button>
             <Button type="submit" variant="primary" disabled={isSubmitting}>
-              {isSubmitting ? 'Closing...' : 'Confirm Closure'}
+              {isSubmitting ? 'Updating...' : (isAlreadyClosed ? 'Update' : 'Confirm Closure')}
             </Button>
           </div>
         </form>
       </Modal>
 
-      {/* Custom Confirmation Modal */}
-      <Modal
-        isOpen={showConfirmModal}
-        onClose={handleCancel}
-        title="Confirm Closure"
-        size="sm"
-      >
-        <div className="space-y-4">
-          <p className="text-gray-600 dark:text-gray-300">
-            Are you sure you want to close this loan?
-          </p>
-          
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500 dark:text-gray-400">Closure Reason:</span>
-              <span className="font-medium text-gray-900 dark:text-white">{reason}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500 dark:text-gray-400">Amount Received:</span>
-              <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(Number(amountReceived) || 0)}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500 dark:text-gray-400">Closure Date:</span>
-              <span className="font-medium text-gray-900 dark:text-white">{formatDateInput(closureDate)}</span>
+      {isAlreadyClosed ? (
+        <Modal
+          isOpen={showConfirmModal}
+          onClose={handleCancel}
+          title="Update Closure Details"
+          size="sm"
+        >
+          <div className="space-y-4">
+            <p className="text-gray-600 dark:text-gray-300">
+              Are you sure you want to update the closure details?
+            </p>
+
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500 dark:text-gray-400">Closure Reason:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{reason}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500 dark:text-gray-400">Amount Received:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(Number(amountReceived) || 0)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500 dark:text-gray-400">Closure Date:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{formatDateInput(closureDate)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500 dark:text-gray-400">Remarks:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{remarks || '-'}</span>
+              </div>
             </div>
           </div>
-          
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            This action will mark the loan as closed and cannot be undone.
-          </p>
-        </div>
-        
-        <div className="flex justify-end gap-3 mt-4">
-          <Button variant="secondary" onClick={handleCancel}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleConfirmYes}>
-            Yes, Close Loan
-          </Button>
-        </div>
-      </Modal>
+
+          <div className="flex justify-end gap-3 mt-4">
+            <Button variant="secondary" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleConfirmYes}>
+              Update
+            </Button>
+          </div>
+        </Modal>
+      ) : (
+        <Modal
+          isOpen={showConfirmModal}
+          onClose={handleCancel}
+          title="Confirm Closure"
+          size="sm"
+        >
+          <div className="space-y-4">
+            <p className="text-gray-600 dark:text-gray-300">
+              Are you sure you want to close this loan?
+            </p>
+
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500 dark:text-gray-400">Closure Reason:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{reason}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500 dark:text-gray-400">Amount Received:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(Number(amountReceived) || 0)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500 dark:text-gray-400">Closure Date:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{formatDateInput(closureDate)}</span>
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              This action will mark the loan as closed and cannot be undone.
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-3 mt-4">
+            <Button variant="secondary" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleConfirmYes}>
+              Yes, Close Loan
+            </Button>
+          </div>
+        </Modal>
+      )}
     </>
   );
 }

@@ -642,7 +642,7 @@ router.put('/:id/close', async (req, res) => {
         if (closureDate !== undefined) {
           loan.closureInfo.closureDate = closureDate ? new Date(closureDate) : loan.closureInfo.closureDate;
         }
-        await loan.save();
+        await loan.save({ validateBeforeSave: false });
         return res.json(loan);
       }
       return res.status(400).json({ message: 'Loan is already closed. Use updateOnly=true to update closure info.' });

@@ -8,14 +8,21 @@ export function PaymentTrendChart({ loans = [] }) {
   loans.forEach(loan => {
     loan.installments?.forEach(installment => {
       if (installment.status === 'Paid' && installment.dateReceived) {
-        const month = format(new Date(installment.dateReceived), 'MMM yyyy');
+        const date = new Date(installment.dateReceived);
+        if (isNaN(date.getTime())) return;
+        const month = format(date, 'MMM yyyy');
         monthlyData[month] = (monthlyData[month] || 0) + (installment.amountReceived || 0);
       }
     });
   });
 
   const sortedMonths = Object.keys(monthlyData)
-    .sort((a, b) => new Date(a) - new Date(b))
+    .sort((a, b) => {
+      const dateA = new Date(a);
+      const dateB = new Date(b);
+      if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
+      return dateA - dateB;
+    })
     .slice(-12);
 
   const chartData = sortedMonths.map(month => ({

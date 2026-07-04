@@ -255,9 +255,13 @@ export function LoanDetailPage() {
   };
 
   const handleCloseLoan = async (data) => {
-    await closeLoan.mutateAsync({ id, data });
-    showToast('Loan closed successfully', 'success');
-    setShowCloseModal(false);
+    try {
+      await closeLoan.mutateAsync({ id, data });
+      showToast('Loan closed successfully', 'success');
+      setShowCloseModal(false);
+    } catch (err) {
+      showToast(err?.message || 'Failed to close loan', 'error');
+    }
   };
 
   const handleRestructure = async (data) => {

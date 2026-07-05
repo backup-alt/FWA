@@ -65,6 +65,7 @@ router.post('/', async (req, res) => {
       providedInstallments,
       providedStatus,
       providedCompletedAt,
+      vehicles,
     } = req.body;
 
     if (!customerId) {
@@ -129,6 +130,7 @@ router.post('/', async (req, res) => {
       interestAmount,
       emiAmount,
       installments,
+      vehicles: Array.isArray(vehicles) ? vehicles : [],
       outstandingPrincipal: Math.max(totalPayable - totalPaid, 0),
       totalPaid,
       status: providedStatus || 'Active',
@@ -326,7 +328,7 @@ router.put('/:id', async (req, res) => {
       'make', 'model', 'regNo', 'loanAmount', 'loanAccountNumber',
       'rcDetails', 'noc', 'insurance', 'idProof', 'keyStatus', 'salesDoneBy',
       'customerName', 'address', 'cellNumbers', 'guarantor', 'chequesReceived',
-      'installmentPeriodUnit',
+      'installmentPeriodUnit', 'vehicles',
     ];
 
     updatableFields.forEach((field) => {

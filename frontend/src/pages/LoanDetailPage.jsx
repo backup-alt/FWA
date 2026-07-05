@@ -600,8 +600,8 @@ export function LoanDetailPage() {
                   ['Total Paid', formatCurrency(loan.totalPaid || 0)],
                   ['', '']
                 ].map(([label, value], idx, arr) => (
-                  <div 
-                    key={idx} 
+                  <div
+                    key={idx}
                     className={`border-gray-200 p-4 dark:border-gray-700 sm:odd:border-r ${
                       idx >= arr.length - 2 ? '' : 'border-b'
                     }`}
@@ -617,6 +617,59 @@ export function LoanDetailPage() {
               </dl>
             </CardContent>
           </Card>
+
+          {loan.vehicles && loan.vehicles.length > 0 && (
+            <Card padding="">
+              <CardHeader
+                title={`Vehicles (${loan.vehicles.length})`}
+                subtitle="All vehicles associated with this loan"
+                action={null}
+              />
+              <CardContent className="p-0">
+                <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {loan.vehicles.map((v, idx) => (
+                    <div key={idx} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/30">
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 text-sm font-semibold">
+                          {idx + 1}
+                        </span>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">
+                          {v.vehicleType} - {v.make} {v.model}
+                        </h4>
+                        <span className="text-sm text-gray-500 dark:text-gray-400 ml-auto">
+                          Reg. No: <span className="font-mono font-medium text-gray-700 dark:text-gray-300">{v.regNo || '-'}</span>
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 text-sm">
+                        <div>
+                          <p className="text-gray-500 dark:text-gray-400">RC Status</p>
+                          <p className="font-medium text-gray-900 dark:text-white">{v.rcStatus || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 dark:text-gray-400">NOC</p>
+                          <p className="font-medium text-gray-900 dark:text-white">{v.noc || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 dark:text-gray-400">Insurance</p>
+                          <p className="font-medium text-gray-900 dark:text-white">{v.insurance || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 dark:text-gray-400">ID Proof</p>
+                          <p className="font-medium text-gray-900 dark:text-white">
+                            {v.idProofType ? `${v.idProofType} ${v.idProofNumber ? `(${v.idProofNumber})` : ''}` : '-'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 dark:text-gray-400">Key Status</p>
+                          <p className="font-medium text-gray-900 dark:text-white">{v.keyStatus || '-'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
 

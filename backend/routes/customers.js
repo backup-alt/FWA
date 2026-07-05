@@ -165,9 +165,9 @@ router.get('/', async (req, res) => {
         $group: {
           _id: '$_id',
           customerId: { $first: '$customerId' },
-          loanCount: { $sum: 1 },
+          loanCount: { $addToSet: '$_id' },
           totalOutstanding: { $first: '$outstandingPrincipal' },
-          activeLoans: { $first: { $cond: [{ $eq: ['$status', 'Active'] }, 1, 0] } },
+          activeLoans: { $sum: { $cond: [{ $eq: ['$status', 'Active'] }, 1, 0] } },
           bikeRegNos: {
             $addToSet: {
               $cond: [
@@ -207,7 +207,7 @@ router.get('/', async (req, res) => {
       const cid = agg.customerId?.toString();
       if (cid) {
         if (loanMap[cid]) {
-          loanMap[cid].loanCount += agg.loanCount || 0;
+          loanMap[cid].loanCount = [...(loanMap[cid].loanCount || []), ...(agg.loanCount || [])];
           loanMap[cid].totalOutstanding = (loanMap[cid].totalOutstanding || 0) + (agg.totalOutstanding || 0);
           loanMap[cid].activeLoans = (loanMap[cid].activeLoans || 0) + (agg.activeLoans || 0);
           loanMap[cid].bikeRegNos = [...(loanMap[cid].bikeRegNos || []), ...(agg.bikeRegNos || [])];
@@ -227,7 +227,7 @@ router.get('/', async (req, res) => {
       const shaped = await shapeCustomerResponse(c);
       return {
         ...shaped,
-        loanCount: agg.loanCount || 0,
+        loanCount: (agg.loanCount || []).length,
         totalOutstanding: agg.totalOutstanding || 0,
         activeLoans: agg.activeLoans || 0,
         bikeRegNos: (agg.bikeRegNos || []).filter(r => r),

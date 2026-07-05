@@ -17,6 +17,10 @@ export function PaymentTrendChart({ loans = [] }) {
   });
 
   const sortedMonths = Object.keys(monthlyData)
+    .filter(month => {
+      const date = new Date(month);
+      return date <= new Date();
+    })
     .sort((a, b) => {
       const dateA = new Date(a);
       const dateB = new Date(b);

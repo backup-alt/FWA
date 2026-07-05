@@ -241,6 +241,8 @@ export function CustomersPage() {
                     </div>
                     {customer.activeLoans > 0 ? (
                       <Badge variant="info">{customer.activeLoans} active</Badge>
+                    ) : customer.closedLoans > 0 ? (
+                      <Badge variant="warning">{customer.closedLoans} closed</Badge>
                     ) : customer.loanCount > 0 ? (
                       <Badge variant="success">All completed</Badge>
                     ) : (

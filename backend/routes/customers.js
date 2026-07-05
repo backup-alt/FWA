@@ -168,6 +168,7 @@ router.get('/', async (req, res) => {
           loanCount: { $addToSet: '$_id' },
           totalOutstanding: { $first: '$outstandingPrincipal' },
           activeLoans: { $sum: { $cond: [{ $eq: ['$status', 'Active'] }, 1, 0] } },
+          closedLoans: { $sum: { $cond: [{ $eq: ['$status', 'Closed'] }, 1, 0] } },
           bikeRegNos: {
             $addToSet: {
               $cond: [
@@ -210,6 +211,7 @@ router.get('/', async (req, res) => {
           loanMap[cid].loanCount = [...(loanMap[cid].loanCount || []), ...(agg.loanCount || [])];
           loanMap[cid].totalOutstanding = (loanMap[cid].totalOutstanding || 0) + (agg.totalOutstanding || 0);
           loanMap[cid].activeLoans = (loanMap[cid].activeLoans || 0) + (agg.activeLoans || 0);
+          loanMap[cid].closedLoans = (loanMap[cid].closedLoans || 0) + (agg.closedLoans || 0);
           loanMap[cid].bikeRegNos = [...(loanMap[cid].bikeRegNos || []), ...(agg.bikeRegNos || [])];
           loanMap[cid].carRegNos = [...(loanMap[cid].carRegNos || []), ...(agg.carRegNos || [])];
           loanMap[cid].autoRegNos = [...(loanMap[cid].autoRegNos || []), ...(agg.autoRegNos || [])];
@@ -230,6 +232,7 @@ router.get('/', async (req, res) => {
         loanCount: (agg.loanCount || []).length,
         totalOutstanding: agg.totalOutstanding || 0,
         activeLoans: agg.activeLoans || 0,
+        closedLoans: agg.closedLoans || 0,
         bikeRegNos: (agg.bikeRegNos || []).filter(r => r),
         carRegNos: (agg.carRegNos || []).filter(r => r),
         autoRegNos: (agg.autoRegNos || []).filter(r => r),

@@ -167,8 +167,16 @@ router.get('/', async (req, res) => {
           customerId: { $first: '$customerId' },
           loanCount: { $addToSet: '$_id' },
           totalOutstanding: { $first: '$outstandingPrincipal' },
-          activeLoans: { $sum: { $cond: [{ $eq: ['$status', 'Active'] }, 1, 0] } },
-          closedLoans: { $sum: { $cond: [{ $eq: ['$status', 'Closed'] }, 1, 0] } },
+          activeLoanIds: {
+            $addToSet: {
+              $cond: [{ $eq: ['$status', 'Active'] }, '$_id', '$$REMOVE']
+            }
+          },
+          closedLoanIds: {
+            $addToSet: {
+              $cond: [{ $eq: ['$status', 'Closed'] }, '$_id', '$$REMOVE']
+            }
+          },
           bikeRegNos: {
             $addToSet: {
               $cond: [
@@ -210,8 +218,8 @@ router.get('/', async (req, res) => {
         if (loanMap[cid]) {
           loanMap[cid].loanCount = [...(loanMap[cid].loanCount || []), ...(agg.loanCount || [])];
           loanMap[cid].totalOutstanding = (loanMap[cid].totalOutstanding || 0) + (agg.totalOutstanding || 0);
-          loanMap[cid].activeLoans = (loanMap[cid].activeLoans || 0) + (agg.activeLoans || 0);
-          loanMap[cid].closedLoans = (loanMap[cid].closedLoans || 0) + (agg.closedLoans || 0);
+          loanMap[cid].activeLoanIds = [...(loanMap[cid].activeLoanIds || []), ...(agg.activeLoanIds || [])];
+          loanMap[cid].closedLoanIds = [...(loanMap[cid].closedLoanIds || []), ...(agg.closedLoanIds || [])];
           loanMap[cid].bikeRegNos = [...(loanMap[cid].bikeRegNos || []), ...(agg.bikeRegNos || [])];
           loanMap[cid].carRegNos = [...(loanMap[cid].carRegNos || []), ...(agg.carRegNos || [])];
           loanMap[cid].autoRegNos = [...(loanMap[cid].autoRegNos || []), ...(agg.autoRegNos || [])];
@@ -229,13 +237,13 @@ router.get('/', async (req, res) => {
       const shaped = await shapeCustomerResponse(c);
       return {
         ...shaped,
-        loanCount: (agg.loanCount || []).length,
+        loanCount: [...new Set(agg.loanCount || [])].length,
         totalOutstanding: agg.totalOutstanding || 0,
-        activeLoans: agg.activeLoans || 0,
-        closedLoans: agg.closedLoans || 0,
-        bikeRegNos: (agg.bikeRegNos || []).filter(r => r),
-        carRegNos: (agg.carRegNos || []).filter(r => r),
-        autoRegNos: (agg.autoRegNos || []).filter(r => r),
+        activeLoans: [...new Set(agg.activeLoanIds || [])].length,
+        closedLoans: [...new Set(agg.closedLoanIds || [])].length,
+        bikeRegNos: [...new Set((agg.bikeRegNos || []).filter(r => r))],
+        carRegNos: [...new Set((agg.carRegNos || []).filter(r => r))],
+        autoRegNos: [...new Set((agg.autoRegNos || []).filter(r => r))],
         bikeCount: agg.bikeCount || 0,
         carCount: agg.carCount || 0,
         autoCount: agg.autoCount || 0,

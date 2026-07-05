@@ -101,6 +101,13 @@ router.get('/', async (req, res) => {
   try {
     const { search, searchType } = req.query;
     let customers = await Customer.find().sort({ createdAt: -1 }).lean();
+    const seenCustomerIds = new Set();
+    customers = customers.filter(c => {
+      const id = c._id.toString();
+      if (seenCustomerIds.has(id)) return false;
+      seenCustomerIds.add(id);
+      return true;
+    });
     let customerIds = null;
 
     if (search && searchType === 'name') {
@@ -118,8 +125,11 @@ router.get('/', async (req, res) => {
     } else if (search && searchType === 'regNo') {
       const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const matchingLoans = await Loan.find({
-        regNo: { $regex: escapedSearch, $options: 'i' }
-      }).select('customerId regNo').lean();
+        $or: [
+          { regNo: { $regex: escapedSearch, $options: 'i' } },
+          { 'vehicles.regNo': { $regex: escapedSearch, $options: 'i' } }
+        ]
+      }).select('customerId regNo vehicles').lean();
 
       customerIds = [...new Set(
         matchingLoans
@@ -129,21 +139,28 @@ router.get('/', async (req, res) => {
       customers = customers.filter(c => customerIds.includes(c._id.toString()));
     }
 
+    const matchStage = customerIds
+      ? { customerId: { $in: customerIds.map(id => new mongoose.Types.ObjectId(id)) } }
+      : {};
+    const uniqueCustomerIds = [...new Set(customers.map(c => c._id.toString()))];
+    const loanMatchStage = Object.keys(matchStage).length > 0
+      ? { customerId: { $in: uniqueCustomerIds.map(id => new mongoose.Types.ObjectId(id)) } }
+      : {};
+
     const loanAgg = await Loan.aggregate([
-      customerIds ? { $match: { customerId: { $in: customerIds.map(id => new mongoose.Types.ObjectId(id)) } } } : { $match: {} },
+      { $match: loanMatchStage },
       {
         $addFields: {
-          allVehicles: {
-            $concatArrays: [
-              [{ vehicleType: '$vehicleType', regNo: '$regNo' }],
-              { $ifNull: ['$vehicles', []] }
+          vehiclesArray: {
+            $cond: [
+              { $gt: [{ $size: { $ifNull: ['$vehicles', []] } }, 0] },
+              '$vehicles',
+              [{ vehicleType: '$vehicleType', make: '$make', model: '$model', regNo: '$regNo' }]
             ]
           }
         }
       },
-      {
-        $unwind: { path: '$allVehicles', preserveNullAndEmptyArrays: true }
-      },
+      { $unwind: { path: '$vehiclesArray', preserveNullAndEmptyArrays: true } },
       {
         $group: {
           _id: '$_id',
@@ -152,35 +169,35 @@ router.get('/', async (req, res) => {
           totalOutstanding: { $first: '$outstandingPrincipal' },
           activeLoans: { $first: { $cond: [{ $eq: ['$status', 'Active'] }, 1, 0] } },
           bikeRegNos: {
-            $push: {
+            $addToSet: {
               $cond: [
-                { $eq: ['$allVehicles.vehicleType', 'Bike'] },
-                '$allVehicles.regNo',
+                { $and: [{ $eq: ['$vehiclesArray.vehicleType', 'Bike'] }, { $ne: ['$vehiclesArray.regNo', null] }, { $ne: ['$vehiclesArray.regNo', ''] }] },
+                '$vehiclesArray.regNo',
                 '$$REMOVE'
               ]
             }
           },
           carRegNos: {
-            $push: {
+            $addToSet: {
               $cond: [
-                { $eq: ['$allVehicles.vehicleType', 'Car'] },
-                '$allVehicles.regNo',
+                { $and: [{ $eq: ['$vehiclesArray.vehicleType', 'Car'] }, { $ne: ['$vehiclesArray.regNo', null] }, { $ne: ['$vehiclesArray.regNo', ''] }] },
+                '$vehiclesArray.regNo',
                 '$$REMOVE'
               ]
             }
           },
           autoRegNos: {
-            $push: {
+            $addToSet: {
               $cond: [
-                { $eq: ['$allVehicles.vehicleType', 'Auto'] },
-                '$allVehicles.regNo',
+                { $and: [{ $eq: ['$vehiclesArray.vehicleType', 'Auto'] }, { $ne: ['$vehiclesArray.regNo', null] }, { $ne: ['$vehiclesArray.regNo', ''] }] },
+                '$vehiclesArray.regNo',
                 '$$REMOVE'
               ]
             }
           },
-          bikeCount: { $sum: { $cond: [{ $eq: ['$allVehicles.vehicleType', 'Bike'] }, 1, 0] } },
-          carCount: { $sum: { $cond: [{ $eq: ['$allVehicles.vehicleType', 'Car'] }, 1, 0] } },
-          autoCount: { $sum: { $cond: [{ $eq: ['$allVehicles.vehicleType', 'Auto'] }, 1, 0] } },
+          bikeCount: { $sum: { $cond: [{ $and: [{ $eq: ['$vehiclesArray.vehicleType', 'Bike'] }, { $ne: ['$vehiclesArray.regNo', null] }, { $ne: ['$vehiclesArray.regNo', ''] }] }, 1, 0] } },
+          carCount: { $sum: { $cond: [{ $and: [{ $eq: ['$vehiclesArray.vehicleType', 'Car'] }, { $ne: ['$vehiclesArray.regNo', null] }, { $ne: ['$vehiclesArray.regNo', ''] }] }, 1, 0] } },
+          autoCount: { $sum: { $cond: [{ $and: [{ $eq: ['$vehiclesArray.vehicleType', 'Auto'] }, { $ne: ['$vehiclesArray.regNo', null] }, { $ne: ['$vehiclesArray.regNo', ''] }] }, 1, 0] } },
         }
       },
     ]);

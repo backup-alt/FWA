@@ -336,6 +336,9 @@ export function CustomerDetailPage() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showEditCustomerModal, setShowEditCustomerModal] = useState(false);
   const [loanFilter, setLoanFilter] = useState('all');
+  const [showVehicleEditModal, setShowVehicleEditModal] = useState(false);
+  const [editingLoanId, setEditingLoanId] = useState(null);
+  const [editingVehicles, setEditingVehicles] = useState([]);
 
   const handleProfileImageChange = async (e) => {
     const file = e.target.files?.[0];
@@ -378,6 +381,73 @@ export function CustomerDetailPage() {
     showToast('Updated successfully', 'success');
     setShowEditCustomerModal(false);
     refetch();
+  };
+
+  const openVehicleEditModal = (loan) => {
+    const loanVehicles = loan.vehicles && loan.vehicles.length > 0
+      ? loan.vehicles.map(v => ({ ...v }))
+      : [{
+          vehicleType: loan.vehicleType || 'Bike',
+          make: loan.make || '',
+          model: loan.model || '',
+          regNo: loan.regNo || '',
+          rcStatus: loan.rcDetails?.status || '',
+          noc: loan.noc || '',
+          insurance: loan.insurance || '',
+          idProofType: loan.idProofType || '',
+          idProofNumber: loan.idProofNumber || '',
+          keyStatus: loan.keyStatus || '',
+        }];
+    setEditingLoanId(loan._id);
+    setEditingVehicles(loanVehicles);
+    setShowVehicleEditModal(true);
+  };
+
+  const handleVehicleEditChange = (index, field, value) => {
+    setEditingVehicles(prev => prev.map((v, i) => i === index ? { ...v, [field]: value } : v));
+  };
+
+  const addVehicleToEdit = () => {
+    setEditingVehicles(prev => [...prev, {
+      vehicleType: 'Bike',
+      make: '',
+      model: '',
+      regNo: '',
+      rcStatus: '',
+      noc: '',
+      insurance: '',
+      idProofType: '',
+      idProofNumber: '',
+      keyStatus: '',
+    }]);
+  };
+
+  const removeVehicleFromEdit = (index) => {
+    setEditingVehicles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSaveVehicles = async () => {
+    try {
+      const firstVehicle = editingVehicles[0] || {};
+      await updateLoan.mutateAsync({
+        id: editingLoanId,
+        data: {
+          vehicles: editingVehicles,
+          vehicleType: firstVehicle.vehicleType || 'Bike',
+          make: firstVehicle.make || '',
+          model: firstVehicle.model || '',
+          regNo: firstVehicle.regNo || '',
+          noc: firstVehicle.noc || '',
+          insurance: firstVehicle.insurance || '',
+          keyStatus: firstVehicle.keyStatus || '',
+        }
+      });
+      showToast('Vehicles updated successfully', 'success');
+      setShowVehicleEditModal(false);
+      refetch();
+    } catch (err) {
+      showToast(err.message || 'Failed to update vehicles', 'error');
+    }
   };
 
   if (isLoading) {
@@ -507,74 +577,6 @@ export function CustomerDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Vehicles Section */}
-      <Card padding="">
-        <CardHeader
-          className="px-5 pt-5 mb-0"
-          title="Vehicles"
-          subtitle={`${loans.reduce((sum, l) => sum + (l.vehicles?.length || (l.vehicleType ? 1 : 0)), 0)} vehicle${loans.reduce((sum, l) => sum + (l.vehicles?.length || (l.vehicleType ? 1 : 0)), 0) !== 1 ? 's' : ''} across ${loans.length} loan${loans.length !== 1 ? 's' : ''}`}
-        />
-        <CardContent className="p-0">
-          {loans.length === 0 ? (
-            <div className="p-5 text-center text-gray-500 dark:text-gray-400">No vehicles</div>
-          ) : (
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {loans.map(loan => {
-                const vehicleCount = loan.vehicles?.length || (loan.vehicleType ? 1 : 0);
-                if (vehicleCount === 0) return null;
-                const loanVehicles = loan.vehicles?.length > 0 ? loan.vehicles : [{
-                  vehicleType: loan.vehicleType,
-                  make: loan.make,
-                  model: loan.model,
-                  regNo: loan.regNo,
-                  rcStatus: loan.rcDetails?.status || '',
-                  noc: loan.noc || '',
-                  insurance: loan.insurance || '',
-                  keyStatus: loan.keyStatus || '',
-                }];
-                return loanVehicles.map((v, idx) => (
-                  <div key={`${loan._id}-${idx}`} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/30">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {v.vehicleType === 'Bike' ? (
-                          <img src={bikeIcon} alt="Bike" className="h-8 w-8 shrink-0" />
-                        ) : v.vehicleType === 'Car' ? (
-                          <img src={carIcon} alt="Car" className="h-8 w-8 shrink-0" />
-                        ) : (
-                          <img src={autoIcon} alt="Auto" className="h-8 w-8 shrink-0" />
-                        )}
-                        <div>
-                          <h4 className="font-semibold text-gray-900 dark:text-white">
-                            {v.vehicleType} - {v.make || ''} {v.model || ''}
-                          </h4>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {v.regNo || 'No Reg. No.'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">
-                          Loan #{loan.loanAccountNumber || loan._id.slice(-6)}
-                        </span>
-                        <Badge variant={statusColors[loan.status] || 'gray'}>
-                          {loan.status}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                      {v.rcStatus && <span className="text-gray-500">RC: <span className="text-gray-700 dark:text-gray-300">{v.rcStatus}</span></span>}
-                      {v.noc && <span className="text-gray-500">NOC: <span className="text-gray-700 dark:text-gray-300">{v.noc}</span></span>}
-                      {v.insurance && <span className="text-gray-500">INS: <span className="text-gray-700 dark:text-gray-300">{v.insurance}</span></span>}
-                      {v.keyStatus && <span className="text-gray-500">Key: <span className="text-gray-700 dark:text-gray-300">{v.keyStatus}</span></span>}
-                    </div>
-                  </div>
-                ));
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Loans List */}
       <Card padding="">
         <CardHeader
@@ -582,48 +584,40 @@ export function CustomerDetailPage() {
           title="Loans"
           subtitle={`${loans.length} loan${loans.length !== 1 ? 's' : ''} associated with this customer`}
           action={
-            <div className="flex items-center gap-2">
-              <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
-                <button
-                  type="button"
-                  onClick={() => setLoanFilter('all')}
-                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                    loanFilter === 'all'
-                      ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                  }`}
-                >
-                  All ({loans.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLoanFilter('active')}
-                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                    loanFilter === 'active'
-                      ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                  }`}
-                >
-                  Active ({loans.filter(l => l.status === 'Active').length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLoanFilter('completed')}
-                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                    loanFilter === 'completed'
-                      ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                  }`}
-                >
-                  Completed ({loans.filter(l => l.status === 'Completed' || l.status === 'Closed').length})
-                </button>
-              </div>
-              <NavLink to={`/customer/${id}/add-loan`}>
-                <Button size="sm" variant="secondary">
-                  <PlusIcon className="h-4 w-4 mr-1.5" />
-                  Add Loan
-                </Button>
-              </NavLink>
+            <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+              <button
+                type="button"
+                onClick={() => setLoanFilter('all')}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  loanFilter === 'all'
+                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                All ({loans.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setLoanFilter('active')}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  loanFilter === 'active'
+                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                Active ({loans.filter(l => l.status === 'Active').length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setLoanFilter('completed')}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  loanFilter === 'completed'
+                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                Completed ({loans.filter(l => l.status === 'Completed' || l.status === 'Closed').length})
+              </button>
             </div>
           }
         />
@@ -631,34 +625,19 @@ export function CustomerDetailPage() {
           {loans.length === 0 ? (
             <div className="rounded-lg border border-gray-200 p-8 text-center dark:border-gray-700">
               <p className="text-sm text-gray-500 dark:text-gray-400">This customer has no loans yet.</p>
-              <NavLink to={`/customer/${id}/add-loan`} className="mt-4 inline-flex">
-                <Button>
-                  <PlusIcon className="mr-2 h-5 w-5" />
-                  Create First Loan
-                </Button>
-              </NavLink>
             </div>
           ) : (
-            (() => {
-              const filteredLoans = loans.filter(l => {
-                if (loanFilter === 'active') return l.status === 'Active';
-                if (loanFilter === 'completed') return l.status === 'Completed' || l.status === 'Closed';
-                return true;
-              });
-              if (filteredLoans.length === 0) {
+            <div className="space-y-4">
+              {loans.map(loan => {
+                const loanVehicles = loan.vehicles && loan.vehicles.length > 0
+                  ? loan.vehicles
+                  : [{ vehicleType: loan.vehicleType, make: loan.make, model: loan.model, regNo: loan.regNo, rcStatus: loan.rcDetails?.status || '', noc: loan.noc || '', insurance: loan.insurance || '', idProofType: loan.idProofType || '', idProofNumber: loan.idProofNumber || '', keyStatus: loan.keyStatus || '' }];
+
                 return (
-                  <div className="rounded-lg border border-gray-200 p-8 text-center dark:border-gray-700">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">No {loanFilter === 'all' ? '' : loanFilter} loans found.</p>
-                  </div>
-                );
-              }
-              return (
-                <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-                  {filteredLoans.map(loan => (
+                  <div key={loan._id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                     <NavLink
-                      key={loan._id}
                       to={`/loan/${loan._id}`}
-                      className="flex border-b border-gray-200 bg-white p-4 transition-colors last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700/50 flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+                      className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-4 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         {loan.vehicleType === 'Bike' ? (
@@ -672,12 +651,12 @@ export function CustomerDetailPage() {
                           <h3 className="font-semibold text-gray-900 dark:text-white truncate">
                             {loan.vehicleType} - {loan.make || ''} {loan.model || ''}
                           </h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">
-                            {loan.regNo ? `${loan.regNo} • ` : ''}{loan.loanAccountNumber ? `Acct: ${loan.loanAccountNumber} • ` : ''}Started {formatDate(loan.loanStartDate)} • {loan.installmentPeriod} months
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                            {loan.regNo ? `${loan.regNo} • ` : ''}{loan.loanAccountNumber ? `Acct: ${loan.loanAccountNumber} • ` : ''}{loan.installmentPeriod} months
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 sm:flex-col sm:items-end">
+                      <div className="flex items-center gap-4">
                         <div className="text-right">
                           <p className="font-semibold text-gray-900 dark:text-white">
                             {formatCurrency(loan.outstandingPrincipal || 0)}
@@ -687,12 +666,66 @@ export function CustomerDetailPage() {
                         <Badge variant={statusColors[loan.status] || 'gray'}>
                           {loan.status}
                         </Badge>
+                        <ChevronRightIcon className="h-5 w-5 text-gray-400" />
                       </div>
                     </NavLink>
-                  ))}
-                </div>
-              );
-            })()
+
+                    {loanVehicles.length > 0 && (
+                      <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Vehicles ({loanVehicles.length})
+                            </h4>
+                            <button
+                              type="button"
+                              onClick={() => openVehicleEditModal(loan)}
+                              className="p-1 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 rounded"
+                              title="Edit vehicles"
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </button>
+                          </div>
+                          <NavLink
+                            to={`/loan/${loan._id}`}
+                            className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400"
+                          >
+                            View Loan Details →
+                          </NavLink>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {loanVehicles.map((v, idx) => (
+                            <div key={idx} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+                              <div className="flex items-center gap-2 mb-2">
+                                {v.vehicleType === 'Bike' ? (
+                                  <img src={bikeIcon} alt="Bike" className="h-5 w-5 shrink-0" />
+                                ) : v.vehicleType === 'Car' ? (
+                                  <img src={carIcon} alt="Car" className="h-5 w-5 shrink-0" />
+                                ) : (
+                                  <img src={autoIcon} alt="Auto" className="h-5 w-5 shrink-0" />
+                                )}
+                                <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                  {v.vehicleType} {v.make} {v.model}
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-mono">
+                                {v.regNo || 'No Reg. No.'}
+                              </p>
+                              <div className="flex flex-wrap gap-1 text-xs">
+                                {v.rcStatus && <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-300">RC: {v.rcStatus}</span>}
+                                {v.noc && <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-300">NOC: {v.noc}</span>}
+                                {v.insurance && <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-300">INS: {v.insurance}</span>}
+                                {v.keyStatus && <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-300">Key: {v.keyStatus}</span>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
         </CardContent>
       </Card>
@@ -750,6 +783,90 @@ export function CustomerDetailPage() {
           onCancel={() => setShowEditCustomerModal(false)} 
           isSubmitting={updateCustomer.isPending || updateLoan.isPending} 
         />
+      </Modal>
+
+      <Modal
+        isOpen={showVehicleEditModal}
+        onClose={() => setShowVehicleEditModal(false)}
+        title="Edit Vehicles"
+        size="lg"
+      >
+        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+          {editingVehicles.map((vehicle, index) => (
+            <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Vehicle {index + 1}</h4>
+                {editingVehicles.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeVehicleFromEdit(index)}
+                    className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Select
+                  label="Type"
+                  value={vehicle.vehicleType}
+                  onChange={(value) => handleVehicleEditChange(index, 'vehicleType', value)}
+                  options={VEHICLE_TYPE_OPTIONS}
+                />
+                <Input
+                  label="Reg. No."
+                  value={vehicle.regNo}
+                  onChange={(e) => handleVehicleEditChange(index, 'regNo', e.target.value)}
+                />
+                <Input
+                  label="Make"
+                  value={vehicle.make}
+                  onChange={(e) => handleVehicleEditChange(index, 'make', e.target.value)}
+                />
+                <Input
+                  label="Model"
+                  value={vehicle.model}
+                  onChange={(e) => handleVehicleEditChange(index, 'model', e.target.value)}
+                />
+                <Input
+                  label="RC Status"
+                  value={vehicle.rcStatus}
+                  onChange={(e) => handleVehicleEditChange(index, 'rcStatus', e.target.value)}
+                />
+                <Select
+                  label="NOC"
+                  value={vehicle.noc}
+                  onChange={(value) => handleVehicleEditChange(index, 'noc', value)}
+                  options={NOC_OPTIONS}
+                />
+                <Select
+                  label="Insurance"
+                  value={vehicle.insurance}
+                  onChange={(value) => handleVehicleEditChange(index, 'insurance', value)}
+                  options={INSURANCE_OPTIONS}
+                />
+                <Select
+                  label="Key Status"
+                  value={vehicle.keyStatus}
+                  onChange={(value) => handleVehicleEditChange(index, 'keyStatus', value)}
+                  options={KEY_STATUS_OPTIONS}
+                />
+              </div>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addVehicleToEdit}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-colors"
+          >
+            <PlusIcon className="h-4 w-4" />
+            Add Vehicle
+          </button>
+        </div>
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 mt-4">
+          <Button variant="secondary" onClick={() => setShowVehicleEditModal(false)}>Cancel</Button>
+          <Button onClick={handleSaveVehicles} loading={updateLoan.isPending}>Save</Button>
+        </div>
       </Modal>
     </div>
   );

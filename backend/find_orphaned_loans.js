@@ -1,7 +1,7 @@
 const { MongoClient } = require('mongodb');
 
 async function findOrphanedLoans() {
-  const mongoUri = 'mongodb+srv://universeexplorer4_db_user:VrAJcf7MJqgcTejr@cluster0.ftabrot.mongodb.net/vehicleFinanceDB?retryWrites=true&w=majority&appName=Cluster0';
+  const mongoUri = 'mongodb+srv://universeexplorer4_db_user:openloop@cluster0.ftabrot.mongodb.net/vehicleFinanceDB?retryWrites=true&w=majority&appName=Cluster0';
 
   const client = new MongoClient(mongoUri);
 

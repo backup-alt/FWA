@@ -6,7 +6,7 @@ const connectDB = async () => {
   try {
     let uri = process.env.MONGODB_URI || '';
     if (!uri.includes('/vehicleFinanceDB') || uri.includes('->')) {
-      uri = 'mongodb+srv://universeexplorer4_db_user:VrAJcf7MJqgcTejr@cluster0.ftabrot.mongodb.net/vehicleFinanceDB?retryWrites=true&w=majority&appName=Cluster0';
+      uri = 'mongodb+srv://universeexplorer4_db_user:openloop@cluster0.ftabrot.mongodb.net/vehicleFinanceDB?retryWrites=true&w=majority&appName=Cluster0';
       console.warn('MONGODB_URI appears misconfigured — using fallback. Please update the env var in Render dashboard.');
     }
     const conn = await mongoose.connect(uri);

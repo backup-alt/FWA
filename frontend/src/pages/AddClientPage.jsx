@@ -7,6 +7,7 @@ import { ArrowLeftIcon, ArrowRightIcon, CheckIcon } from '@heroicons/react/24/ou
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Stepper } from '@/components/forms/Stepper';
+import { CustomerStep } from '@/components/forms/CustomerStep';
 import { VehicleDetailsStep } from '@/components/forms/VehicleDetailsStep';
 import { GuarantorStep } from '@/components/forms/GuarantorStep';
 import { ChequesStep } from '@/components/forms/ChequesStep';

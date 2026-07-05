@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate, NavLink } from 'react-router-dom';
-import { ArrowLeftIcon, PlusIcon, PencilIcon, CameraIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, PlusIcon, PencilIcon, CameraIcon, TrashIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useCustomer, useUpdateCustomer } from '@/hooks/useCustomers';
 import { useUpdateLoan } from '@/hooks/useLoans';
 import { useToast } from '@/context/ToastContext';

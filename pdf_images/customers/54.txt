@@ -10,10 +10,11 @@ ID             :
 Key            :
 Sales Done By  : Ram Auto Finance
 
-Customer Name  : P Stephen
+Customer Name  : P Stephen S/o Bakkiyanathan.
 
-Address        :
+Address        : 39/3 Pudhu Theru, Kalakkad.
 
 Call           : 9600258199
 
 guarantor Number  : 8438228694
+guarantor address : Lawrence Thambi, Avaraikulam.

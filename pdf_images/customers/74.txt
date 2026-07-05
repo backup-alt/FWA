@@ -10,9 +10,9 @@ ID                : Yes
 Key               : No
 Sales Done By     : Ref: E925 → E692 → E478 → D284
 
-Customer Name     : Titus
+Customer Name     : Titus  S/o Devadasan
 
-Address           :
+Address           : 3-108-2 Mettuvilai, Jamestown
 
 Call              : 9751505872
 

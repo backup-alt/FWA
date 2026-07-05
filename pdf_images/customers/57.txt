@@ -10,9 +10,9 @@ ID                : Yes
 Key               :
 Sales Done By     : Ref: E776
 
-Customer Name     : George Galin
+Customer Name     : George Galin S/o Jesu Manimuthu
 
-Address           :
+Address           : 4/11 St. Thomas Street, Thirumoola Nagar, Azhagappapuram.
 
 Call              : 9500364543
 

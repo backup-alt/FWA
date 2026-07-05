@@ -10,10 +10,10 @@ ID                :
 Key               :
 Sales Done By     :
 
-Customer Name     : Kingwin
+Customer Name     : Kingwin S/o Jesu Victoria Koottapuli
 
-Address           :
+Address           : 21/122 North Street
 
 Call              : 9787261851
 
-Guarantor Number  : 8248811027
+Guarantor Number  : 8248811027(Jeegunthan)

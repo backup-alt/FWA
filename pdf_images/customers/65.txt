@@ -10,10 +10,12 @@ ID                :
 Key               : No
 Sales Done By     : 
 
-Customer Name     : Venkatesh
+Customer Name     : Venkatesh S/o Periyasamy
 
-Address           :
+Address           : c/o Kannan (Arputham)
 
 Call              : 7598353406, 9345072873,9843516137
 
 Guarantor Number  : 9715609169
+
+guarantor Name : Kannan (Azhagappapuram)

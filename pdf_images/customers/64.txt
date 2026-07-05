@@ -11,9 +11,9 @@ ID                : Yes
 Key               :
 Sales Done By     : Ref: E832
 
-Customer Name     : Murugesan
+Customer Name     : Murugesan S/o Ramakrishnan
 
-Address           :
+Address           : 16/15A Mettukudiyiruppu, Anjugramam
 
 Call              : 8695754510
 

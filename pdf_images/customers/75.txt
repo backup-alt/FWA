@@ -10,10 +10,10 @@ ID                :
 Key               : 
 Sales Done By     : RC BOOK F75(changed from Ref: E754 → E276) 
 
-Customer Name     : Tharmaraj
+Customer Name     : Dharmaraj S/o Narayanan
 
-Address           :
+Address           : 19-124C, South Street, Madhaganeri (Brother-in-law of Surya Nadar)
 
-Call              : 6369229705, 9345140385
+Call              : 6369229705(Vinoth(son)), 9345140385(Wishiva)
 
-Guarantor Number  : 9488589180, 9944817509
+Guarantor Number  : 9488589180(Wife), 9944817509(Dharmaraj)

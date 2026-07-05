@@ -10,9 +10,9 @@ ID                : Yes
 Key               : Yes
 Sales Done By     :
 
-Customer Name     : Mohan Roy
+Customer Name     : Mohan Roy S/o Swami Das
 
-Address           :
+Address           : 12/39 Ladakh Street, Kanakappapuram
 
 Call              : 7639924674
 

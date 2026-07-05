@@ -10,10 +10,10 @@ ID                : Yes
 Key               :
 Sales Done By     : Ref: D561, E458, E774
 
-Customer Name     : Ayyappan
+Customer Name     : Ayyappan S/o Arumugam
 
-Address           :
+Address           : Marthandapuram, Myladi.
 
 Call              : 9894621756
 
-Guarantor Number  : 9487933170
+Guarantor Number  : 9487933170(Stella Raj)

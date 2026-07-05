@@ -49,6 +49,22 @@ const documentSchema = new mongoose.Schema(
   }
 );
 
+const vehicleSchema = new mongoose.Schema(
+  {
+    vehicleType: { type: String, default: 'Bike' },
+    make: { type: String, default: '' },
+    model: { type: String, default: '' },
+    regNo: { type: String, default: '' },
+    rcStatus: { type: String, default: '' },
+    noc: { type: String, default: '' },
+    insurance: { type: String, default: '' },
+    idProofType: { type: String, default: '' },
+    idProofNumber: { type: String, default: '' },
+    keyStatus: { type: String, default: '' },
+  },
+  { _id: false }
+);
+
 
 const loanSchema = new mongoose.Schema(
   {
@@ -118,6 +134,7 @@ const loanSchema = new mongoose.Schema(
 
     installments: [installmentSchema],
     documents: [documentSchema],
+    vehicles: [vehicleSchema],
     outstandingPrincipal: { type: Number, default: 0 },
     totalPaid: { type: Number, default: 0 },
 

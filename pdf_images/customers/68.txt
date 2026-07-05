@@ -10,9 +10,9 @@ ID                : Yes
 Key               : Yes
 Sales Done By     : Ravi Kondankulam (Ref: E797)
 
-Customer Name     : Nallapan
+Customer Name     : Nallapan S/o Balakrishnan
 
-Address           :
+Address           : No. B-300,Anuvijay Township, Chettikulam.
 
 Call              : 9786611897
 

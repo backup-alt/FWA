@@ -10,8 +10,8 @@ ID                :
 Key               :
 Sales Done By     :
 
-Customer Name     : Mani (Akar Kanyakumari)
-Address           :
+Customer Name     : Mani (Akar Kanyakumari) S/o Kumar
+Address           : Paramartha Lingapuram, Mahathanayuram, Kanyakumari
 
 Call              : 9787218572
 

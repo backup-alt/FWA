@@ -10,9 +10,9 @@ ID                : Yes
 Key               : Yes
 Sales Done By     : Ref: E762 → E560 → E222 → D735 → D208
 
-Customer Name     : Muthu
+Customer Name     : Muthu S/o Muthaiah Thevar
 
-Address           :
+Address           :  Indira Colony, Anju Kootuvilai, near Anjaneyar Swamy Temple, Karungulam.
 
 Call              : 9944028095
 

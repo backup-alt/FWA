@@ -10,9 +10,9 @@ ID                : Yes
 Key               : No
 Sales Done By     : Ref: E804 → E354
 
-Customer Name     : Manikandan Gopi
+Customer Name     : Manikandan Gopi S/o Kumar
 
-Address           :
+Address           : North Kamarajar Street, Kudankulam
 
 Call              : 7603883915
 

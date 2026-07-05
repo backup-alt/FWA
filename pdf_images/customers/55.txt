@@ -10,10 +10,12 @@ ID                : Yes
 Key               : Yes
 Sales Done By     :
 
-Customer Name     : S.Brito
+Customer Name     : S.Brito S/o Sebastian
 
-Address           :
+Address           : 5/87 B Lourdu Matha Street, Kanyakumari
+
 
 Call              : 9442010054
 
 Guarantor Number  : 
+guarantor address : Thommai

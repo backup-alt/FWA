@@ -8,8 +8,6 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Stepper } from '@/components/forms/Stepper';
 import { VehicleDetailsStep } from '@/components/forms/VehicleDetailsStep';
-import { DocumentationStep } from '@/components/forms/DocumentationStep';
-import { CustomerStep } from '@/components/forms/CustomerStep';
 import { GuarantorStep } from '@/components/forms/GuarantorStep';
 import { ChequesStep } from '@/components/forms/ChequesStep';
 import { useCreateLoan } from '@/hooks/useLoans';
@@ -21,15 +19,22 @@ const steps = [
   { label: 'Customer' },
   { label: 'Guarantor' },
   { label: 'Vehicle & Finance' },
-  { label: 'Documentation' },
   { label: 'Cheques' },
 ];
 
 const schema = z.object({
-  vehicleType: z.string().min(1, 'Vehicle type is required'),
-  make: z.string().optional(),
-  model: z.string().optional(),
-  regNo: z.string().optional(),
+  vehicles: z.array(z.object({
+    vehicleType: z.string().default('Bike'),
+    make: z.string().default(''),
+    model: z.string().default(''),
+    regNo: z.string().default(''),
+    rcStatus: z.string().default(''),
+    noc: z.string().default(''),
+    insurance: z.string().default(''),
+    idProofType: z.string().default(''),
+    idProofNumber: z.string().default(''),
+    keyStatus: z.string().default(''),
+  })).min(1, 'At least one vehicle is required'),
   loanAccountNumber: z.string().optional(),
   loanAmount: z.coerce.number().min(1, 'Loan amount is required'),
   financeAmount: z.coerce.number().min(1, 'Finance amount is required'),
@@ -37,20 +42,8 @@ const schema = z.object({
   installmentPeriod: z.coerce.number().min(1, 'Period is required'),
   installmentPeriodUnit: z.enum(['Months', 'Weeks', 'Days']).optional().default('Months'),
   loanStartDate: z.string().min(1, 'Start date is required'),
-  rcDetails: z.object({
-    status: z.string().optional(),
-    paidThrough: z.string().optional(),
-    chequeNumber: z.string().optional(),
-    amount: z.coerce.number().optional(),
-  }).optional(),
-  noc: z.string().optional(),
-  insurance: z.string().optional(),
-  idProofType: z.string().optional(),
-  idProofNumber: z.string().optional(),
-  idStatus: z.string().optional(),
-  keyStatus: z.string().optional(),
   salesDoneBy: z.string().optional(),
-  
+
   isNewCustomer: z.boolean().default(true),
   existingCustomerId: z.string().optional(),
   customerName: z.string().optional(),
@@ -114,7 +107,18 @@ export function AddClientPage() {
       cellNumbers: [{ number: '' }],
       guarantor: { name: '', address: '', mobile: '' },
       chequesReceived: [{ chequeNumber: '', bank: '', amount: 0 }],
-      rcDetails: { status: '', paidThrough: '', chequeNumber: '', amount: 0 },
+      vehicles: [{
+        vehicleType: 'Bike',
+        make: '',
+        model: '',
+        regNo: '',
+        rcStatus: '',
+        noc: '',
+        insurance: '',
+        idProofType: '',
+        idProofNumber: '',
+        keyStatus: '',
+      }],
       profileImage: '',
       loanAccountNumber: '',
     },
@@ -162,20 +166,19 @@ export function AddClientPage() {
           cellNumbers: data.cellNumbers?.filter(c => c.number) || [],
           guarantor: hasAnyValue(data.guarantor) ? data.guarantor : undefined,
           profileImage: data.profileImage || '',
-          idProofType: data.idProofType || '',
-          idProofNumber: data.idProofNumber || '',
-          idStatus: data.idStatus || '',
         });
         cId = customer._id;
       }
 
+      const firstVehicle = data.vehicles?.[0] || {};
+
       // Step 2: Create loan linked to customer
       const loanPayload = {
         customerId: cId,
-        vehicleType: data.vehicleType,
-        make: data.make,
-        model: data.model,
-        regNo: data.regNo,
+        vehicleType: firstVehicle.vehicleType || 'Bike',
+        make: firstVehicle.make || '',
+        model: firstVehicle.model || '',
+        regNo: firstVehicle.regNo || '',
         loanAccountNumber: data.loanAccountNumber || '',
         loanAmount: data.loanAmount,
         financeAmount: data.financeAmount,
@@ -183,10 +186,7 @@ export function AddClientPage() {
         installmentPeriod: data.installmentPeriod,
         installmentPeriodUnit: data.installmentPeriodUnit,
         loanStartDate: data.loanStartDate,
-        rcDetails: hasAnyValue(data.rcDetails) ? data.rcDetails : undefined,
-        noc: data.noc,
-        insurance: data.insurance,
-        keyStatus: data.keyStatus,
+        vehicles: data.vehicles || [],
         salesDoneBy: data.salesDoneBy,
         chequesReceived: data.chequesReceived?.filter(c => c.chequeNumber) || [],
       };
@@ -206,8 +206,7 @@ export function AddClientPage() {
       case 0: return <CustomerStep form={{ register, watch, setValue, formState: { errors }, control }} control={control} />;
       case 1: return <GuarantorStep form={{ register, watch, setValue, formState: { errors } }} />;
       case 2: return <VehicleDetailsStep form={{ register, watch, setValue, formState: { errors }, control }} />;
-      case 3: return <DocumentationStep form={{ register, watch, setValue, formState: { errors }, control }} />;
-      case 4: return <ChequesStep form={{ register, watch, setValue, formState: { errors }, control }} control={control} />;
+      case 3: return <ChequesStep form={{ register, watch, setValue, formState: { errors }, control }} control={control} />;
       default: return null;
     }
   };
@@ -217,7 +216,7 @@ export function AddClientPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">New Customer Loan File</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">
-          {watchedValues.vehicleType ? `${watchedValues.vehicleType} project` : 'Bike or car project'} - customer loan register
+          {watchedValues.vehicles?.[0]?.vehicleType ? `${watchedValues.vehicles[0].vehicleType} project` : 'Bike or car project'} - customer loan register
         </p>
       </div>
 

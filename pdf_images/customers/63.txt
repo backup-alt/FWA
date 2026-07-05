@@ -10,10 +10,13 @@ ID                : Yes
 Key               : No
 Sales Done By     : Ref: E784
 
-Customer Name     : Muthuraj
+Customer Name     : Muthuraj S/o Durairaj
 
-Address           :
+Address           : No. 44, Middle Street, Putheri (Irukkanthurai)
+
+
 
 Call              : 8248352582
 
+guarantor Name: Kannan (Azhagappapuram)
 Guarantor Number  : 9715609169

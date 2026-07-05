@@ -132,18 +132,30 @@ router.get('/', async (req, res) => {
     const loanAgg = await Loan.aggregate([
       customerIds ? { $match: { customerId: { $in: customerIds.map(id => new mongoose.Types.ObjectId(id)) } } } : { $match: {} },
       {
+        $addFields: {
+          allVehicles: {
+            $concatArrays: [
+              [{ vehicleType: '$vehicleType', regNo: '$regNo' }],
+              { $ifNull: ['$vehicles', []] }
+            ]
+          }
+        }
+      },
+      {
+        $unwind: { path: '$allVehicles', preserveNullAndEmptyArrays: true }
+      },
+      {
         $group: {
-          _id: '$customerId',
+          _id: '$_id',
+          customerId: { $first: '$customerId' },
           loanCount: { $sum: 1 },
-          totalOutstanding: { $sum: '$outstandingPrincipal' },
-          activeLoans: {
-            $sum: { $cond: [{ $eq: ['$status', 'Active'] }, 1, 0] },
-          },
+          totalOutstanding: { $first: '$outstandingPrincipal' },
+          activeLoans: { $first: { $cond: [{ $eq: ['$status', 'Active'] }, 1, 0] } },
           bikeRegNos: {
             $push: {
               $cond: [
-                { $eq: ['$vehicleType', 'Bike'] },
-                '$regNo',
+                { $eq: ['$allVehicles.vehicleType', 'Bike'] },
+                '$allVehicles.regNo',
                 '$$REMOVE'
               ]
             }
@@ -151,8 +163,8 @@ router.get('/', async (req, res) => {
           carRegNos: {
             $push: {
               $cond: [
-                { $eq: ['$vehicleType', 'Car'] },
-                '$regNo',
+                { $eq: ['$allVehicles.vehicleType', 'Car'] },
+                '$allVehicles.regNo',
                 '$$REMOVE'
               ]
             }
@@ -160,22 +172,37 @@ router.get('/', async (req, res) => {
           autoRegNos: {
             $push: {
               $cond: [
-                { $eq: ['$vehicleType', 'Auto'] },
-                '$regNo',
+                { $eq: ['$allVehicles.vehicleType', 'Auto'] },
+                '$allVehicles.regNo',
                 '$$REMOVE'
               ]
             }
           },
-          bikeCount: { $sum: { $cond: [{ $eq: ['$vehicleType', 'Bike'] }, 1, 0] } },
-          carCount: { $sum: { $cond: [{ $eq: ['$vehicleType', 'Car'] }, 1, 0] } },
-          autoCount: { $sum: { $cond: [{ $eq: ['$vehicleType', 'Auto'] }, 1, 0] } },
-        },
+          bikeCount: { $sum: { $cond: [{ $eq: ['$allVehicles.vehicleType', 'Bike'] }, 1, 0] } },
+          carCount: { $sum: { $cond: [{ $eq: ['$allVehicles.vehicleType', 'Car'] }, 1, 0] } },
+          autoCount: { $sum: { $cond: [{ $eq: ['$allVehicles.vehicleType', 'Auto'] }, 1, 0] } },
+        }
       },
     ]);
 
     const loanMap = {};
     loanAgg.forEach(agg => {
-      loanMap[agg._id?.toString()] = agg;
+      const cid = agg.customerId?.toString();
+      if (cid) {
+        if (loanMap[cid]) {
+          loanMap[cid].loanCount += agg.loanCount || 0;
+          loanMap[cid].totalOutstanding = (loanMap[cid].totalOutstanding || 0) + (agg.totalOutstanding || 0);
+          loanMap[cid].activeLoans = (loanMap[cid].activeLoans || 0) + (agg.activeLoans || 0);
+          loanMap[cid].bikeRegNos = [...(loanMap[cid].bikeRegNos || []), ...(agg.bikeRegNos || [])];
+          loanMap[cid].carRegNos = [...(loanMap[cid].carRegNos || []), ...(agg.carRegNos || [])];
+          loanMap[cid].autoRegNos = [...(loanMap[cid].autoRegNos || []), ...(agg.autoRegNos || [])];
+          loanMap[cid].bikeCount = (loanMap[cid].bikeCount || 0) + (agg.bikeCount || 0);
+          loanMap[cid].carCount = (loanMap[cid].carCount || 0) + (agg.carCount || 0);
+          loanMap[cid].autoCount = (loanMap[cid].autoCount || 0) + (agg.autoCount || 0);
+        } else {
+          loanMap[cid] = agg;
+        }
+      }
     });
 
     const result = await Promise.all(customers.map(async c => {

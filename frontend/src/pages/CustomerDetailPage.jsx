@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate, NavLink } from 'react-router-dom';
-import { ArrowLeftIcon, PlusIcon, PencilIcon, CameraIcon, XMarkIcon, EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, PlusIcon, PencilIcon, CameraIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useCustomer, useUpdateCustomer } from '@/hooks/useCustomers';
 import { useUpdateLoan } from '@/hooks/useLoans';
 import { useToast } from '@/context/ToastContext';
@@ -20,6 +20,59 @@ const statusColors = {
   Completed: 'success',
 };
 
+const VEHICLE_TYPE_OPTIONS = [
+  { value: 'Bike', label: 'Bike' },
+  { value: 'Car', label: 'Car' },
+  { value: 'Auto', label: 'Auto' },
+];
+
+const NOC_OPTIONS = [
+  { value: 'Received', label: 'Received' },
+  { value: 'Not Received', label: 'Not Received' },
+  { value: 'NA', label: 'NA' },
+];
+
+const INSURANCE_OPTIONS = [
+  { value: 'Expired', label: 'Expired' },
+  { value: 'Not Expired', label: 'Not Expired' },
+  { value: 'NA', label: 'NA' },
+];
+
+const KEY_STATUS_OPTIONS = [
+  { value: 'Given', label: 'Given' },
+  { value: 'Not Given', label: 'Not Given' },
+];
+
+function getInitialVehicles(firstLoan) {
+  if (!firstLoan) return [];
+  if (firstLoan.vehicles && firstLoan.vehicles.length > 0) {
+    return firstLoan.vehicles.map(v => ({
+      vehicleType: v.vehicleType || 'Bike',
+      make: v.make || '',
+      model: v.model || '',
+      regNo: v.regNo || '',
+      rcStatus: v.rcStatus || '',
+      noc: v.noc || '',
+      insurance: v.insurance || '',
+      idProofType: v.idProofType || '',
+      idProofNumber: v.idProofNumber || '',
+      keyStatus: v.keyStatus || '',
+    }));
+  }
+  return [{
+    vehicleType: firstLoan.vehicleType || 'Bike',
+    make: firstLoan.make || '',
+    model: firstLoan.model || '',
+    regNo: firstLoan.regNo || '',
+    rcStatus: firstLoan.rcDetails?.status || '',
+    noc: firstLoan.noc || '',
+    insurance: firstLoan.insurance || '',
+    idProofType: firstLoan.idProofType || '',
+    idProofNumber: firstLoan.idProofNumber || '',
+    keyStatus: firstLoan.keyStatus || '',
+  }];
+}
+
 function EditCustomerForm({ customer, loans, onSubmit, onCancel, isSubmitting }) {
   const firstLoan = loans && loans.length > 0 ? loans[0] : null;
 
@@ -33,9 +86,7 @@ function EditCustomerForm({ customer, loans, onSubmit, onCancel, isSubmitting })
     idProofType: customer.idProofType || '',
     idProofNumber: customer.idProofNumber || '',
     idStatus: customer.idStatus || '',
-    vehicleType: firstLoan?.vehicleType || '',
-    make: firstLoan?.make || '',
-    model: firstLoan?.model || '',
+    vehicles: getInitialVehicles(firstLoan),
   });
 
   const handleChange = (field, value) => {
@@ -55,6 +106,38 @@ function EditCustomerForm({ customer, loans, onSubmit, onCancel, isSubmitting })
     }));
   };
 
+  const handleVehicleChange = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      vehicles: prev.vehicles.map((v, i) => i === index ? { ...v, [field]: value } : v)
+    }));
+  };
+
+  const addVehicle = () => {
+    setFormData(prev => ({
+      ...prev,
+      vehicles: [...prev.vehicles, {
+        vehicleType: 'Bike',
+        make: '',
+        model: '',
+        regNo: '',
+        rcStatus: '',
+        noc: '',
+        insurance: '',
+        idProofType: '',
+        idProofNumber: '',
+        keyStatus: '',
+      }]
+    }));
+  };
+
+  const removeVehicle = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      vehicles: prev.vehicles.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const customerData = {
@@ -69,15 +152,20 @@ function EditCustomerForm({ customer, loans, onSubmit, onCancel, isSubmitting })
       idStatus: formData.idStatus || undefined,
     };
     const loanData = firstLoan ? {
-      vehicleType: formData.vehicleType,
-      make: formData.make,
-      model: formData.model,
+      vehicles: formData.vehicles,
+      vehicleType: formData.vehicles[0]?.vehicleType || 'Bike',
+      make: formData.vehicles[0]?.make || '',
+      model: formData.vehicles[0]?.model || '',
+      regNo: formData.vehicles[0]?.regNo || '',
+      noc: formData.vehicles[0]?.noc || '',
+      insurance: formData.vehicles[0]?.insurance || '',
+      keyStatus: formData.vehicles[0]?.keyStatus || '',
     } : null;
     onSubmit({ customerData, loanData });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
       <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">Customer Information</h3>
       </div>
@@ -102,11 +190,12 @@ function EditCustomerForm({ customer, loans, onSubmit, onCancel, isSubmitting })
         value={formData.monthlySalary}
         onChange={(e) => handleChange('monthlySalary', e.target.value)}
       />
+
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Contact Numbers
         </label>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {formData.cellNumbers.map((cell, index) => (
             <input
               key={index}
@@ -119,6 +208,7 @@ function EditCustomerForm({ customer, loans, onSubmit, onCancel, isSubmitting })
           ))}
         </div>
       </div>
+
       <div className="grid grid-cols-2 gap-4">
         <Input
           label="Guarantor Name"
@@ -131,61 +221,99 @@ function EditCustomerForm({ customer, loans, onSubmit, onCancel, isSubmitting })
           value={formData.guarantor.mobile}
           onChange={(e) => handleGuarantorChange('mobile', e.target.value)}
         />
-        <Input
-          label="Guarantor Address"
-          className="sm:col-span-2"
-          value={formData.guarantor.address}
-          onChange={(e) => handleGuarantorChange('address', e.target.value)}
-        />
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <Input
-          label="ID Proof Type"
-          value={formData.idProofType}
-          onChange={(e) => handleChange('idProofType', e.target.value)}
-        />
-        <Input
-          label="ID Proof Number"
-          value={formData.idProofNumber}
-          onChange={(e) => handleChange('idProofNumber', e.target.value)}
-        />
-        <Select
-          label="ID Status"
-          value={formData.idStatus}
-          onChange={(value) => handleChange('idStatus', value)}
-          options={[
-            { value: '', label: 'Select' },
-            { value: 'Yes', label: 'Yes' },
-            { value: 'No', label: 'No' },
-          ]}
-        />
-      </div>
+
+      <Select
+        label="ID Status"
+        value={formData.idStatus}
+        onChange={(value) => handleChange('idStatus', value)}
+        options={[
+          { value: '', label: 'Select' },
+          { value: 'Yes', label: 'Yes' },
+          { value: 'No', label: 'No' },
+        ]}
+      />
 
       {firstLoan && (
         <>
-          <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mt-6 mb-4">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">Vehicle Information</h3>
+          <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">Vehicles</h3>
+              <button
+                type="button"
+                onClick={addVehicle}
+                className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700"
+              >
+                <PlusIcon className="h-4 w-4" />
+                Add Vehicle
+              </button>
+            </div>
           </div>
-          <Select
-            label="Vehicle Type"
-            value={formData.vehicleType}
-            onChange={(e) => handleChange('vehicleType', e.target.value)}
-            options={[
-              { value: 'Bike', label: 'Bike' },
-              { value: 'Car', label: 'Car' },
-            ]}
-            placeholder="Select vehicle type"
-          />
-          <Input
-            label="Make"
-            value={formData.make}
-            onChange={(e) => handleChange('make', e.target.value)}
-          />
-          <Input
-            label="Model"
-            value={formData.model}
-            onChange={(e) => handleChange('model', e.target.value)}
-          />
+
+          <div className="space-y-3">
+            {formData.vehicles.map((vehicle, index) => (
+              <div key={index} className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900/30">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Vehicle {index + 1}</span>
+                  {formData.vehicles.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeVehicle(index)}
+                      className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Select
+                    label="Type"
+                    value={vehicle.vehicleType}
+                    onChange={(value) => handleVehicleChange(index, 'vehicleType', value)}
+                    options={VEHICLE_TYPE_OPTIONS}
+                  />
+                  <Input
+                    label="Reg. No."
+                    value={vehicle.regNo}
+                    onChange={(e) => handleVehicleChange(index, 'regNo', e.target.value)}
+                  />
+                  <Input
+                    label="Make"
+                    value={vehicle.make}
+                    onChange={(e) => handleVehicleChange(index, 'make', e.target.value)}
+                  />
+                  <Input
+                    label="Model"
+                    value={vehicle.model}
+                    onChange={(e) => handleVehicleChange(index, 'model', e.target.value)}
+                  />
+                  <Input
+                    label="RC Status"
+                    value={vehicle.rcStatus}
+                    onChange={(e) => handleVehicleChange(index, 'rcStatus', e.target.value)}
+                  />
+                  <Select
+                    label="NOC"
+                    value={vehicle.noc}
+                    onChange={(value) => handleVehicleChange(index, 'noc', value)}
+                    options={NOC_OPTIONS}
+                  />
+                  <Select
+                    label="Insurance"
+                    value={vehicle.insurance}
+                    onChange={(value) => handleVehicleChange(index, 'insurance', value)}
+                    options={INSURANCE_OPTIONS}
+                  />
+                  <Select
+                    label="Key Status"
+                    value={vehicle.keyStatus}
+                    onChange={(value) => handleVehicleChange(index, 'keyStatus', value)}
+                    options={KEY_STATUS_OPTIONS}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </>
       )}
 
@@ -376,6 +504,74 @@ export function CustomerDetailPage() {
               </div>
             ))}
           </dl>
+        </CardContent>
+      </Card>
+
+      {/* Vehicles Section */}
+      <Card padding="">
+        <CardHeader
+          className="px-5 pt-5 mb-0"
+          title="Vehicles"
+          subtitle={`${loans.reduce((sum, l) => sum + (l.vehicles?.length || (l.vehicleType ? 1 : 0)), 0)} vehicle${loans.reduce((sum, l) => sum + (l.vehicles?.length || (l.vehicleType ? 1 : 0)), 0) !== 1 ? 's' : ''} across ${loans.length} loan${loans.length !== 1 ? 's' : ''}`}
+        />
+        <CardContent className="p-0">
+          {loans.length === 0 ? (
+            <div className="p-5 text-center text-gray-500 dark:text-gray-400">No vehicles</div>
+          ) : (
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              {loans.map(loan => {
+                const vehicleCount = loan.vehicles?.length || (loan.vehicleType ? 1 : 0);
+                if (vehicleCount === 0) return null;
+                const loanVehicles = loan.vehicles?.length > 0 ? loan.vehicles : [{
+                  vehicleType: loan.vehicleType,
+                  make: loan.make,
+                  model: loan.model,
+                  regNo: loan.regNo,
+                  rcStatus: loan.rcDetails?.status || '',
+                  noc: loan.noc || '',
+                  insurance: loan.insurance || '',
+                  keyStatus: loan.keyStatus || '',
+                }];
+                return loanVehicles.map((v, idx) => (
+                  <div key={`${loan._id}-${idx}`} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/30">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {v.vehicleType === 'Bike' ? (
+                          <img src={bikeIcon} alt="Bike" className="h-8 w-8 shrink-0" />
+                        ) : v.vehicleType === 'Car' ? (
+                          <img src={carIcon} alt="Car" className="h-8 w-8 shrink-0" />
+                        ) : (
+                          <img src={autoIcon} alt="Auto" className="h-8 w-8 shrink-0" />
+                        )}
+                        <div>
+                          <h4 className="font-semibold text-gray-900 dark:text-white">
+                            {v.vehicleType} - {v.make || ''} {v.model || ''}
+                          </h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {v.regNo || 'No Reg. No.'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">
+                          Loan #{loan.loanAccountNumber || loan._id.slice(-6)}
+                        </span>
+                        <Badge variant={statusColors[loan.status] || 'gray'}>
+                          {loan.status}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                      {v.rcStatus && <span className="text-gray-500">RC: <span className="text-gray-700 dark:text-gray-300">{v.rcStatus}</span></span>}
+                      {v.noc && <span className="text-gray-500">NOC: <span className="text-gray-700 dark:text-gray-300">{v.noc}</span></span>}
+                      {v.insurance && <span className="text-gray-500">INS: <span className="text-gray-700 dark:text-gray-300">{v.insurance}</span></span>}
+                      {v.keyStatus && <span className="text-gray-500">Key: <span className="text-gray-700 dark:text-gray-300">{v.keyStatus}</span></span>}
+                    </div>
+                  </div>
+                ));
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 

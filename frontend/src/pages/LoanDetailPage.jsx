@@ -402,7 +402,7 @@ export function LoanDetailPage() {
               Renew Loan
             </Button>
           )}
-          {(loan.status === 'Active' || loan.status === 'Completed') && (
+          {(loan.status === 'Active' || loan.status === 'Completed' || loan.status === 'Renewed') && (
             <Button
               variant="outline"
               size="sm"

@@ -879,8 +879,8 @@ router.post('/:id/renew', async (req, res) => {
     const originalLoan = await Loan.findById(req.params.id);
     if (!originalLoan) return res.status(404).json({ message: 'Loan not found.' });
 
-    if (originalLoan.status !== 'Active') {
-      return res.status(400).json({ message: 'Only active loans can be renewed.' });
+    if (originalLoan.status !== 'Active' && originalLoan.status !== 'Renewed') {
+      return res.status(400).json({ message: 'Only active or renewed loans can be renewed.' });
     }
 
     const { extraAmount, installmentPeriod, interestRate, renewalDate, salesDoneBy, closeExistingLoan, chargeInterestOnOutstanding = true, chargeInterestOnExtra = true } = req.body;
@@ -970,7 +970,7 @@ router.post('/:id/renew', async (req, res) => {
       originalLoan.status = 'Renewed';
       originalLoan.closureInfo = {
         reason: 'Renewed',
-        remarks: `Renewed to new loan ${newLoan._id}. Original loan amount: ${originalLoan.loanAmount}, Outstanding: ${originalLoan.outstandingPrincipal}, Extra amount: ${extraAmount}`,
+        remarks: `Renewed. Original loan amount: ${originalLoan.loanAmount}, Outstanding: ${originalLoan.outstandingPrincipal}, Extra amount: ${extraAmount}`,
         amountReceived: 0,
         closureDate: new Date(),
       };
@@ -978,7 +978,7 @@ router.post('/:id/renew', async (req, res) => {
     } else {
       originalLoan.closureInfo = {
         reason: 'Renewed (active)',
-        remarks: `Renewal created as new loan ${newLoan._id}. Original loan remains active. Outstanding: ${originalLoan.outstandingPrincipal}, Extra amount: ${extraAmount}`,
+        remarks: `Renewal created. Original loan remains active. Outstanding: ${originalLoan.outstandingPrincipal}, Extra amount: ${extraAmount}`,
         amountReceived: 0,
         closureDate: null,
       };

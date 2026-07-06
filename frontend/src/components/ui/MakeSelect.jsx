@@ -20,7 +20,12 @@ const CAR_BRANDS = [
   'BYD', 'Citroen', 'Isuzu', 'Peugeot', 'SsangYong', 'Other'
 ];
 
-const ALL_BRANDS = [...new Set([...BIKE_BRANDS, ...CAR_BRANDS])].sort();
+const AUTO_BRANDS = [
+  'Bajaj', 'Piaggio', 'Mahindra', 'TVS', 'Atul Auto', 'Lohia Auto', 'Force Motors',
+  'Kinetic', 'Sahara', 'Champion', 'Hunsdar', 'Vikram', 'E-Rickshaw', 'Other'
+];
+
+const ALL_BRANDS = [...new Set([...BIKE_BRANDS, ...CAR_BRANDS, ...AUTO_BRANDS])].sort();
 
 export function MakeSelect({ value, onChange, vehicleType, error }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -33,6 +38,7 @@ export function MakeSelect({ value, onChange, vehicleType, error }) {
   const brands = useMemo(() => {
     if (vehicleType === 'Bike') return BIKE_BRANDS;
     if (vehicleType === 'Car') return CAR_BRANDS;
+    if (vehicleType === 'Auto') return AUTO_BRANDS;
     return ALL_BRANDS;
   }, [vehicleType]);
 

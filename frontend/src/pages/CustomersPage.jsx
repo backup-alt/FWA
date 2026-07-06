@@ -239,17 +239,23 @@ export function CustomersPage() {
                         </p>
                       )}
                     </div>
-                    {customer.activeLoans > 0 ? (
-                      <Badge variant="info">{customer.activeLoans} active</Badge>
-                    ) : customer.renewedLoans > 0 ? (
-                      <Badge variant="purple">{customer.renewedLoans} renewed</Badge>
-                    ) : customer.closedLoans > 0 ? (
-                      <Badge variant="warning">{customer.closedLoans} closed</Badge>
-                    ) : customer.loanCount > 0 ? (
-                      <Badge variant="success">All completed</Badge>
-                    ) : (
-                      <Badge variant="gray">No loans</Badge>
-                    )}
+                    <div className="flex flex-wrap gap-1.5 justify-end">
+                      {customer.activeLoans > 0 && (
+                        <Badge variant="info">{customer.activeLoans} active</Badge>
+                      )}
+                      {customer.renewedLoans > 0 && (
+                        <Badge variant="purple">{customer.renewedLoans} renewed</Badge>
+                      )}
+                      {customer.closedLoans > 0 && (
+                        <Badge variant="warning">{customer.closedLoans} closed</Badge>
+                      )}
+                      {customer.completedLoans > 0 && (
+                        <Badge variant="success">{customer.completedLoans} completed</Badge>
+                      )}
+                      {customer.loanCount === 0 && (
+                        <Badge variant="gray">No loans</Badge>
+                      )}
+                    </div>
                   </div>
                 </NavLink>
               ))}

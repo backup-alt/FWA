@@ -887,7 +887,9 @@ router.post('/:id/renew', async (req, res) => {
       return res.status(400).json({ message: 'This loan was already renewed. Cannot renew again.' });
     }
 
-    const { extraAmount, installmentPeriod, interestRate, renewalDate, salesDoneBy } = req.body;
+    const { extraAmount, installmentPeriod, interestRate, renewalDate, salesDoneBy, closeExistingLoan } = req.body;
+
+    const shouldCloseExisting = closeExistingLoan !== false;
 
     if (installmentPeriod === undefined || interestRate === undefined || !renewalDate) {
       return res.status(400).json({ message: 'extraAmount, installmentPeriod, interestRate, and renewalDate are required.' });
@@ -958,14 +960,23 @@ router.post('/:id/renew', async (req, res) => {
 
     await newLoan.save();
 
-    originalLoan.status = 'Renewed';
+    if (shouldCloseExisting) {
+      originalLoan.status = 'Renewed';
+      originalLoan.closureInfo = {
+        reason: 'Renewed',
+        remarks: `Renewed to new loan ${newLoan._id}. Original loan amount: ${originalLoan.loanAmount}, Outstanding: ${originalLoan.outstandingPrincipal}, Extra amount: ${extraAmount}`,
+        amountReceived: 0,
+        closureDate: new Date(),
+      };
+    } else {
+      originalLoan.closureInfo = {
+        reason: 'Renewed (active)',
+        remarks: `Renewal created as new loan ${newLoan._id}. Original loan remains active. Outstanding: ${originalLoan.outstandingPrincipal}, Extra amount: ${extraAmount}`,
+        amountReceived: 0,
+        closureDate: null,
+      };
+    }
     originalLoan.renewedToLoanId = newLoan._id;
-    originalLoan.closureInfo = {
-      reason: 'Renewed',
-      remarks: `Renewed to new loan ${newLoan._id}. Original loan amount: ${originalLoan.loanAmount}, Outstanding: ${originalLoan.outstandingPrincipal}, Extra amount: ${extraAmount}`,
-      amountReceived: 0,
-      closureDate: new Date(),
-    };
     await originalLoan.save();
 
     res.status(201).json(newLoan);

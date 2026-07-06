@@ -11,6 +11,7 @@ export function RenewLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
   const [installmentPeriod, setInstallmentPeriod] = useState('');
   const [interestRate, setInterestRate] = useState('');
   const [renewalDate, setRenewalDate] = useState(new Date().toISOString().split('T')[0]);
+  const [closeExistingLoan, setCloseExistingLoan] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -19,6 +20,7 @@ export function RenewLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
     setInterestRate(String(loan.interestRate || ''));
     setExtraAmount('0');
     setRenewalDate(new Date().toISOString().split('T')[0]);
+    setCloseExistingLoan(true);
     setError('');
   }, [loan, isOpen]);
 
@@ -71,6 +73,7 @@ export function RenewLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
       installmentPeriod: period,
       interestRate: rate,
       renewalDate,
+      closeExistingLoan,
     });
   };
 
@@ -137,6 +140,27 @@ export function RenewLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
             onChange={(val) => setRenewalDate(val)}
             placeholder="Select renewal date"
           />
+        </div>
+
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={closeExistingLoan}
+              onChange={(e) => setCloseExistingLoan(e.target.checked)}
+              className="mt-0.5 h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
+            />
+            <div className="flex-1">
+              <span className="text-sm font-medium text-amber-900 dark:text-amber-200">
+                Close the existing loan
+              </span>
+              <p className="text-xs text-amber-800 dark:text-amber-300 mt-1">
+                {closeExistingLoan
+                  ? 'The original loan will be marked as "Renewed" and all payment history will be preserved. The new loan will replace the outstanding balance.'
+                  : 'The original loan will remain "Active" alongside the new renewal loan. Use this if you want to keep both loans active for record-keeping.'}
+              </p>
+            </div>
+          </label>
         </div>
 
         <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 space-y-2">

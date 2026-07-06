@@ -22,6 +22,8 @@ export function useCreateLoan() {
     mutationFn: (data) => Loans.create(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['loans'] });
+      qc.invalidateQueries({ queryKey: ['customers'] });
+      qc.invalidateQueries({ queryKey: ['pendingDues'] });
     },
   });
 }
@@ -32,6 +34,8 @@ export function useUpdateLoan() {
     mutationFn: ({ id, data }) => Loans.update(id, data),
     onSuccess: (updatedLoan) => {
       qc.invalidateQueries({ queryKey: ['loans'] });
+      qc.invalidateQueries({ queryKey: ['customers'] });
+      qc.invalidateQueries({ queryKey: ['pendingDues'] });
       qc.setQueryData(['loan', updatedLoan._id], updatedLoan);
     },
   });
@@ -43,6 +47,8 @@ export function useDeleteLoan() {
     mutationFn: (id) => Loans.remove(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['loans'] });
+      qc.invalidateQueries({ queryKey: ['customers'] });
+      qc.invalidateQueries({ queryKey: ['pendingDues'] });
     },
   });
 }

@@ -632,6 +632,9 @@ router.put('/:id/close', async (req, res) => {
 
     if (loan.status === 'Closed' || loan.status === 'Completed') {
       if (updateOnly) {
+        if (loan.status === 'Completed') {
+          loan.status = 'Closed';
+        }
         if (closureReason !== undefined) {
           loan.closureInfo.reason = closureReason;
         }

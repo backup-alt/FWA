@@ -177,6 +177,11 @@ router.get('/', async (req, res) => {
               $cond: [{ $eq: ['$status', 'Closed'] }, '$_id', '$$REMOVE']
             }
           },
+          renewedLoanIds: {
+            $addToSet: {
+              $cond: [{ $eq: ['$status', 'Renewed'] }, '$_id', '$$REMOVE']
+            }
+          },
           bikeRegNos: {
             $addToSet: {
               $cond: [
@@ -220,6 +225,7 @@ router.get('/', async (req, res) => {
           loanMap[cid].totalOutstanding = (loanMap[cid].totalOutstanding || 0) + (agg.totalOutstanding || 0);
           loanMap[cid].activeLoanIds = [...(loanMap[cid].activeLoanIds || []), ...(agg.activeLoanIds || [])];
           loanMap[cid].closedLoanIds = [...(loanMap[cid].closedLoanIds || []), ...(agg.closedLoanIds || [])];
+          loanMap[cid].renewedLoanIds = [...(loanMap[cid].renewedLoanIds || []), ...(agg.renewedLoanIds || [])];
           loanMap[cid].bikeRegNos = [...(loanMap[cid].bikeRegNos || []), ...(agg.bikeRegNos || [])];
           loanMap[cid].carRegNos = [...(loanMap[cid].carRegNos || []), ...(agg.carRegNos || [])];
           loanMap[cid].autoRegNos = [...(loanMap[cid].autoRegNos || []), ...(agg.autoRegNos || [])];
@@ -241,6 +247,7 @@ router.get('/', async (req, res) => {
         totalOutstanding: agg.totalOutstanding || 0,
         activeLoans: [...new Set(agg.activeLoanIds || [])].length,
         closedLoans: [...new Set(agg.closedLoanIds || [])].length,
+        renewedLoans: [...new Set(agg.renewedLoanIds || [])].length,
         bikeRegNos: [...new Set((agg.bikeRegNos || []).filter(r => r))],
         carRegNos: [...new Set((agg.carRegNos || []).filter(r => r))],
         autoRegNos: [...new Set((agg.autoRegNos || []).filter(r => r))],

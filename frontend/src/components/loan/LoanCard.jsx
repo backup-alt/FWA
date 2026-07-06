@@ -7,6 +7,8 @@ export function LoanCard({ loan }) {
   const statusColors = {
     Active: 'info',
     Completed: 'success',
+    Closed: 'warning',
+    Renewed: 'purple',
   };
 
   return (

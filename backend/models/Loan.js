@@ -141,17 +141,30 @@ const loanSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ['Active', 'Completed', 'Closed'],
+      enum: ['Active', 'Completed', 'Closed', 'Renewed'],
       default: 'Active',
     },
     completedAt: { type: Date, default: null },
 
     // Loan Closure
     closureInfo: {
-      reason: { type: String, default: '' }, // Full Prepayment | Foreclosure | Write-off | Settlement | Waiver
+      reason: { type: String, default: '' }, // Full Prepayment | Foreclosure | Write-off | Settlement | Waiver | Renewed
       remarks: { type: String, default: '' },
       amountReceived: { type: Number, default: 0 },
       closureDate: { type: Date, default: null },
+    },
+
+    // Renewal tracking
+    isRenewal: { type: Boolean, default: false },
+    renewedFromLoanId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Loan',
+      default: null,
+    },
+    renewedToLoanId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Loan',
+      default: null,
     },
 
     // Restructure history log

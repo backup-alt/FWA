@@ -18,6 +18,8 @@ const autoIcon = '/FWA/icons8-auto-rickshaw-50.png';
 const statusColors = {
   Active: 'info',
   Completed: 'success',
+  Closed: 'warning',
+  Renewed: 'purple',
 };
 
 const VEHICLE_TYPE_OPTIONS = [

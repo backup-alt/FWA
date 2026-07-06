@@ -9,9 +9,10 @@ import {
   MapPinIcon,
   BanknotesIcon,
   ArrowsRightLeftIcon,
-  PencilIcon
+  PencilIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
-import { useLoan, useUpdateLoan, useRecordPayment, useCloseLoan, useRestructureLoan } from '@/hooks/useLoans';
+import { useLoan, useUpdateLoan, useRecordPayment, useCloseLoan, useRestructureLoan, useRenewLoan } from '@/hooks/useLoans';
 import { useCustomer, useUpdateCustomer } from '@/hooks/useCustomers';
 import { useToast } from '@/context/ToastContext';
 import { Modal } from '@/components/ui/Modal';
@@ -21,6 +22,7 @@ import { InstallmentTable } from '@/components/loan/InstallmentTable';
 import { PeriodEditor } from '@/components/loan/PeriodEditor';
 import { CloseLoanModal } from '@/components/loan/CloseLoanModal';
 import { RestructureModal } from '@/components/loan/RestructureModal';
+import { RenewLoanModal } from '@/components/loan/RenewLoanModal';
 import { EditLoanForm } from '@/components/loan/EditLoanForm';
 import { DocumentsTab } from '@/components/loan/DocumentsTab';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
@@ -36,6 +38,8 @@ const autoIcon = '/FWA/icons8-auto-rickshaw-50.png';
 const statusColors = {
   Active: 'info',
   Completed: 'success',
+  Closed: 'warning',
+  Renewed: 'purple',
 };
 
 function EditCustomerForm({ customer, onSubmit, onCancel, isSubmitting }) {
@@ -231,10 +235,12 @@ export function LoanDetailPage() {
   const recordPayment = useRecordPayment();
   const closeLoan = useCloseLoan();
   const restructureLoan = useRestructureLoan();
+  const renewLoan = useRenewLoan();
   const updateCustomer = useUpdateCustomer();
 
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [showRestructureModal, setShowRestructureModal] = useState(false);
+  const [showRenewModal, setShowRenewModal] = useState(false);
   const [showEditCustomerModal, setShowEditCustomerModal] = useState(false);
   const [showEditLoanModal, setShowEditLoanModal] = useState(false);
   const [savingInstallment, setSavingInstallment] = useState(null);
@@ -283,6 +289,13 @@ export function LoanDetailPage() {
     await restructureLoan.mutateAsync({ id, data });
     showToast('Loan restructured successfully', 'success');
     setShowRestructureModal(false);
+  };
+
+  const handleRenew = async (data) => {
+    const newLoan = await renewLoan.mutateAsync({ id, data });
+    showToast('Loan renewed successfully', 'success');
+    setShowRenewModal(false);
+    navigate(`/loan/${newLoan._id}`);
   };
 
   const handleUpdateCustomer = async (data) => {
@@ -378,6 +391,17 @@ export function LoanDetailPage() {
           <Badge variant={statusColors[loan.status] || 'gray'} className="text-sm">
             {loan.status}
           </Badge>
+          {loan.status === 'Active' && !loan.isRenewal && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowRenewModal(true)}
+              className="text-purple-600 border-purple-200 hover:bg-purple-50 dark:border-purple-700 dark:hover:bg-purple-900/30"
+            >
+              <ArrowPathIcon className="h-4 w-4 mr-1.5" />
+              Renew Loan
+            </Button>
+          )}
           {(loan.status === 'Active' || loan.status === 'Completed') && (
             <Button
               variant="outline"
@@ -423,6 +447,49 @@ export function LoanDetailPage() {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {(loan.isRenewal || loan.renewedToLoanId || loan.status === 'Renewed') && (
+        <div className="rounded-lg bg-purple-50 border border-purple-200 p-4 dark:bg-purple-900/20 dark:border-purple-800">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold text-purple-900 dark:text-purple-200">Loan Renewal Information</h3>
+            <ArrowPathIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            {loan.isRenewal && loan.renewedFromLoanId && (
+              <div>
+                <p className="text-purple-700 dark:text-purple-300">Renewed From</p>
+                <NavLink
+                  to={`/loan/${loan.renewedFromLoanId}`}
+                  className="font-medium text-purple-900 dark:text-purple-100 hover:underline"
+                >
+                  View Previous Loan →
+                </NavLink>
+              </div>
+            )}
+            {(loan.status === 'Renewed' || loan.renewedToLoanId) && (
+              <div>
+                <p className="text-purple-700 dark:text-purple-300">Renewed To</p>
+                {loan.renewedToLoanId ? (
+                  <NavLink
+                    to={`/loan/${loan.renewedToLoanId}`}
+                    className="font-medium text-purple-900 dark:text-purple-100 hover:underline"
+                  >
+                    View New Loan →
+                  </NavLink>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">-</p>
+                )}
+              </div>
+            )}
+          </div>
+          {loan.closureInfo?.remarks && loan.status === 'Renewed' && (
+            <div className="mt-3 pt-3 border-t border-purple-200 dark:border-purple-700">
+              <p className="text-purple-700 dark:text-purple-300 text-xs">Remarks</p>
+              <p className="text-sm text-purple-900 dark:text-purple-100">{loan.closureInfo.remarks}</p>
+            </div>
+          )}
         </div>
       )}
 
@@ -686,6 +753,14 @@ export function LoanDetailPage() {
         onClose={() => setShowRestructureModal(false)}
         onConfirm={handleRestructure}
         isSubmitting={restructureLoan.isPending}
+        loan={loan}
+      />
+
+      <RenewLoanModal
+        isOpen={showRenewModal}
+        onClose={() => setShowRenewModal(false)}
+        onConfirm={handleRenew}
+        isSubmitting={renewLoan.isPending}
         loan={loan}
       />
 

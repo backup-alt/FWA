@@ -88,3 +88,16 @@ export function useRestructureLoan() {
     },
   });
 }
+
+export function useRenewLoan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) => Loans.renewLoan(id, data),
+    onSuccess: (newLoan) => {
+      qc.invalidateQueries({ queryKey: ['loans'] });
+      qc.invalidateQueries({ queryKey: ['pendingDues'] });
+      qc.invalidateQueries({ queryKey: ['customers'] });
+      qc.setQueryData(['loan', newLoan._id], newLoan);
+    },
+  });
+}

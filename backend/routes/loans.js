@@ -328,7 +328,7 @@ router.put('/:id', async (req, res) => {
       'make', 'model', 'regNo', 'loanAmount', 'loanAccountNumber',
       'rcDetails', 'noc', 'insurance', 'idProof', 'keyStatus', 'salesDoneBy',
       'customerName', 'address', 'cellNumbers', 'guarantor', 'chequesReceived',
-      'installmentPeriodUnit', 'vehicles',
+      'installmentPeriodUnit', 'vehicles', 'isRenewal', 'renewedFromLoanId', 'renewedToLoanId',
     ];
 
     updatableFields.forEach((field) => {
@@ -870,6 +870,108 @@ router.put('/:id/restructure', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error restructuring loan.' });
+  }
+});
+
+// Renew loan - creates a new loan based on outstanding balance + extra amount
+router.post('/:id/renew', async (req, res) => {
+  try {
+    const originalLoan = await Loan.findById(req.params.id);
+    if (!originalLoan) return res.status(404).json({ message: 'Loan not found.' });
+
+    if (originalLoan.status !== 'Active') {
+      return res.status(400).json({ message: 'Only active loans can be renewed.' });
+    }
+
+    if (originalLoan.isRenewal) {
+      return res.status(400).json({ message: 'This loan was already renewed. Cannot renew again.' });
+    }
+
+    const { extraAmount, installmentPeriod, interestRate, renewalDate, salesDoneBy } = req.body;
+
+    if (installmentPeriod === undefined || interestRate === undefined || !renewalDate) {
+      return res.status(400).json({ message: 'extraAmount, installmentPeriod, interestRate, and renewalDate are required.' });
+    }
+
+    const newLoanAmount = (originalLoan.outstandingPrincipal || 0) + (Number(extraAmount) || 0);
+    const renewalDateObj = new Date(renewalDate);
+
+    const result = generateInstallmentSchedule({
+      principal: newLoanAmount,
+      interestRate,
+      installmentPeriod,
+      installmentPeriodUnit: originalLoan.installmentPeriodUnit || 'Months',
+      loanStartDate: renewalDateObj,
+    });
+
+    const originalVehicles = originalLoan.vehicles && originalLoan.vehicles.length > 0
+      ? originalLoan.vehicles
+      : [{
+          vehicleType: originalLoan.vehicleType,
+          make: originalLoan.make,
+          model: originalLoan.model,
+          regNo: originalLoan.regNo,
+          rcStatus: originalLoan.rcDetails?.status || '',
+          noc: originalLoan.noc || '',
+          insurance: originalLoan.insurance || '',
+          idProofType: originalLoan.idProofType || '',
+          idProofNumber: originalLoan.idProofNumber || '',
+          keyStatus: originalLoan.keyStatus || '',
+        }];
+
+    const newLoan = new Loan({
+      customerId: originalLoan.customerId,
+      customerName: originalLoan.customerName,
+      vehicleType: originalVehicles[0].vehicleType || originalLoan.vehicleType,
+      make: originalVehicles[0].make || originalLoan.make,
+      model: originalVehicles[0].model || originalLoan.model,
+      regNo: originalVehicles[0].regNo || originalLoan.regNo,
+      loanAccountNumber: '',
+      loanAmount: newLoanAmount,
+      financeAmount: newLoanAmount,
+      rcDetails: originalLoan.rcDetails,
+      noc: originalLoan.noc,
+      insurance: originalLoan.insurance,
+      idProofType: originalLoan.idProofType,
+      idProofNumber: originalLoan.idProofNumber,
+      keyStatus: originalLoan.keyStatus,
+      salesDoneBy: salesDoneBy || originalLoan.salesDoneBy || '',
+      address: originalLoan.address,
+      monthlySalary: originalLoan.monthlySalary,
+      cellNumbers: originalLoan.cellNumbers,
+      guarantor: originalLoan.guarantor,
+      chequesReceived: [],
+      loanStartDate: renewalDateObj,
+      installmentPeriod,
+      installmentPeriodUnit: originalLoan.installmentPeriodUnit || 'Months',
+      interestRate,
+      interestAmount: result.interestAmount,
+      emiAmount: result.emiAmount,
+      installments: result.installments,
+      vehicles: originalVehicles,
+      outstandingPrincipal: newLoanAmount,
+      totalPaid: 0,
+      status: 'Active',
+      isRenewal: true,
+      renewedFromLoanId: originalLoan._id,
+    });
+
+    await newLoan.save();
+
+    originalLoan.status = 'Renewed';
+    originalLoan.renewedToLoanId = newLoan._id;
+    originalLoan.closureInfo = {
+      reason: 'Renewed',
+      remarks: `Renewed to new loan ${newLoan._id}. Original loan amount: ${originalLoan.loanAmount}, Outstanding: ${originalLoan.outstandingPrincipal}, Extra amount: ${extraAmount}`,
+      amountReceived: 0,
+      closureDate: new Date(),
+    };
+    await originalLoan.save();
+
+    res.status(201).json(newLoan);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error renewing loan.' });
   }
 });
 

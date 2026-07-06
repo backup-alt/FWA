@@ -102,6 +102,8 @@ export const Loans = {
     apiRequest(`/loans/${id}/close`, { method: 'PUT', body: data }),
   restructureLoan: (id, data) =>
     apiRequest(`/loans/${id}/restructure`, { method: 'PUT', body: data }),
+  renewLoan: (id, data) =>
+    apiRequest(`/loans/${id}/renew`, { method: 'POST', body: data }),
   report: (startDate, endDate) =>
     apiRequest(`/loans/report?startDate=${startDate}&endDate=${endDate}`),
 };

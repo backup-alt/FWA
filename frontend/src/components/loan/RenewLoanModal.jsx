@@ -32,22 +32,22 @@ export function RenewLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
   const period = Number(installmentPeriod) || 0;
   const rate = Number(interestRate) || 0;
 
-  const calculateEmi = () => {
-    if (period <= 0 || rate < 0 || newLoanAmount <= 0) return 0;
-    const monthlyRate = rate / 12 / 100;
-    if (monthlyRate === 0) return newLoanAmount / period;
-    const emi = (newLoanAmount * monthlyRate * Math.pow(1 + monthlyRate, period)) /
-      (Math.pow(1 + monthlyRate, period) - 1);
-    return Math.round(emi);
+  const calculateFlatEmi = () => {
+    if (period <= 0 || newLoanAmount <= 0) return 0;
+    const monthlyInterest = roundMoney(newLoanAmount * (rate / 100));
+    const monthlyPrincipal = roundMoney(newLoanAmount / period);
+    return monthlyPrincipal + monthlyInterest;
   };
 
   const calculateInterest = () => {
     if (period <= 0) return 0;
-    const emi = calculateEmi();
-    return Math.round(emi * period - newLoanAmount);
+    const monthlyInterest = roundMoney(newLoanAmount * (rate / 100));
+    return monthlyInterest * period;
   };
 
-  const estimatedEmi = calculateEmi();
+  const roundMoney = (v) => +Number(v || 0).toFixed(2);
+
+  const estimatedEmi = calculateFlatEmi();
   const estimatedInterest = calculateInterest();
 
   const handleSubmit = (e) => {

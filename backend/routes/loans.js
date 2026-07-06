@@ -883,10 +883,6 @@ router.post('/:id/renew', async (req, res) => {
       return res.status(400).json({ message: 'Only active loans can be renewed.' });
     }
 
-    if (originalLoan.isRenewal) {
-      return res.status(400).json({ message: 'This loan was already renewed. Cannot renew again.' });
-    }
-
     const { extraAmount, installmentPeriod, interestRate, renewalDate, salesDoneBy, closeExistingLoan } = req.body;
 
     const shouldCloseExisting = closeExistingLoan !== false;
@@ -961,6 +957,11 @@ router.post('/:id/renew', async (req, res) => {
     await newLoan.save();
 
     if (shouldCloseExisting) {
+      originalLoan.installments.forEach((inst) => {
+        if (inst.status !== 'Paid') {
+          inst.status = 'Cancelled';
+        }
+      });
       originalLoan.status = 'Renewed';
       originalLoan.closureInfo = {
         reason: 'Renewed',
@@ -968,6 +969,7 @@ router.post('/:id/renew', async (req, res) => {
         amountReceived: 0,
         closureDate: new Date(),
       };
+      recalculateSchedule(originalLoan);
     } else {
       originalLoan.closureInfo = {
         reason: 'Renewed (active)',

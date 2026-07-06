@@ -391,7 +391,7 @@ export function LoanDetailPage() {
           <Badge variant={statusColors[loan.status] || 'gray'} className="text-sm">
             {loan.status}
           </Badge>
-          {loan.status === 'Active' && !loan.isRenewal && (
+          {(loan.status === 'Active' || loan.status === 'Renewed') && (
             <Button
               variant="outline"
               size="sm"

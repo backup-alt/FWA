@@ -12,6 +12,8 @@ export function RenewLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
   const [interestRate, setInterestRate] = useState('');
   const [renewalDate, setRenewalDate] = useState(new Date().toISOString().split('T')[0]);
   const [closeExistingLoan, setCloseExistingLoan] = useState(true);
+  const [chargeInterestOnOutstanding, setChargeInterestOnOutstanding] = useState(true);
+  const [chargeInterestOnExtra, setChargeInterestOnExtra] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -21,34 +23,30 @@ export function RenewLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
     setExtraAmount('0');
     setRenewalDate(new Date().toISOString().split('T')[0]);
     setCloseExistingLoan(true);
+    setChargeInterestOnOutstanding(true);
+    setChargeInterestOnExtra(true);
     setError('');
   }, [loan, isOpen]);
 
   if (!loan) return null;
 
+  const roundMoney = (v) => +Number(v || 0).toFixed(2);
   const outstandingBalance = Number(loan.outstandingPrincipal || 0);
   const extra = Number(extraAmount) || 0;
-  const newLoanAmount = outstandingBalance + extra;
   const period = Number(installmentPeriod) || 0;
   const rate = Number(interestRate) || 0;
 
+  const interestOnOutstandingAmt = chargeInterestOnOutstanding ? roundMoney(outstandingBalance * (rate / 100) * period) : 0;
+  const interestOnExtraAmt = chargeInterestOnExtra ? roundMoney(extra * (rate / 100) * period) : 0;
+  const totalInterest = interestOnOutstandingAmt + interestOnExtraAmt;
+  const totalAmount = outstandingBalance + extra + totalInterest;
+
   const calculateFlatEmi = () => {
-    if (period <= 0 || newLoanAmount <= 0) return 0;
-    const monthlyInterest = roundMoney(newLoanAmount * (rate / 100));
-    const monthlyPrincipal = roundMoney(newLoanAmount / period);
-    return monthlyPrincipal + monthlyInterest;
+    if (period <= 0 || totalAmount <= 0) return 0;
+    return roundMoney(totalAmount / period + totalAmount * (rate / 100));
   };
-
-  const calculateInterest = () => {
-    if (period <= 0) return 0;
-    const monthlyInterest = roundMoney(newLoanAmount * (rate / 100));
-    return monthlyInterest * period;
-  };
-
-  const roundMoney = (v) => +Number(v || 0).toFixed(2);
 
   const estimatedEmi = calculateFlatEmi();
-  const estimatedInterest = calculateInterest();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -74,6 +72,9 @@ export function RenewLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
       interestRate: rate,
       renewalDate,
       closeExistingLoan,
+      chargeInterestOnOutstanding,
+      chargeInterestOnExtra,
+      totalAmount,
     });
   };
 
@@ -142,6 +143,46 @@ export function RenewLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
           />
         </div>
 
+        <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3 space-y-3">
+          <h4 className="text-sm font-medium text-purple-900 dark:text-purple-100">Interest Calculation</h4>
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={chargeInterestOnOutstanding}
+              onChange={(e) => setChargeInterestOnOutstanding(e.target.checked)}
+              className="mt-0.5 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+            />
+            <div className="flex-1">
+              <span className="text-sm font-medium text-purple-900 dark:text-purple-100">
+                Charge interest on outstanding ({formatCurrency(outstandingBalance)})
+              </span>
+              <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
+                {chargeInterestOnOutstanding
+                  ? `Interest: ${formatCurrency(interestOnOutstandingAmt)} (${rate}% on ${formatCurrency(outstandingBalance)} for ${period} periods)`
+                  : 'No interest will be charged on the outstanding balance.'}
+              </p>
+            </div>
+          </label>
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={chargeInterestOnExtra}
+              onChange={(e) => setChargeInterestOnExtra(e.target.checked)}
+              className="mt-0.5 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+            />
+            <div className="flex-1">
+              <span className="text-sm font-medium text-purple-900 dark:text-purple-100">
+                Charge interest on extra amount ({formatCurrency(extra)})
+              </span>
+              <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
+                {chargeInterestOnExtra
+                  ? `Interest: ${formatCurrency(interestOnExtraAmt)} (${rate}% on ${formatCurrency(extra)} for ${period} periods)`
+                  : 'No interest will be charged on the extra amount.'}
+              </p>
+            </div>
+          </label>
+        </div>
+
         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
           <label className="flex items-start gap-3 cursor-pointer">
             <input
@@ -166,17 +207,34 @@ export function RenewLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
         <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 space-y-2">
           <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">New Loan Summary</h4>
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="text-gray-500 dark:text-gray-400">New Loan Amount:</div>
+            <div className="text-gray-500 dark:text-gray-400">Outstanding Principal:</div>
             <div className="text-right font-medium text-gray-900 dark:text-white">
-              {formatCurrency(newLoanAmount)}
+              {formatCurrency(outstandingBalance)}
+            </div>
+            <div className="text-gray-500 dark:text-gray-400">Extra Amount:</div>
+            <div className="text-right font-medium text-gray-900 dark:text-white">
+              {formatCurrency(extra)}
+            </div>
+            <div className="text-gray-500 dark:text-gray-400">Interest on Outstanding:</div>
+            <div className="text-right font-medium text-gray-900 dark:text-white">
+              {formatCurrency(interestOnOutstandingAmt)}
+            </div>
+            <div className="text-gray-500 dark:text-gray-400">Interest on Extra:</div>
+            <div className="text-right font-medium text-gray-900 dark:text-white">
+              {formatCurrency(interestOnExtraAmt)}
+            </div>
+            <div className="text-gray-500 dark:text-gray-400">Total Interest:</div>
+            <div className="text-right font-medium text-gray-900 dark:text-white">
+              {formatCurrency(totalInterest)}
+            </div>
+            <div className="border-t border-gray-200 dark:border-gray-700 col-span-2 my-1" />
+            <div className="text-gray-500 dark:text-gray-400">Total Amount:</div>
+            <div className="text-right font-bold text-gray-900 dark:text-white">
+              {formatCurrency(totalAmount)}
             </div>
             <div className="text-gray-500 dark:text-gray-400">Estimated EMI:</div>
             <div className="text-right font-medium text-gray-900 dark:text-white">
               {formatCurrency(estimatedEmi)}
-            </div>
-            <div className="text-gray-500 dark:text-gray-400">Estimated Interest:</div>
-            <div className="text-right font-medium text-gray-900 dark:text-white">
-              {formatCurrency(estimatedInterest)}
             </div>
           </div>
         </div>

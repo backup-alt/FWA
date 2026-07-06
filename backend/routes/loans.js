@@ -883,7 +883,7 @@ router.post('/:id/renew', async (req, res) => {
       return res.status(400).json({ message: 'Only active loans can be renewed.' });
     }
 
-    const { extraAmount, installmentPeriod, interestRate, renewalDate, salesDoneBy, closeExistingLoan } = req.body;
+    const { extraAmount, installmentPeriod, interestRate, renewalDate, salesDoneBy, closeExistingLoan, chargeInterestOnOutstanding = true, chargeInterestOnExtra = true } = req.body;
 
     const shouldCloseExisting = closeExistingLoan !== false;
 
@@ -891,16 +891,21 @@ router.post('/:id/renew', async (req, res) => {
       return res.status(400).json({ message: 'extraAmount, installmentPeriod, interestRate, and renewalDate are required.' });
     }
 
-    const newLoanAmount = (originalLoan.outstandingPrincipal || 0) + (Number(extraAmount) || 0);
+    const outstanding = Number(originalLoan.outstandingPrincipal || 0);
+    const extra = Number(extraAmount) || 0;
+    const interestBearingPortion = (chargeInterestOnOutstanding ? outstanding : 0) + (chargeInterestOnExtra ? extra : 0);
+    const newLoanAmount = outstanding + extra;
     const renewalDateObj = new Date(renewalDate);
 
     const result = generateInstallmentSchedule({
-      principal: newLoanAmount,
+      principal: interestBearingPortion,
       interestRate,
       installmentPeriod,
       installmentPeriodUnit: originalLoan.installmentPeriodUnit || 'Months',
       loanStartDate: renewalDateObj,
     });
+
+    const totalPayable = roundMoney(interestBearingPortion + result.interestAmount);
 
     const originalVehicles = originalLoan.vehicles && originalLoan.vehicles.length > 0
       ? originalLoan.vehicles
@@ -925,8 +930,8 @@ router.post('/:id/renew', async (req, res) => {
       model: originalVehicles[0].model || originalLoan.model,
       regNo: originalVehicles[0].regNo || originalLoan.regNo,
       loanAccountNumber: '',
-      loanAmount: newLoanAmount,
-      financeAmount: newLoanAmount,
+      loanAmount: totalPayable,
+      financeAmount: totalPayable,
       rcDetails: originalLoan.rcDetails,
       noc: originalLoan.noc,
       insurance: originalLoan.insurance,
@@ -947,7 +952,7 @@ router.post('/:id/renew', async (req, res) => {
       emiAmount: result.emiAmount,
       installments: result.installments,
       vehicles: originalVehicles,
-      outstandingPrincipal: newLoanAmount,
+      outstandingPrincipal: totalPayable,
       totalPaid: 0,
       status: 'Active',
       isRenewal: true,

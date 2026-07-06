@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate, NavLink } from 'react-router-dom';
-import { ArrowLeftIcon, PlusIcon, PencilIcon, CameraIcon, TrashIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, PlusIcon, PencilIcon, CameraIcon, TrashIcon, ChevronRightIcon, ArrowPathIcon, LinkIcon, CalendarIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { useCustomer, useUpdateCustomer } from '@/hooks/useCustomers';
 import { useUpdateLoan } from '@/hooks/useLoans';
 import { useToast } from '@/context/ToastContext';
@@ -630,103 +630,164 @@ export function CustomerDetailPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {loans.map(loan => {
-                const loanVehicles = loan.vehicles && loan.vehicles.length > 0
-                  ? loan.vehicles
-                  : [{ vehicleType: loan.vehicleType, make: loan.make, model: loan.model, regNo: loan.regNo, rcStatus: loan.rcDetails?.status || '', noc: loan.noc || '', insurance: loan.insurance || '', idProofType: loan.idProofType || '', idProofNumber: loan.idProofNumber || '', keyStatus: loan.keyStatus || '' }];
+              {(() => {
+                const sortedLoans = [...loans].sort((a, b) => {
+                  const dateA = new Date(a.loanStartDate || a.createdAt || 0);
+                  const dateB = new Date(b.loanStartDate || b.createdAt || 0);
+                  return dateA - dateB;
+                });
+                const renewalChains = new Map();
+                const rootLoans = new Map();
+                sortedLoans.forEach(loan => {
+                  if (loan.renewedFromLoanId) {
+                    renewalChains.set(loan.renewedFromLoanId.toString(), loan);
+                  }
+                  if (!loan.renewedFromLoanId) {
+                    rootLoans.set(loan._id.toString(), loan);
+                  }
+                });
+                return sortedLoans.map((loan, idx) => {
+                  const loanNumber = idx + 1;
+                  const isRenewal = !!loan.isRenewal;
+                  const renewedToLoan = renewalChains.get(loan._id.toString());
+                  const isLastInChain = !renewedToLoan;
+                  const loanVehicles = loan.vehicles && loan.vehicles.length > 0
+                    ? loan.vehicles
+                    : [{ vehicleType: loan.vehicleType, make: loan.make, model: loan.model, regNo: loan.regNo, rcStatus: loan.rcDetails?.status || '', noc: loan.noc || '', insurance: loan.insurance || '', idProofType: loan.idProofType || '', idProofNumber: loan.idProofNumber || '', keyStatus: loan.keyStatus || '' }];
 
-                return (
-                  <div key={loan._id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                    <NavLink
-                      to={`/loan/${loan._id}`}
-                      className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-4 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                  return (
+                    <div
+                      key={loan._id}
+                      className={`border rounded-lg overflow-hidden ${
+                        isRenewal
+                          ? 'border-purple-200 dark:border-purple-700 ml-4 md:ml-8'
+                          : 'border-gray-200 dark:border-gray-700'
+                      } ${isLastInChain && loan.status === 'Active' ? 'ring-2 ring-primary-100 dark:ring-primary-900/30' : ''}`}
                     >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        {loan.vehicleType === 'Bike' ? (
-                          <img src={bikeIcon} alt="Bike" className="h-8 w-8 shrink-0" />
-                        ) : loan.vehicleType === 'Car' ? (
-                          <img src={carIcon} alt="Car" className="h-8 w-8 shrink-0" />
-                        ) : (
-                          <img src={autoIcon} alt="Auto" className="h-8 w-8 shrink-0" />
-                        )}
-                        <div className="min-w-0">
-                          <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-                            {loan.vehicleType} - {loan.make || ''} {loan.model || ''}
-                          </h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate">
-                            {loan.regNo ? `${loan.regNo} • ` : ''}{loan.loanAccountNumber ? `Acct: ${loan.loanAccountNumber} • ` : ''}{loan.installmentPeriod} months
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className="font-semibold text-gray-900 dark:text-white">
-                            {formatCurrency(loan.outstandingPrincipal || 0)}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Outstanding</p>
-                        </div>
-                        <Badge variant={statusColors[loan.status] || 'gray'}>
-                          {loan.status}
-                        </Badge>
-                        <ChevronRightIcon className="h-5 w-5 text-gray-400" />
-                      </div>
-                    </NavLink>
-
-                    {loanVehicles.length > 0 && (
-                      <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                              Vehicles ({loanVehicles.length})
-                            </h4>
-                            <button
-                              type="button"
-                              onClick={() => openVehicleEditModal(loan)}
-                              className="p-1 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 rounded"
-                              title="Edit vehicles"
-                            >
-                              <PencilIcon className="h-4 w-4" />
-                            </button>
+                      <NavLink
+                        to={`/loan/${loan._id}`}
+                        className={`flex items-center justify-between p-4 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors ${
+                          isRenewal ? 'bg-purple-50/40 dark:bg-purple-900/10' : 'bg-gray-50 dark:bg-gray-800'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="flex flex-col items-center shrink-0">
+                            <span className={`flex items-center justify-center h-8 w-8 rounded-full text-sm font-bold ${
+                              isRenewal
+                                ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'
+                                : 'bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300'
+                            }`}>
+                              #{loanNumber}
+                            </span>
+                            {isRenewal && (
+                              <span className="text-purple-500 dark:text-purple-400 text-xs mt-1">
+                                <ArrowPathIcon className="h-3 w-3 mx-auto" />
+                              </span>
+                            )}
                           </div>
-                          <NavLink
-                            to={`/loan/${loan._id}`}
-                            className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400"
-                          >
-                            View Loan Details →
-                          </NavLink>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                          {loanVehicles.map((v, idx) => (
-                            <div key={idx} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
-                              <div className="flex items-center gap-2 mb-2">
-                                {v.vehicleType === 'Bike' ? (
-                                  <img src={bikeIcon} alt="Bike" className="h-5 w-5 shrink-0" />
-                                ) : v.vehicleType === 'Car' ? (
-                                  <img src={carIcon} alt="Car" className="h-5 w-5 shrink-0" />
-                                ) : (
-                                  <img src={autoIcon} alt="Auto" className="h-5 w-5 shrink-0" />
-                                )}
-                                <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                  {v.vehicleType} {v.make} {v.model}
-                                </span>
-                              </div>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-mono">
-                                {v.regNo || 'No Reg. No.'}
-                              </p>
-                              <div className="flex flex-wrap gap-1 text-xs">
-                                {v.rcStatus && <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-300">RC: {v.rcStatus}</span>}
-                                {v.noc && <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-300">NOC: {v.noc}</span>}
-                                {v.insurance && <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-300">INS: {v.insurance}</span>}
-                                {v.keyStatus && <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-300">Key: {v.keyStatus}</span>}
-                              </div>
+                          {loan.vehicleType === 'Bike' ? (
+                            <img src={bikeIcon} alt="Bike" className="h-8 w-8 shrink-0" />
+                          ) : loan.vehicleType === 'Car' ? (
+                            <img src={carIcon} alt="Car" className="h-8 w-8 shrink-0" />
+                          ) : (
+                            <img src={autoIcon} alt="Auto" className="h-8 w-8 shrink-0" />
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                                {loan.vehicleType} - {loan.make || ''} {loan.model || ''}
+                              </h3>
+                              {isRenewal && (
+                                <Badge variant="purple">Renewal</Badge>
+                              )}
                             </div>
-                          ))}
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                              {loan.regNo ? `${loan.regNo} • ` : ''}{loan.loanAccountNumber ? `Acct: ${loan.loanAccountNumber} • ` : ''}{loan.installmentPeriod} months
+                            </p>
+                            {isRenewal && loan.renewedFromLoanId && (
+                              <p className="text-xs text-purple-600 dark:text-purple-400 mt-1 flex items-center gap-1">
+                                <LinkIcon className="h-3 w-3" />
+                                Renewed from previous loan
+                              </p>
+                            )}
+                            {renewedToLoan && (
+                              <p className="text-xs text-purple-600 dark:text-purple-400 mt-1 flex items-center gap-1">
+                                <ArrowPathIcon className="h-3 w-3" />
+                                Renewed to a new loan
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            <p className="font-semibold text-gray-900 dark:text-white">
+                              {formatCurrency(loan.outstandingPrincipal || 0)}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Outstanding</p>
+                          </div>
+                          <Badge variant={statusColors[loan.status] || 'gray'}>
+                            {loan.status}
+                          </Badge>
+                          <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+                        </div>
+                      </NavLink>
+
+                      {loanVehicles.length > 0 && (
+                        <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Vehicles ({loanVehicles.length})
+                              </h4>
+                              <button
+                                type="button"
+                                onClick={() => openVehicleEditModal(loan)}
+                                className="p-1 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 rounded"
+                                title="Edit vehicles"
+                              >
+                                <PencilIcon className="h-4 w-4" />
+                              </button>
+                            </div>
+                            <NavLink
+                              to={`/loan/${loan._id}`}
+                              className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400"
+                            >
+                              View Loan Details →
+                            </NavLink>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {loanVehicles.map((v, idx) => (
+                              <div key={idx} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+                                <div className="flex items-center gap-2 mb-2">
+                                  {v.vehicleType === 'Bike' ? (
+                                    <img src={bikeIcon} alt="Bike" className="h-5 w-5 shrink-0" />
+                                  ) : v.vehicleType === 'Car' ? (
+                                    <img src={carIcon} alt="Car" className="h-5 w-5 shrink-0" />
+                                  ) : (
+                                    <img src={autoIcon} alt="Auto" className="h-5 w-5 shrink-0" />
+                                  )}
+                                  <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                    {v.vehicleType} {v.make} {v.model}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-mono">
+                                  {v.regNo || 'No Reg. No.'}
+                                </p>
+                                <div className="flex flex-wrap gap-1 text-xs">
+                                  {v.rcStatus && <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-300">RC: {v.rcStatus}</span>}
+                                  {v.noc && <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-300">NOC: {v.noc}</span>}
+                                  {v.insurance && <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-300">INS: {v.insurance}</span>}
+                                  {v.keyStatus && <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-300">Key: {v.keyStatus}</span>}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                });
+              })()}
             </div>
           )}
         </CardContent>

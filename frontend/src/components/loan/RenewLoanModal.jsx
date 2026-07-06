@@ -36,14 +36,18 @@ export function RenewLoanModal({ isOpen, onClose, onConfirm, isSubmitting, loan 
   const period = Number(installmentPeriod) || 0;
   const rate = Number(interestRate) || 0;
 
+  const interestBearingPortion = (chargeInterestOnOutstanding ? outstandingBalance : 0) + (chargeInterestOnExtra ? extra : 0);
+  const nonInterestPortion = (!chargeInterestOnOutstanding ? outstandingBalance : 0) + (!chargeInterestOnExtra ? extra : 0);
   const interestOnOutstandingAmt = chargeInterestOnOutstanding ? roundMoney(outstandingBalance * (rate / 100) * period) : 0;
   const interestOnExtraAmt = chargeInterestOnExtra ? roundMoney(extra * (rate / 100) * period) : 0;
   const totalInterest = interestOnOutstandingAmt + interestOnExtraAmt;
   const totalAmount = outstandingBalance + extra + totalInterest;
 
   const calculateFlatEmi = () => {
-    if (period <= 0 || totalAmount <= 0) return 0;
-    return roundMoney(totalAmount / period + totalAmount * (rate / 100));
+    if (period <= 0) return 0;
+    const monthlyInterest = roundMoney(interestBearingPortion * (rate / 100));
+    const monthlyPrincipal = roundMoney((interestBearingPortion + nonInterestPortion) / period);
+    return monthlyPrincipal + monthlyInterest;
   };
 
   const estimatedEmi = calculateFlatEmi();

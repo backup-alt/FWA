@@ -296,27 +296,38 @@ router.get('/:id', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid customer id.' });
+    }
     const customer = await Customer.findById(req.params.id);
     if (!customer) return res.status(404).json({ message: 'Customer not found.' });
 
     const oldName = customer.name;
     const oldProfileFileId = customer.profileImageFileId;
 
-    const scalarFields = [
-      'name', 'fileId', 'address', 'temporaryAddress', 'monthlySalary',
-      'idProofType', 'idProofNumber', 'idStatus',
-    ];
-    scalarFields.forEach(field => {
-      if (req.body[field] !== undefined) {
-        customer[field] = req.body[field];
+    if (req.body.name !== undefined) {
+      if (typeof req.body.name !== 'string' || req.body.name.trim() === '') {
+        return res.status(400).json({ message: 'Customer name is required.' });
       }
-    });
+      customer.name = req.body.name;
+    }
+    if (req.body.fileId !== undefined) {
+      customer.fileId = typeof req.body.fileId === 'string' ? req.body.fileId : '';
+    }
+    if (req.body.address !== undefined) customer.address = req.body.address || '';
+    if (req.body.temporaryAddress !== undefined) customer.temporaryAddress = req.body.temporaryAddress || '';
+    if (req.body.monthlySalary !== undefined) {
+      customer.monthlySalary = req.body.monthlySalary ? Number(req.body.monthlySalary) : 0;
+    }
+    if (req.body.idProofType !== undefined) customer.idProofType = req.body.idProofType || '';
+    if (req.body.idProofNumber !== undefined) customer.idProofNumber = req.body.idProofNumber || '';
+    if (req.body.idStatus !== undefined) customer.idStatus = req.body.idStatus || '';
 
     if (req.body.cellNumbers !== undefined) {
-      customer.cellNumbers = (req.body.cellNumbers || []).filter(c => c.number);
+      customer.cellNumbers = (req.body.cellNumbers || []).filter(c => c && c.number);
     }
     if (req.body.guarantor !== undefined) {
-      customer.guarantor = req.body.guarantor;
+      customer.guarantor = req.body.guarantor || { name: '', address: '', mobile: '' };
     }
 
     if (req.body.profileImage !== undefined) {
@@ -355,7 +366,16 @@ router.put('/:id', async (req, res) => {
     const shapedCustomer = await shapeCustomerResponse(customer);
     res.json(shapedCustomer);
   } catch (err) {
-    console.error(err);
+    console.error('Error updating customer:', err);
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({ message: `Validation error: ${err.message}` });
+    }
+    if (err.name === 'CastError') {
+      return res.status(400).json({ message: `Invalid data: ${err.message}` });
+    }
+    if (err.name === 'VersionError') {
+      return res.status(409).json({ message: 'Customer was modified by another process. Please refresh and try again.' });
+    }
     res.status(500).json({ message: 'Server error updating customer.' });
   }
 });

@@ -383,10 +383,21 @@ export function CustomerDetailPage() {
 
   const handleUpdateCustomer = async (data) => {
     const { customerData, loanData } = data;
-    await updateCustomer.mutateAsync({ id, data: customerData });
-    if (loanData && loans.length > 0) {
-      await updateLoan.mutateAsync({ id: loans[0]._id, data: loanData });
+    try {
+      await updateCustomer.mutateAsync({ id, data: customerData });
+    } catch (err) {
+      showToast(err.message || 'Failed to update customer', 'error');
+      return;
     }
+
+    if (loanData && loans.length > 0) {
+      try {
+        await updateLoan.mutateAsync({ id: loans[0]._id, data: loanData });
+      } catch (err) {
+        showToast('Customer saved, but failed to update vehicle: ' + (err.message || 'Unknown error'), 'warning');
+      }
+    }
+
     showToast('Updated successfully', 'success');
     setShowEditCustomerModal(false);
     refetch();

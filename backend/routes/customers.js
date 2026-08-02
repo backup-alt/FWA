@@ -56,7 +56,7 @@ async function deleteProfileImage(fileId) {
 router.post('/', async (req, res) => {
   try {
     const {
-      name, address, temporaryAddress, monthlySalary, cellNumbers, guarantor,
+      name, fileId, address, temporaryAddress, monthlySalary, cellNumbers, guarantor,
       profileImage, idProofType, idProofNumber,
     } = req.body;
 
@@ -78,6 +78,7 @@ router.post('/', async (req, res) => {
 
     const customer = new Customer({
       name,
+      fileId: fileId || '',
       address,
       temporaryAddress,
       monthlySalary,
@@ -114,6 +115,10 @@ router.get('/', async (req, res) => {
       const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const regex = new RegExp(escapedSearch, 'i');
       customers = customers.filter(c => regex.test(c.name || ''));
+    } else if (search && searchType === 'fileId') {
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escapedSearch, 'i');
+      customers = customers.filter(c => regex.test(c.fileId || ''));
     } else if (search && searchType === 'phone') {
       const phoneDigits = String(search).replace(/\D/g, '');
       const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -298,7 +303,7 @@ router.put('/:id', async (req, res) => {
     const oldProfileFileId = customer.profileImageFileId;
 
     const scalarFields = [
-      'name', 'address', 'temporaryAddress', 'monthlySalary',
+      'name', 'fileId', 'address', 'temporaryAddress', 'monthlySalary',
       'idProofType', 'idProofNumber', 'idStatus',
     ];
     scalarFields.forEach(field => {

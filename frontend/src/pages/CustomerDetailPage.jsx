@@ -80,6 +80,7 @@ function EditCustomerForm({ customer, loans, onSubmit, onCancel, isSubmitting })
 
   const [formData, setFormData] = useState({
     customerName: customer.name || '',
+    fileId: customer.fileId || '',
     address: customer.address || '',
     temporaryAddress: customer.temporaryAddress || '',
     monthlySalary: customer.monthlySalary || '',
@@ -144,6 +145,7 @@ function EditCustomerForm({ customer, loans, onSubmit, onCancel, isSubmitting })
     e.preventDefault();
     const customerData = {
       name: formData.customerName,
+      fileId: formData.fileId || undefined,
       address: formData.address,
       temporaryAddress: formData.temporaryAddress || undefined,
       monthlySalary: formData.monthlySalary ? Number(formData.monthlySalary) : undefined,
@@ -175,6 +177,11 @@ function EditCustomerForm({ customer, loans, onSubmit, onCancel, isSubmitting })
         label="Customer Name"
         value={formData.customerName}
         onChange={(e) => handleChange('customerName', e.target.value)}
+      />
+      <Input
+        label="File ID"
+        value={formData.fileId}
+        onChange={(e) => handleChange('fileId', e.target.value)}
       />
       <Input
         label="Address"
@@ -477,6 +484,7 @@ export function CustomerDetailPage() {
 
   const detailRows = [
     ['Customer Name', customer.name || '-'],
+    ['File ID', customer.fileId || '-'],
     ['Address', customer.address || '-'],
     ['Temporary Address', customer.temporaryAddress || '-'],
     ['Cell Numbers', (customer.cellNumbers || []).map(c => c.number).join(', ') || '-'],
@@ -531,6 +539,11 @@ export function CustomerDetailPage() {
           </div>
 
           <div className="min-w-0">
+            {customer.fileId && (
+              <p className="text-sm font-semibold text-primary-600 dark:text-primary-400 mb-1">
+                File ID: {customer.fileId}
+              </p>
+            )}
             <h1 className="min-w-0 truncate text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
               {customer.name}
             </h1>

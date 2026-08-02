@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const customerSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+    fileId: { type: String, default: '' },
     address: { type: String, default: '' },
     temporaryAddress: { type: String, default: '' },
     monthlySalary: { type: Number, default: 0 },

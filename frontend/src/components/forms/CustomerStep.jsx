@@ -145,6 +145,11 @@ export function CustomerStep({ form, control }) {
           />
           
           <Input
+            label="File ID"
+            {...register('fileId')}
+          />
+          
+          <Input
             label="Address"
             className="sm:col-span-2"
             {...register('address')}

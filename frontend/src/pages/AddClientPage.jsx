@@ -48,6 +48,7 @@ const schema = z.object({
   isNewCustomer: z.boolean().default(true),
   existingCustomerId: z.string().optional(),
   customerName: z.string().optional(),
+  fileId: z.string().optional(),
   address: z.string().optional(),
   temporaryAddress: z.string().optional(),
   monthlySalary: z.coerce.number().optional(),
@@ -161,6 +162,7 @@ export function AddClientPage() {
       if (!cId) {
         const customer = await createCustomer.mutateAsync({
           name: data.customerName,
+          fileId: data.fileId,
           address: data.address,
           temporaryAddress: data.temporaryAddress || '',
           monthlySalary: data.monthlySalary,

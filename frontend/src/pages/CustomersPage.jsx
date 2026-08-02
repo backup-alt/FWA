@@ -10,6 +10,7 @@ import { formatCurrency } from '@/api';
 import { clsx } from 'clsx';
 
 const SEARCH_TYPES = [
+  { value: 'fileId', label: 'File ID' },
   { value: 'name', label: 'Name' },
   { value: 'phone', label: 'Phone Number' },
   { value: 'regNo', label: 'Vehicle Reg. Number' },
@@ -198,29 +199,60 @@ export function CustomersPage() {
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-                          {customer.name}
-                        </h3>
-                        {customer.bikeCount > 0 && (
-                          <span className="inline-flex items-center gap-0.5 text-blue-600 dark:text-blue-400" title={`${customer.bikeCount} Bike loan(s)`}>
-                            <BikeIcon />
-                            <span className="text-xs font-bold">{customer.bikeCount}</span>
-                          </span>
-                        )}
-                        {customer.carCount > 0 && (
-                          <span className="inline-flex items-center gap-0.5 text-green-600 dark:text-green-400" title={`${customer.carCount} Car loan(s)`}>
-                            <CarIcon />
-                            <span className="text-xs font-bold">{customer.carCount}</span>
-                          </span>
-                        )}
-                        {customer.autoCount > 0 && (
-                          <span className="inline-flex items-center gap-0.5 text-orange-600 dark:text-orange-400" title={`${customer.autoCount} Auto loan(s)`}>
-                            <img src={autoIcon} alt="Auto" className="h-4 w-4" />
-                            <span className="text-xs font-bold">{customer.autoCount}</span>
-                          </span>
-                        )}
-                      </div>
+                      {customer.fileId ? (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                              File ID: {customer.fileId}
+                            </h3>
+                            {customer.bikeCount > 0 && (
+                              <span className="inline-flex items-center gap-0.5 text-blue-600 dark:text-blue-400" title={`${customer.bikeCount} Bike loan(s)`}>
+                                <BikeIcon />
+                                <span className="text-xs font-bold">{customer.bikeCount}</span>
+                              </span>
+                            )}
+                            {customer.carCount > 0 && (
+                              <span className="inline-flex items-center gap-0.5 text-green-600 dark:text-green-400" title={`${customer.carCount} Car loan(s)`}>
+                                <CarIcon />
+                                <span className="text-xs font-bold">{customer.carCount}</span>
+                              </span>
+                            )}
+                            {customer.autoCount > 0 && (
+                              <span className="inline-flex items-center gap-0.5 text-orange-600 dark:text-orange-400" title={`${customer.autoCount} Auto loan(s)`}>
+                                <img src={autoIcon} alt="Auto" className="h-4 w-4" />
+                                <span className="text-xs font-bold">{customer.autoCount}</span>
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                            {customer.name}
+                          </p>
+                        </>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                            {customer.name}
+                          </h3>
+                          {customer.bikeCount > 0 && (
+                            <span className="inline-flex items-center gap-0.5 text-blue-600 dark:text-blue-400" title={`${customer.bikeCount} Bike loan(s)`}>
+                              <BikeIcon />
+                              <span className="text-xs font-bold">{customer.bikeCount}</span>
+                            </span>
+                          )}
+                          {customer.carCount > 0 && (
+                            <span className="inline-flex items-center gap-0.5 text-green-600 dark:text-green-400" title={`${customer.carCount} Car loan(s)`}>
+                              <CarIcon />
+                              <span className="text-xs font-bold">{customer.carCount}</span>
+                            </span>
+                          )}
+                          {customer.autoCount > 0 && (
+                            <span className="inline-flex items-center gap-0.5 text-orange-600 dark:text-orange-400" title={`${customer.autoCount} Auto loan(s)`}>
+                              <img src={autoIcon} alt="Auto" className="h-4 w-4" />
+                              <span className="text-xs font-bold">{customer.autoCount}</span>
+                            </span>
+                          )}
+                        </div>
+                      )}
                       <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                         {customer.cellNumbers?.map(c => c.number).join(', ') || 'No phone'}
                         {customer.address ? ` • ${customer.address}` : ''}

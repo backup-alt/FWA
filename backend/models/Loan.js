@@ -32,7 +32,7 @@ const installmentSchema = new mongoose.Schema(
 
 const chequeSchema = new mongoose.Schema(
   {
-    chequeNumber: { type: String, required: true },
+    chequeNumber: { type: String, default: '' },
     bank: { type: String, default: '' },
     amount: { type: Number, default: 0 },
   },
@@ -110,7 +110,7 @@ const loanSchema = new mongoose.Schema(
     monthlySalary: { type: Number, default: 0 },
     cellNumbers: [
       {
-        number: { type: String, required: true },
+        number: { type: String, default: '' },
       },
     ],
     guarantor: {
@@ -185,5 +185,34 @@ const loanSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+function sanitizeCellNumbers(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => {
+      if (typeof item === 'string') return { number: item };
+      if (item && typeof item === 'object' && typeof item.number === 'string') return { number: item.number };
+      if (item && typeof item === 'object') return { number: '' };
+      return null;
+    })
+    .filter(Boolean);
+}
+
+function sanitizeChequesReceived(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null;
+      return {
+        chequeNumber: typeof item.chequeNumber === 'string' ? item.chequeNumber : '',
+        bank: typeof item.bank === 'string' ? item.bank : '',
+        amount: typeof item.amount === 'number' ? item.amount : 0,
+      };
+    })
+    .filter(Boolean);
+}
+
+loanSchema.path('cellNumbers').set(sanitizeCellNumbers);
+loanSchema.path('chequesReceived').set(sanitizeChequesReceived);
 
 module.exports = mongoose.model('Loan', loanSchema);

@@ -390,7 +390,16 @@ router.put('/:id', async (req, res) => {
     await loan.save();
     res.json(loan);
   } catch (err) {
-    console.error(err);
+    console.error('Error updating loan:', err);
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({ message: `Validation error: ${err.message}` });
+    }
+    if (err.name === 'CastError') {
+      return res.status(400).json({ message: `Invalid data: ${err.message}` });
+    }
+    if (err.name === 'VersionError') {
+      return res.status(409).json({ message: 'Loan was modified by another process. Please refresh and try again.' });
+    }
     res.status(500).json({ message: 'Server error updating loan.' });
   }
 });

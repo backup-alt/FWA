@@ -1,5 +1,13 @@
 const mongoose = require('mongoose');
 
+const ALLOWED_ID_STATUS = ['Yes', 'No', ''];
+
+function normalizeIdStatus(value) {
+  if (typeof value !== 'string') return '';
+  const candidate = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  return ALLOWED_ID_STATUS.includes(candidate) ? candidate : '';
+}
+
 const customerSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -23,8 +31,9 @@ const customerSchema = new mongoose.Schema(
     idProofNumber: { type: String, default: '' },
     idStatus: {
       type: String,
-      enum: ['Yes', 'No', ''],
+      enum: ALLOWED_ID_STATUS,
       default: '',
+      set: normalizeIdStatus,
     },
   },
   { timestamps: true }

@@ -57,11 +57,18 @@ router.post('/', async (req, res) => {
   try {
     const {
       name, fileId, address, temporaryAddress, monthlySalary, cellNumbers, guarantor,
-      profileImage, idProofType, idProofNumber,
+      profileImage, idProofType, idProofNumber, idStatus,
     } = req.body;
 
     if (!name) {
       return res.status(400).json({ message: 'Customer name is required.' });
+    }
+
+    const allowedIdStatus = ['Yes', 'No', ''];
+    let normalizedIdStatus = '';
+    if (typeof idStatus === 'string') {
+      const candidate = idStatus.charAt(0).toUpperCase() + idStatus.slice(1).toLowerCase();
+      if (allowedIdStatus.includes(candidate)) normalizedIdStatus = candidate;
     }
 
     let profileImageFileId = '';
@@ -87,6 +94,7 @@ router.post('/', async (req, res) => {
       profileImageFileId,
       idProofType,
       idProofNumber,
+      idStatus: normalizedIdStatus,
     });
 
     await customer.save();
@@ -321,7 +329,13 @@ router.put('/:id', async (req, res) => {
     }
     if (req.body.idProofType !== undefined) customer.idProofType = req.body.idProofType || '';
     if (req.body.idProofNumber !== undefined) customer.idProofNumber = req.body.idProofNumber || '';
-    if (req.body.idStatus !== undefined) customer.idStatus = req.body.idStatus || '';
+    if (req.body.idStatus !== undefined) {
+      const allowed = ['Yes', 'No', ''];
+      const normalized = typeof req.body.idStatus === 'string'
+        ? (req.body.idStatus.charAt(0).toUpperCase() + req.body.idStatus.slice(1).toLowerCase())
+        : '';
+      customer.idStatus = allowed.includes(normalized) ? normalized : '';
+    }
 
     if (req.body.cellNumbers !== undefined) {
       customer.cellNumbers = (req.body.cellNumbers || []).filter(c => c && c.number);

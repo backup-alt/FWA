@@ -559,7 +559,10 @@ export function CustomerDetailPage() {
               {customer.name}
             </h1>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {loans.length} loan{loans.length !== 1 ? 's' : ''} • Customer since {formatDate(customer.createdAt)}
+              {loans.length} loan{loans.length !== 1 ? 's' : ''}
+              {customer.createdAt && !isNaN(new Date(customer.createdAt).getTime()) && new Date(customer.createdAt).getFullYear() > 1970
+                ? ` • Customer since ${formatDate(customer.createdAt)}`
+                : ''}
             </p>
           </div>
         </div>

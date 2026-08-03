@@ -76,12 +76,13 @@ export function exportReportToExcel(reportData, options = {}) {
   if (showDue) {
     const dueRows = buildReportRows(reportData.due?.data || []);
     const dueHeaderRow = sheetData.length;
+    let dueHeaders = [];
     sheetData.push(['PENDING DUES']);
     if (dueRows.length > 0) {
-      const headers = Object.keys(dueRows[0]);
-      sheetData.push(headers);
+      dueHeaders = Object.keys(dueRows[0]);
+      sheetData.push(dueHeaders);
       dueRows.forEach(row => {
-        sheetData.push(headers.map(h => row[h]));
+        sheetData.push(dueHeaders.map(h => row[h]));
       });
     } else {
       sheetData.push(['No pending dues for this period']);
@@ -89,7 +90,7 @@ export function exportReportToExcel(reportData, options = {}) {
     sheetData.push([]);
     if (dueRows.length > 0) {
       const totalsRow = sheetData.length;
-      const amountColIdx = headers.indexOf('Amount Due (INR)');
+      const amountColIdx = dueHeaders.indexOf('Amount Due (INR)');
       sheetData.push([
         '', '', '', '', '', '', '', '', '', '', '', '',
         'Total Due (INR)',
@@ -102,12 +103,13 @@ export function exportReportToExcel(reportData, options = {}) {
   if (showPaid) {
     const paidRows = buildReportRows(reportData.paid?.data || []);
     const paidHeaderRow = sheetData.length;
+    let paidHeaders = [];
     sheetData.push(['PAYMENTS RECEIVED']);
     if (paidRows.length > 0) {
-      const headers = Object.keys(paidRows[0]);
-      sheetData.push(headers);
+      paidHeaders = Object.keys(paidRows[0]);
+      sheetData.push(paidHeaders);
       paidRows.forEach(row => {
-        sheetData.push(headers.map(h => row[h]));
+        sheetData.push(paidHeaders.map(h => row[h]));
       });
     } else {
       sheetData.push(['No payments received for this period']);

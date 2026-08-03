@@ -1,11 +1,12 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { ArrowLeftIcon, ArrowDownTrayIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ArrowDownTrayIcon, DocumentTextIcon, TableCellsIcon } from '@heroicons/react/24/outline';
 import { NavLink } from 'react-router-dom';
 import { CustomCalendar } from '@/components/ui/CustomCalendar';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { formatCurrency, Loans } from '@/api';
+import { exportPendingDuesExcel, exportPaymentsReceivedExcel, exportCompleteReportExcel } from '@/utils/excelExport';
 import { clsx } from 'clsx';
 import { useToast } from '@/context/ToastContext';
 const autoIcon = '/FWA/icons8-auto-rickshaw-50.png';
@@ -403,6 +404,82 @@ export function ReportPage() {
   const downloadPaymentsReceived = () => downloadReport('paid');
   const downloadAllReport = () => downloadReport('all');
 
+  const getDateRangeLabel = () => {
+    return mode === 'single'
+      ? formatDisplayDate(selectedDate)
+      : `${formatDisplayDate(selectedRange.start)} - ${selectedRange.end ? formatDisplayDate(selectedRange.end) : 'N/A'}`;
+  };
+
+  const getDateRangeFileName = () => {
+    const safe = (d) => {
+      if (!d) return 'NA';
+      const dt = new Date(d);
+      if (isNaN(dt.getTime())) return 'NA';
+      const day = String(dt.getDate()).padStart(2, '0');
+      const month = String(dt.getMonth() + 1).padStart(2, '0');
+      const year = dt.getFullYear();
+      return `${day}-${month}-${year}`;
+    };
+    if (mode === 'single') {
+      return safe(selectedDate);
+    }
+    return `${safe(selectedRange.start)}_to_${safe(selectedRange.end || selectedRange.start)}`;
+  };
+
+  const downloadPendingDuesExcel = () => {
+    if (!reportData) {
+      showToast('Please generate a report first', 'error');
+      return;
+    }
+    try {
+      const dateRange = getDateRangeLabel();
+      exportPendingDuesExcel(reportData, {
+        title: `Pending Dues Report - ${dateRange}`,
+        fileName: `Pending_Dues_Report_${getDateRangeFileName()}`,
+      });
+      showToast('Excel downloaded', 'success');
+    } catch (err) {
+      console.error('Excel download error:', err);
+      showToast('Failed to download Excel. Please try again.', 'error');
+    }
+  };
+
+  const downloadPaymentsReceivedExcel = () => {
+    if (!reportData) {
+      showToast('Please generate a report first', 'error');
+      return;
+    }
+    try {
+      const dateRange = getDateRangeLabel();
+      exportPaymentsReceivedExcel(reportData, {
+        title: `Payments Received Report - ${dateRange}`,
+        fileName: `Payments_Received_Report_${getDateRangeFileName()}`,
+      });
+      showToast('Excel downloaded', 'success');
+    } catch (err) {
+      console.error('Excel download error:', err);
+      showToast('Failed to download Excel. Please try again.', 'error');
+    }
+  };
+
+  const downloadAllReportExcel = () => {
+    if (!reportData) {
+      showToast('Please generate a report first', 'error');
+      return;
+    }
+    try {
+      const dateRange = getDateRangeLabel();
+      exportCompleteReportExcel(reportData, {
+        title: `Complete Payment Report - ${dateRange}`,
+        fileName: `Complete_Payment_Report_${getDateRangeFileName()}`,
+      });
+      showToast('Excel downloaded', 'success');
+    } catch (err) {
+      console.error('Excel download error:', err);
+      showToast('Failed to download Excel. Please try again.', 'error');
+    }
+  };
+
   const displayDate = useMemo(() => {
     if (mode === 'single') {
       if (!selectedDate || isNaN(selectedDate.getTime())) return 'N/A';
@@ -500,20 +577,37 @@ export function ReportPage() {
                 </div>
 
                 {reportData && (
-                  <div className="flex flex-wrap items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Download:</span>
-                    <Button onClick={downloadPendingDues} variant="outline" size="sm" className="flex items-center gap-1 text-orange-600 border-orange-300 hover:bg-orange-50">
-                      <ArrowDownTrayIcon className="h-4 w-4" />
-                      Pending Dues
-                    </Button>
-                    <Button onClick={downloadPaymentsReceived} variant="outline" size="sm" className="flex items-center gap-1 text-green-600 border-green-300 hover:bg-green-50">
-                      <ArrowDownTrayIcon className="h-4 w-4" />
-                      Payments Received
-                    </Button>
-                    <Button onClick={downloadAllReport} size="sm" className="flex items-center gap-1">
-                      <ArrowDownTrayIcon className="h-4 w-4" />
-                      Complete Report
-                    </Button>
+                  <div className="flex flex-col gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Print / PDF:</span>
+                      <Button onClick={downloadPendingDues} variant="outline" size="sm" className="flex items-center gap-1 text-orange-600 border-orange-300 hover:bg-orange-50">
+                        <ArrowDownTrayIcon className="h-4 w-4" />
+                        Pending Dues
+                      </Button>
+                      <Button onClick={downloadPaymentsReceived} variant="outline" size="sm" className="flex items-center gap-1 text-green-600 border-green-300 hover:bg-green-50">
+                        <ArrowDownTrayIcon className="h-4 w-4" />
+                        Payments Received
+                      </Button>
+                      <Button onClick={downloadAllReport} size="sm" className="flex items-center gap-1">
+                        <ArrowDownTrayIcon className="h-4 w-4" />
+                        Complete Report
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Excel:</span>
+                      <Button onClick={downloadPendingDuesExcel} variant="outline" size="sm" className="flex items-center gap-1 text-orange-600 border-orange-300 hover:bg-orange-50">
+                        <TableCellsIcon className="h-4 w-4" />
+                        Pending Dues
+                      </Button>
+                      <Button onClick={downloadPaymentsReceivedExcel} variant="outline" size="sm" className="flex items-center gap-1 text-green-600 border-green-300 hover:bg-green-50">
+                        <TableCellsIcon className="h-4 w-4" />
+                        Payments Received
+                      </Button>
+                      <Button onClick={downloadAllReportExcel} size="sm" className="flex items-center gap-1">
+                        <TableCellsIcon className="h-4 w-4" />
+                        Complete Report
+                      </Button>
+                    </div>
                   </div>
                 )}
 

@@ -139,6 +139,7 @@ function ReportTable({
             <thead>
               <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                 <th className="text-left py-3 px-4 font-semibold text-gray-600 dark:text-gray-300">Customer</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-600 dark:text-gray-300">File ID</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-600 dark:text-gray-300">Vehicle</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-600 dark:text-gray-300">Reg. No.</th>
                 <th className="text-left py-3 px-4 font-semibold text-gray-600 dark:text-gray-300">Phone</th>
@@ -161,6 +162,9 @@ function ReportTable({
                     <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
                       {item.address || 'No address'}
                     </div>
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-gray-700 dark:text-gray-300">
+                    {item.customerFileId || '-'}
                   </td>
                   <td className="py-3 px-4">
                     <span className={clsx(
@@ -226,6 +230,7 @@ export function ReportPage() {
   const [vehicleFilter, setVehicleFilter] = useState('');
   const [customerSearch, setCustomerSearch] = useState('');
   const [regNoSearch, setRegNoSearch] = useState('');
+  const [fileIdSearch, setFileIdSearch] = useState('');
   const calendarRef = useRef(null);
 
   const formatDateString = useCallback((date) => {
@@ -291,7 +296,8 @@ export function ReportPage() {
     status: statusFilter || undefined,
     customerSearch: customerSearch || undefined,
     regNo: regNoSearch || undefined,
-  }), [activeRange, vehicleFilter, statusFilter, customerSearch, regNoSearch]);
+    fileId: fileIdSearch || undefined,
+  }), [activeRange, vehicleFilter, statusFilter, customerSearch, regNoSearch, fileIdSearch]);
 
   // Reset page to 1 whenever filters or date range change
   useEffect(() => {
@@ -311,6 +317,7 @@ export function ReportPage() {
         status: baseFilters.status,
         customerSearch: baseFilters.customerSearch,
         regNo: baseFilters.regNo,
+        fileId: baseFilters.fileId,
       }),
     placeholderData: (prev) => prev,
   });
@@ -327,6 +334,7 @@ export function ReportPage() {
         status: baseFilters.status,
         customerSearch: baseFilters.customerSearch,
         regNo: baseFilters.regNo,
+        fileId: baseFilters.fileId,
       }),
     placeholderData: (prev) => prev,
   });
@@ -352,6 +360,7 @@ export function ReportPage() {
       status: baseFilters.status,
       customerSearch: baseFilters.customerSearch,
       regNo: baseFilters.regNo,
+      fileId: baseFilters.fileId,
     });
   };
 
@@ -474,6 +483,7 @@ export function ReportPage() {
           <thead>
             <tr>
               <th>Customer</th>
+              <th>File ID</th>
               <th>Vehicle</th>
               <th>Reg. No.</th>
               <th>Phone</th>
@@ -488,6 +498,7 @@ export function ReportPage() {
             ${data.due.data.map(item => `
               <tr>
                 <td>${item.customerName}</td>
+                <td>${item.customerFileId || '-'}</td>
                 <td>${item.vehicleType}</td>
                 <td>${item.regNo || '-'}</td>
                 <td>${item.cellNumbers?.join(', ') || '-'}</td>
@@ -510,6 +521,7 @@ export function ReportPage() {
           <thead>
             <tr>
               <th>Customer</th>
+              <th>File ID</th>
               <th>Vehicle</th>
               <th>Reg. No.</th>
               <th>Phone</th>
@@ -524,6 +536,7 @@ export function ReportPage() {
             ${data.paid.data.map(item => `
               <tr>
                 <td>${item.customerName}</td>
+                <td>${item.customerFileId || '-'}</td>
                 <td>${item.vehicleType}</td>
                 <td>${item.regNo || '-'}</td>
                 <td>${item.cellNumbers?.join(', ') || '-'}</td>
@@ -702,7 +715,7 @@ export function ReportPage() {
             </div>
 
             {showFilters && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div>
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Status</label>
                   <Listbox value={statusFilter} onChange={setStatusFilter}>
@@ -770,6 +783,16 @@ export function ReportPage() {
                     value={regNoSearch}
                     onChange={e => setRegNoSearch(e.target.value)}
                     placeholder="Search by reg no..."
+                    className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">File ID</label>
+                  <input
+                    type="text"
+                    value={fileIdSearch}
+                    onChange={e => setFileIdSearch(e.target.value)}
+                    placeholder="Search by file ID..."
                     className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg"
                   />
                 </div>

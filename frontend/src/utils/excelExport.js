@@ -19,6 +19,7 @@ function buildReportRows(data) {
   return data.map((item, idx) => ({
     'S.No': idx + 1,
     'Customer': item.customerName || '',
+    'File ID': item.customerFileId || '',
     'Address': item.address || '',
     'Vehicle Type': item.vehicleType || '',
     'Reg. No.': item.regNo || '',
@@ -92,7 +93,7 @@ export function exportReportToExcel(reportData, options = {}) {
       const totalsRow = sheetData.length;
       const amountColIdx = dueHeaders.indexOf('Amount Due (INR)');
       sheetData.push([
-        '', '', '', '', '', '', '', '', '', '', '', '',
+        '', '', '', '', '', '', '', '', '', '', '', '', '', '',
         'Total Due (INR)',
         dueTotal
       ]);
@@ -117,7 +118,7 @@ export function exportReportToExcel(reportData, options = {}) {
     sheetData.push([]);
     if (paidRows.length > 0) {
       sheetData.push([
-        '', '', '', '', '', '', '', '', '', '', '', '',
+        '', '', '', '', '', '', '', '', '', '', '', '', '', '',
         'Total Received (INR)',
         paidTotal
       ]);
@@ -133,6 +134,7 @@ export function exportReportToExcel(reportData, options = {}) {
   worksheet['!cols'] = [
     { wch: 8 },
     { wch: 24 },
+    { wch: 16 },
     { wch: 28 },
     { wch: 12 },
     { wch: 14 },

@@ -37,6 +37,7 @@ export function PendingDuesTable({ dues, sortConfig, onSort }) {
         <TableHeader>
           <TableRow>
             <SortableHeader sortKey="customerName">Customer</SortableHeader>
+            <SortableHeader sortKey="customerFileId">File ID</SortableHeader>
             <SortableHeader sortKey="vehicleType">Vehicle</SortableHeader>
             <SortableHeader sortKey="sNo">Installment</SortableHeader>
             <SortableHeader sortKey="dueDate">Due Date</SortableHeader>
@@ -48,7 +49,7 @@ export function PendingDuesTable({ dues, sortConfig, onSort }) {
         <TableBody>
           {sortedDues.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center py-8 text-gray-500 dark:text-gray-400">
+              <TableCell colSpan={8} className="text-center py-8 text-gray-500 dark:text-gray-400">
                 No pending dues found
               </TableCell>
             </TableRow>
@@ -59,6 +60,9 @@ export function PendingDuesTable({ dues, sortConfig, onSort }) {
                   <NavLink to={`/loan/${due.loanId}`} className="font-medium text-primary-600 hover:underline">
                     {due.customerName}
                   </NavLink>
+                </TableCell>
+                <TableCell className="font-mono text-xs text-gray-700 dark:text-gray-300">
+                  {due.customerFileId || '-'}
                 </TableCell>
                 <TableCell>
                   <Badge variant={due.vehicleType === 'Bike' ? 'info' : due.vehicleType === 'Car' ? 'success' : 'warning'}>

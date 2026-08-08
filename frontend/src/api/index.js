@@ -127,6 +127,7 @@ export const Loans = {
     if (options.status) params.set('status', options.status);
     if (options.customerSearch) params.set('customerSearch', options.customerSearch);
     if (options.regNo) params.set('regNo', options.regNo);
+    if (options.fileId) params.set('fileId', options.fileId);
     return apiRequest(`/loans/report?${params.toString()}`);
   },
 };

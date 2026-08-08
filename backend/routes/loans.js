@@ -196,8 +196,37 @@ router.get('/pending-dues', async (req, res) => {
     const mongoMatch = { status: { $regex: /^(active|ongoing)$/i } };
     if (req.query.vehicleType) mongoMatch.vehicleType = req.query.vehicleType;
 
+    const fileIdSearch = (req.query.fileId || '').trim();
+    if (fileIdSearch) {
+      const escaped = fileIdSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const matchingCustomers = await Customer.find({ fileId: { $regex: escaped, $options: 'i' } })
+        .select('_id')
+        .lean();
+      const ids = matchingCustomers.map((c) => c._id);
+      if (ids.length === 0) {
+        return res.json(paginatedResponse({ data: [], total: 0, page, pageSize }));
+      }
+      mongoMatch.customerId = { $in: ids };
+    }
+
     const loans = await Loan.find(mongoMatch).lean();
     const allPending = getPendingDues(loans);
+
+    // Backfill customer fileId from the Customer collection when not present on the loan
+    const customerIds = [...new Set(
+      allPending.map((p) => p.customerId).filter(Boolean).map((id) => id.toString())
+    )];
+    if (customerIds.length) {
+      const customers = await Customer.find({ _id: { $in: customerIds } })
+        .select('_id fileId')
+        .lean();
+      const map = new Map(customers.map((c) => [c._id.toString(), c.fileId || '']));
+      for (const p of allPending) {
+        if (!p.customerFileId && p.customerId) {
+          p.customerFileId = map.get(p.customerId.toString()) || '';
+        }
+      }
+    }
 
     const minOverdueDays = req.query.minOverdueDays !== undefined && req.query.minOverdueDays !== ''
       ? Number(req.query.minOverdueDays)
@@ -358,6 +387,7 @@ router.get('/report', async (req, res) => {
     const installmentStatus = req.query.status || null; // installment-level status filter
     const customerSearch = (req.query.customerSearch || '').trim();
     const regNoSearch = (req.query.regNo || '').trim();
+    const fileIdSearch = (req.query.fileId || '').trim();
     const downloadAll = req.query.download === 'true';
     const pagination = downloadAll
       ? { page: 1, pageSize: 10000, skip: 0, limit: 10000 }
@@ -374,6 +404,25 @@ router.get('/report', async (req, res) => {
         { regNo: { $regex: re, $options: 'i' } },
         { 'vehicles.regNo': { $regex: re, $options: 'i' } },
       ];
+    }
+
+    let fileIdCustomerIds = null;
+    if (fileIdSearch) {
+      const escaped = fileIdSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const matchingCustomers = await Customer.find({
+        fileId: { $regex: escaped, $options: 'i' },
+      })
+        .select('_id')
+        .lean();
+      fileIdCustomerIds = matchingCustomers.map((c) => c._id);
+      if (fileIdCustomerIds.length === 0) {
+        const emptySection = { count: 0, total: 0, data: [], page, pageSize, hasMore: false };
+        return res.json({
+          filters: { tab, startDate, endDate, vehicleType, status: installmentStatus, customerSearch, regNoSearch, fileId: fileIdSearch },
+          paid: emptySection,
+          due: emptySection,
+        });
+      }
     }
 
     const installmentMatchPaid = {
@@ -415,6 +464,13 @@ router.get('/report', async (req, res) => {
         addressResolved: {
           $ifNull: ['$address', { $arrayElemAt: ['$customer.address', 0] }, ''],
         },
+        customerFileIdResolved: {
+          $ifNull: [
+            '$customerFileId',
+            { $arrayElemAt: ['$customer.fileId', 0] },
+            '',
+          ],
+        },
       },
     };
     const projectCommon = {
@@ -422,6 +478,7 @@ router.get('/report', async (req, res) => {
         loanId: '$_id',
         customerId: '$customerId',
         customerName: '$customerNameResolved',
+        customerFileId: '$customerFileIdResolved',
         cellNumbers: {
           $map: {
             input: {
@@ -480,6 +537,7 @@ router.get('/report', async (req, res) => {
         { $unwind: { path: '$installments', preserveNullAndEmptyArrays: false } },
         { $match: { ...installmentMatch } },
         ...(Object.keys(baseLoanMatch).length ? [{ $match: baseLoanMatch }] : []),
+        ...(fileIdCustomerIds ? [{ $match: { customerId: { $in: fileIdCustomerIds } } }] : []),
         customerLookup,
         flattenCustomer,
         ...(matchCustomerName ? [matchCustomerName] : []),
@@ -504,7 +562,7 @@ router.get('/report', async (req, res) => {
       return { total, count, data, hasMore: skip + data.length < count };
     }
 
-    const response = { filters: { tab, startDate, endDate, vehicleType, status: installmentStatus, customerSearch, regNoSearch } };
+    const response = { filters: { tab, startDate, endDate, vehicleType, status: installmentStatus, customerSearch, regNoSearch, fileId: fileIdSearch } };
 
     if (wantPaid) {
       const paid = await fetchSection(

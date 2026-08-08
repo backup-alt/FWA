@@ -36,6 +36,16 @@ export function PendingFilters({ filter, onFilterChange, onClear }) {
           />
         </div>
 
+        <div className="w-full sm:w-48">
+          <Input
+            label="Search by File ID"
+            type="text"
+            placeholder="e.g. 1234567890"
+            value={filter.fileId || ''}
+            onChange={event => onFilterChange({ fileId: event.target.value || undefined })}
+          />
+        </div>
+
         <button
           type="button"
           onClick={onClear}

@@ -221,6 +221,8 @@ function getPendingDues(loans) {
       if (outstanding > 0 && daysOverdue > 0) {
         pending.push({
           loanId: loan._id,
+          customerId: loan.customerId,
+          customerFileId: loan.customerFileId || '',
           customerName: loan.customerName,
           vehicleType: loan.vehicleType,
           make: loan.make,

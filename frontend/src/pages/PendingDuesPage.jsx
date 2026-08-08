@@ -18,6 +18,7 @@ export function PendingDuesPage() {
     if (filter.minAmount !== undefined && filter.minAmount !== '' && filter.minAmount !== null) {
       out.minAmount = filter.minAmount;
     }
+    if (filter.fileId) out.fileId = filter.fileId;
     return out;
   }, [filter]);
 

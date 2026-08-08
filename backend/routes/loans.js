@@ -465,11 +465,19 @@ router.get('/report', async (req, res) => {
           $ifNull: ['$address', { $arrayElemAt: ['$customer.address', 0] }, ''],
         },
         customerFileIdResolved: {
-          $ifNull: [
-            '$customerFileId',
-            { $arrayElemAt: ['$customer.fileId', 0] },
-            '',
-          ],
+          $let: {
+            vars: {
+              fromLoan: { $ifNull: ['$customerFileId', null] },
+              fromCustomer: { $arrayElemAt: ['$customer.fileId', 0] },
+            },
+            in: {
+              $cond: [
+                { $and: [{ $ne: ['$$fromLoan', null] }, { $ne: ['$$fromLoan', ''] }] },
+                '$$fromLoan',
+                { $cond: [{ $and: [{ $ne: ['$$fromCustomer', null] }, { $ne: ['$$fromCustomer', ''] }] }, '$$fromCustomer', ''] },
+              ],
+            },
+          },
         },
       },
     };

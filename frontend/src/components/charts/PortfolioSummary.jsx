@@ -33,29 +33,48 @@ const statStyles = {
   },
 };
 
-export function PortfolioSummary({ loans = [] }) {
-  const activeLoans = loans.filter(loan => loan.status === 'Active');
-  const completedLoans = loans.filter(loan => loan.status === 'Completed');
+export function PortfolioSummary({ loans = [], summary }) {
+  let totalOutstanding = 0;
+  let totalOverdue = 0;
+  let totalCollected = 0;
+  let activeLoansCount = 0;
+  let completedLoansCount = 0;
+  let totalCustomers = 0;
 
-  const totalOutstanding = activeLoans.reduce((sum, loan) => sum + (loan.outstandingPrincipal || 0), 0);
-  const totalOverdue = activeLoans.reduce((sum, loan) => {
-    const overdue = loan.installments
-      ?.filter(installment => installment.status === 'Overdue' || installment.status === 'Partial')
-      .reduce((innerSum, installment) => (
-        innerSum + (installment.dueAmount - (installment.amountReceived || 0) + (installment.adjustment || 0))
-      ), 0) || 0;
+  if (summary) {
+    totalOutstanding = Number(summary.totalOutstanding || 0);
+    totalOverdue = Number(summary.overdueAmount || 0);
+    totalCollected = Number(summary.totalCollected || 0);
+    activeLoansCount = summary.counts?.active || 0;
+    completedLoansCount = summary.counts?.completed || 0;
+    totalCustomers = summary.counts?.uniqueCustomers || 0;
+  } else {
+    const activeLoans = loans.filter(loan => loan.status === 'Active');
+    const completedLoans = loans.filter(loan => loan.status === 'Completed');
 
-    return sum + overdue;
-  }, 0);
-  const totalCollected = loans.reduce((sum, loan) => sum + (loan.totalPaid || 0), 0);
+    totalOutstanding = activeLoans.reduce((sum, loan) => sum + (loan.outstandingPrincipal || 0), 0);
+    totalOverdue = activeLoans.reduce((sum, loan) => {
+      const overdue = loan.installments
+        ?.filter(installment => installment.status === 'Overdue' || installment.status === 'Partial')
+        .reduce((innerSum, installment) => (
+          innerSum + (installment.dueAmount - (installment.amountReceived || 0) + (installment.adjustment || 0))
+        ), 0) || 0;
+
+      return sum + overdue;
+    }, 0);
+    totalCollected = loans.reduce((sum, loan) => sum + (loan.totalPaid || 0), 0);
+    activeLoansCount = activeLoans.length;
+    completedLoansCount = completedLoans.length;
+    totalCustomers = new Set(loans.map(l => l.customerId || l.customerName).filter(Boolean)).size || loans.length;
+  }
 
   const stats = [
     { label: 'Total Outstanding', value: formatCurrency(totalOutstanding), color: 'primary', icon: CurrencyRupeeIcon },
     { label: 'Overdue Amount', value: formatCurrency(totalOverdue), color: 'danger', icon: ExclamationTriangleIcon },
     { label: 'Total Collected', value: formatCurrency(totalCollected), color: 'success', icon: BanknotesIcon },
-    { label: 'Active Loans', value: activeLoans.length, color: 'info', icon: ClipboardDocumentListIcon },
-    { label: 'Completed Loans', value: completedLoans.length, color: 'success', icon: CheckCircleIcon },
-    { label: 'Total Customers', value: new Set(loans.map(l => l.customerId || l.customerName).filter(Boolean)).size || loans.length, color: 'gray', icon: UserGroupIcon },
+    { label: 'Active Loans', value: activeLoansCount, color: 'info', icon: ClipboardDocumentListIcon },
+    { label: 'Completed Loans', value: completedLoansCount, color: 'success', icon: CheckCircleIcon },
+    { label: 'Total Customers', value: totalCustomers, color: 'gray', icon: UserGroupIcon },
   ];
 
   return (

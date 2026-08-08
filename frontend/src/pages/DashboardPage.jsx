@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { PlusIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
-import { useLoans, usePendingDues } from '@/hooks/useLoans';
+import { usePendingDues, useLoansSummary, usePendingDuesSummary } from '@/hooks/useLoans';
 import { PortfolioSummary } from '@/components/charts/PortfolioSummary';
 import { VehicleTypeChart } from '@/components/charts/VehicleTypeChart';
 import { PaymentTrendChart } from '@/components/charts/PaymentTrendChart';
 import { PendingDuesTable } from '@/components/pending/PendingDuesTable';
-import { PendingFilters } from '@/components/pending/PendingFilters';
 import { Button } from '@/components/ui/Button';
-import { Card, CardHeader, CardContent } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { formatCurrency } from '@/api';
 import { clsx } from 'clsx';
 
 const TABS = [
@@ -62,32 +62,29 @@ function DashboardSkeleton() {
 
 export function DashboardPage() {
   const [activeTab, setActiveTab] = useState('');
-  const [pendingFilter, setPendingFilter] = useState({});
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
-  const { data: loans = [], isLoading: loansLoading, isFetching: loansFetching, isError: loansError } = useLoans(
-    activeTab === 'pending' ? {} : { vehicleType: activeTab || undefined }
-  );
-  const { data: pendingDues = [], isLoading: pendingLoading, isFetching: pendingFetching, isError: pendingError } = usePendingDues();
+  const isPendingTab = activeTab === 'pending';
+  const summaryFilter = isPendingTab ? {} : (activeTab ? { vehicleType: activeTab } : {});
 
-  const handleFilterChange = (newFilter) => {
-    setPendingFilter(prev => ({ ...prev, ...newFilter }));
-  };
+  const { data: pendingResponse, isLoading: pendingLoading, isFetching: pendingFetching, isError: pendingError } = usePendingDues();
+  const pendingDues = pendingResponse?.data || [];
 
-  const handleClearFilters = () => {
-    setPendingFilter({});
-  };
+  const { data: summary, isLoading: summaryLoading, isError: summaryError } = useLoansSummary(summaryFilter);
+  const { data: pendingSummary } = usePendingDuesSummary();
+  const truePendingTotal = pendingSummary?.count ?? pendingDues.length;
+  const truePendingOutstanding = pendingSummary?.totalOutstanding || 0;
 
   const handleSort = (direction, key) => {
     setSortConfig({ key, direction });
   };
 
-  // Show skeleton while the initial data load or background fetch is in progress and we have no data
-  if ((loansLoading || (loansFetching && loans.length === 0)) && !loansError) {
+  // Show skeleton while the initial summary load is in progress
+  if (summaryLoading && !summaryError) {
     return <DashboardSkeleton />;
   }
 
-  if (loansError) {
+  if (summaryError) {
     return (
       <div className="mx-auto max-w-7xl p-8 text-center bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
         <h2 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">Failed to load dashboard data</h2>
@@ -98,21 +95,21 @@ export function DashboardPage() {
     );
   }
 
-  if (activeTab === 'pending') {
+  if (isPendingTab) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pending Dues</h1>
-          <Badge variant="warning" className="text-sm">
-            {pendingDues.length} overdue installments
-          </Badge>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {truePendingTotal} overdue installment{truePendingTotal === 1 ? '' : 's'}
+              {truePendingOutstanding > 0 ? ` • ${formatCurrency(truePendingOutstanding)}` : ''}
+            </span>
+            <Badge variant="warning" className="text-sm">
+              {pendingDues.length} shown
+            </Badge>
+          </div>
         </div>
-
-        <PendingFilters
-          filter={pendingFilter}
-          onFilterChange={handleFilterChange}
-          onClear={handleClearFilters}
-        />
 
         <Card>
           <CardContent className="p-0">
@@ -125,7 +122,6 @@ export function DashboardPage() {
                 dues={pendingDues}
                 sortConfig={sortConfig}
                 onSort={handleSort}
-                filter={pendingFilter}
               />
             )}
           </CardContent>
@@ -198,11 +194,11 @@ export function DashboardPage() {
         ))}
       </div>
 
-      <PortfolioSummary loans={loans} />
+      <PortfolioSummary summary={summary} />
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <VehicleTypeChart loans={loans} />
-        <PaymentTrendChart loans={loans} />
+        <VehicleTypeChart counts={summary?.vehicleTypeCounts} />
+        <PaymentTrendChart monthlyCollections={summary?.monthlyCollections} />
       </div>
     </div>
   );

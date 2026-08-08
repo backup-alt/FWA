@@ -1,8 +1,8 @@
-import { useMemo, useState, Fragment } from 'react';
+import { useEffect, useMemo, useRef, useState, Fragment } from 'react';
 import { NavLink } from 'react-router-dom';
 import { PlusIcon, MagnifyingGlassIcon, ChevronUpDownIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { Listbox, Transition } from '@headlessui/react';
-import { useCustomers } from '@/hooks/useCustomers';
+import { useInfiniteCustomers } from '@/hooks/useCustomers';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -47,7 +47,37 @@ export function CustomersPage() {
     return {};
   }, [query, searchType]);
 
-  const { data: customers = [], isLoading } = useCustomers(searchParams);
+  const {
+    data: customersPages,
+    isLoading,
+    isFetching,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteCustomers(searchParams);
+
+  const customers = useMemo(
+    () => (customersPages?.pages || []).flatMap((p) => p.data || []),
+    [customersPages]
+  );
+  const totalLoaded = customersPages?.pages?.[0]?.total ?? customers.length;
+
+  const sentinelRef = useRef(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return undefined;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, searchParams]);
 
   const renderRegNumbers = (customer) => {
     const bikeRegs = customer.bikeRegNos || [];
@@ -104,7 +134,11 @@ export function CustomersPage() {
         <CardHeader
           className="px-5 pt-5 mb-0"
           title="Customer List"
-          subtitle={isLoading ? 'Loading...' : `${customers.length} customer${customers.length === 1 ? '' : 's'}`}
+          subtitle={
+            isLoading
+              ? 'Loading...'
+              : `${totalLoaded} customer${totalLoaded === 1 ? '' : 's'} • showing ${customers.length}`
+          }
         />
         <CardContent className="p-5">
           <div className="mb-5">
@@ -291,6 +325,21 @@ export function CustomersPage() {
                   </div>
                 </NavLink>
               ))}
+            </div>
+          )}
+
+          {customers.length > 0 && (
+            <div
+              ref={sentinelRef}
+              className="mt-4 h-10 flex items-center justify-center text-sm text-gray-500 dark:text-gray-400"
+            >
+              {isFetchingNextPage
+                ? 'Loading more...'
+                : hasNextPage
+                  ? 'Scroll to load more'
+                  : isFetching
+                    ? 'Refreshing...'
+                    : 'No more customers'}
             </div>
           )}
         </CardContent>

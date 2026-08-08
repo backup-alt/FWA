@@ -1,6 +1,11 @@
+const dns = require('dns');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+
+// On Windows the default DNS resolver sometimes can't reach MongoDB Atlas SRV
+// records, so we point Node at well-known public resolvers before connecting.
+dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
 
 const connectDB = async () => {
   try {

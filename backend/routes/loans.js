@@ -2,6 +2,7 @@ const express = require('express');
 const Loan = require('../models/Loan');
 const Customer = require('../models/Customer');
 const authMiddleware = require('../middleware/auth');
+const { parsePagination, paginatedResponse } = require('../utils/pagination');
 const {
   generateInstallmentSchedule,
   recalculateSchedule,
@@ -153,24 +154,30 @@ router.get('/', async (req, res) => {
     if (req.query.status) filter.status = req.query.status;
     if (req.query.customerId) filter.customerId = req.query.customerId;
 
-    const loans = await Loan.find(filter).sort({ createdAt: -1 }).lean();
+    const { page, pageSize, skip, limit } = parsePagination(req.query);
+
+    const total = await Loan.countDocuments(filter);
+    const loans = await Loan.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
     // Recalculate schedule in-memory only (DO NOT SAVE on GET request to keep it fast)
     for (const loan of loans) {
       recalculateSchedule(loan);
     }
     const shapedLoans = await Promise.all(loans.map(buildLoanResponse));
-    res.json(shapedLoans);
+    res.json(paginatedResponse({ data: shapedLoans, total, page, pageSize }));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error fetching loans.' });
   }
 });
 
-// Vehicle type counts
+// Vehicle type counts (ALL loans, not just Active — canonicalized)
 router.get('/vehicle-type-counts', authMiddleware, async (req, res) => {
   try {
     const agg = await Loan.aggregate([
-      { $match: { status: 'Active' } },
       { $group: { _id: '$vehicleType', count: { $sum: 1 } } },
     ]);
     const counts = {};
@@ -184,120 +191,370 @@ router.get('/vehicle-type-counts', authMiddleware, async (req, res) => {
 // Pending dues
 router.get('/pending-dues', async (req, res) => {
   try {
-    const loans = await Loan.find({ status: 'Active' }).lean();
-    const pending = getPendingDues(loans);
-    res.json(pending);
+    const { page, pageSize, skip, limit } = parsePagination(req.query);
+
+    const mongoMatch = { status: { $regex: /^(active|ongoing)$/i } };
+    if (req.query.vehicleType) mongoMatch.vehicleType = req.query.vehicleType;
+
+    const loans = await Loan.find(mongoMatch).lean();
+    const allPending = getPendingDues(loans);
+
+    const minOverdueDays = req.query.minOverdueDays !== undefined && req.query.minOverdueDays !== ''
+      ? Number(req.query.minOverdueDays)
+      : null;
+    const minAmount = req.query.minAmount !== undefined && req.query.minAmount !== ''
+      ? Number(req.query.minAmount)
+      : null;
+
+    const filtered = allPending.filter((due) => {
+      if (minOverdueDays !== null && !Number.isNaN(minOverdueDays) && due.daysOverdue < minOverdueDays) return false;
+      if (minAmount !== null && !Number.isNaN(minAmount) && (due.outstandingForThisInstallment || 0) < minAmount) return false;
+      return true;
+    });
+
+    const total = filtered.length;
+    const data = filtered.slice(skip, skip + limit);
+    res.json(paginatedResponse({ data, total, page, pageSize }));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error fetching pending dues.' });
   }
 });
 
-// Payment report
+// Portfolio summary (counts + totals across ALL loans, not just the current page)
+// We need to apply recalculateSchedule in JS to mirror the legacy client-side
+// computation. The summary loads all loans (currently 98 — small dataset) so
+// the recalculation runs once per summary request.
+router.get('/summary', async (req, res) => {
+  try {
+    const match = {};
+    if (req.query.vehicleType) match.vehicleType = req.query.vehicleType;
+
+    const loans = await Loan.find(match).lean();
+    for (const loan of loans) recalculateSchedule(loan);
+
+    const counts = { total: loans.length, active: 0, completed: 0, closed: 0, renewed: 0, other: 0 };
+    let totalOutstanding = 0;
+    let totalCollected = 0;
+    let overdueAmount = 0;
+    const customerIds = new Set();
+    const vehicleTypeCounts = { Bike: 0, Car: 0, Auto: 0 };
+    const monthlyMap = new Map();
+
+    for (const loan of loans) {
+      if (loan.customerId) customerIds.add(loan.customerId.toString());
+      const v = loan.vehicleType;
+      if (v && vehicleTypeCounts[v] !== undefined) vehicleTypeCounts[v] += 1;
+
+      totalCollected += Number(loan.totalPaid || 0);
+
+      if (loan.status === 'Active') {
+        counts.active += 1;
+        totalOutstanding += Number(loan.outstandingPrincipal || 0);
+        for (const inst of loan.installments || []) {
+          if (inst.status === 'Overdue' || inst.status === 'Partial') {
+            overdueAmount += (Number(inst.dueAmount || 0) - Number(inst.amountReceived || 0) + Number(inst.adjustment || 0));
+          }
+          if (inst.status === 'Paid' && inst.dateReceived) {
+            const d = new Date(inst.dateReceived);
+            if (!Number.isNaN(d.getTime()) && d <= new Date()) {
+              const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+              monthlyMap.set(key, (monthlyMap.get(key) || 0) + Number(inst.amountReceived || 0));
+            }
+          }
+        }
+      } else if (loan.status === 'Completed') {
+        counts.completed += 1;
+      } else if (loan.status === 'Closed') {
+        counts.closed += 1;
+      } else if (loan.status === 'Renewed') {
+        counts.renewed += 1;
+      } else {
+        counts.other += 1;
+      }
+    }
+    counts.uniqueCustomers = customerIds.size;
+
+    const monthlyCollections = Array.from(monthlyMap.entries())
+      .map(([month, collected]) => ({ month, collected: roundMoney(collected) }))
+      .sort((a, b) => (a.month < b.month ? 1 : -1))
+      .slice(0, 12)
+      .sort((a, b) => (a.month < b.month ? -1 : 1));
+
+    res.json({
+      totalOutstanding: roundMoney(totalOutstanding),
+      totalCollected: roundMoney(totalCollected),
+      overdueAmount: roundMoney(overdueAmount),
+      counts,
+      vehicleTypeCounts,
+      monthlyCollections,
+    });
+  } catch (err) {
+    console.error('Summary error:', err);
+    res.status(500).json({ message: 'Server error computing summary.' });
+  }
+});
+
+// Pending dues summary (total counts + amounts across ALL overdue installments)
+router.get('/pending-dues/summary', async (req, res) => {
+  try {
+    const now = new Date();
+    const [result] = await Loan.aggregate([
+      { $match: { status: { $regex: /^(active|ongoing)$/i } } },
+      { $unwind: { path: '$installments', preserveNullAndEmptyArrays: false } },
+      {
+        $match: {
+          'installments.status': { $in: ['Overdue', 'Partial'] },
+          'installments.dueDate': { $ne: null, $lt: now },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          count: { $sum: 1 },
+          totalOutstanding: {
+            $sum: {
+              $max: [
+                {
+                  $subtract: [
+                    { $add: [{ $ifNull: ['$installments.dueAmount', 0] }, { $ifNull: ['$installments.adjustment', 0] }] },
+                    { $ifNull: ['$installments.amountReceived', 0] },
+                  ],
+                },
+                0,
+              ],
+            },
+          },
+        },
+      },
+    ]);
+
+    res.json({
+      count: result?.count || 0,
+      totalOutstanding: roundMoney(result?.totalOutstanding || 0),
+    });
+  } catch (err) {
+    console.error('Pending dues summary error:', err);
+    res.status(500).json({ message: 'Server error computing pending dues summary.' });
+  }
+});
+
+// Payment report — server-side pagination, totals independent of page
 router.get('/report', async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
     if (!startDate || !endDate) {
       return res.status(400).json({ message: 'startDate and endDate are required.' });
     }
-
-    // Use date strings directly for comparison to avoid timezone issues
-    const startStr = startDate; // YYYY-MM-DD
-    const endStr = endDate; // YYYY-MM-DD
-
-    const loans = await Loan.find({}).lean();
-    const customers = await Customer.find({}).lean();
-
-    const customerMap = {};
-    customers.forEach(c => {
-      customerMap[c._id.toString()] = c;
-    });
-
-    const paidInstallments = [];
-    const dueInstallments = [];
-    let paidTotal = 0;
-    let dueTotal = 0;
-
-    for (const loan of loans) {
-      const customer = customerMap[loan.customerId?.toString()] || {};
-      const customerName = loan.customerName || customer.name || 'Unknown';
-      const cellNumbers = loan.cellNumbers || customer.cellNumbers || [];
-      const address = loan.address || customer.address || '';
-
-      for (const installment of loan.installments || []) {
-        let dueDateStr = null;
-        if (installment.dueDate) {
-          const dueDateObj = new Date(installment.dueDate);
-          if (!Number.isNaN(dueDateObj.getTime())) {
-            dueDateStr = dueDateObj.toISOString().split('T')[0];
-          }
-        }
-
-        let receivedDateStr = null;
-        if (installment.dateReceived) {
-          const receivedDateObj = new Date(installment.dateReceived);
-          if (!Number.isNaN(receivedDateObj.getTime())) {
-            receivedDateStr = receivedDateObj.toISOString().split('T')[0];
-          }
-        }
-
-        const isDueInRange = dueDateStr && dueDateStr >= startStr && dueDateStr <= endStr;
-        const isPaidInRange = receivedDateStr && receivedDateStr >= startStr && receivedDateStr <= endStr;
-
-        const commonData = {
-          loanId: loan._id,
-          customerId: loan.customerId,
-          customerName,
-          cellNumbers: cellNumbers.map ? cellNumbers.map(c => c.number).filter(Boolean) : [],
-          address,
-          vehicleType: loan.vehicleType,
-          make: loan.make,
-          model: loan.model,
-          regNo: loan.regNo,
-          loanAmount: loan.loanAmount,
-          emiAmount: loan.emiAmount,
-          sNo: installment.sNo,
-          dueDate: installment.dueDate,
-          dueAmount: installment.dueAmount,
-          amountReceived: installment.amountReceived || 0,
-          dateReceived: installment.dateReceived,
-          status: installment.status,
-          pendingAmount: installment.pendingAmount || 0,
-        };
-
-        if (isPaidInRange) {
-          paidTotal += installment.amountReceived || 0;
-          paidInstallments.push(commonData);
-        }
-
-        if (dueDateStr && dueDateStr <= endStr && installment.status !== 'Paid') {
-          const dueDateObj = new Date(installment.dueDate);
-          const today = new Date();
-          const daysOverdue = Number.isNaN(dueDateObj.getTime())
-            ? 0
-            : Math.floor((today - dueDateObj) / (1000 * 60 * 60 * 24));
-          dueInstallments.push({
-            ...commonData,
-            daysOverdue: daysOverdue > 0 ? daysOverdue : 0,
-            carryingOutstanding: installment.pendingAmount || installment.dueAmount,
-          });
-          dueTotal += installment.pendingAmount || installment.dueAmount;
-        }
-      }
+    const startRange = new Date(`${startDate}T00:00:00.000Z`);
+    const endRange = new Date(`${endDate}T23:59:59.999Z`);
+    if (Number.isNaN(startRange.getTime()) || Number.isNaN(endRange.getTime())) {
+      return res.status(400).json({ message: 'startDate and endDate must be valid YYYY-MM-DD.' });
     }
 
-    res.json({
-      paid: {
-        count: paidInstallments.length,
-        total: paidTotal,
-        data: paidInstallments,
+    // Optional filters (applied at DB level for both paid & due)
+    const tab = (req.query.tab || 'all').toLowerCase();
+    const vehicleType = req.query.vehicleType || null;
+    const installmentStatus = req.query.status || null; // installment-level status filter
+    const customerSearch = (req.query.customerSearch || '').trim();
+    const regNoSearch = (req.query.regNo || '').trim();
+    const downloadAll = req.query.download === 'true';
+    const pagination = downloadAll
+      ? { page: 1, pageSize: 10000, skip: 0, limit: 10000 }
+      : parsePagination(req.query);
+    const { page, pageSize, skip, limit } = pagination;
+    const wantPaid = tab === 'all' || tab === 'paid';
+    const wantDue = tab === 'all' || tab === 'due';
+
+    const baseLoanMatch = {};
+    if (vehicleType) baseLoanMatch.vehicleType = vehicleType;
+    if (regNoSearch) {
+      const re = regNoSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      baseLoanMatch.$or = [
+        { regNo: { $regex: re, $options: 'i' } },
+        { 'vehicles.regNo': { $regex: re, $options: 'i' } },
+      ];
+    }
+
+    const installmentMatchPaid = {
+      'installments.status': 'Paid',
+      'installments.dateReceived': { $ne: null, $gte: startRange, $lte: endRange },
+    };
+    // Due filters: status != Paid (default) OR exactly equal if user filter says so.
+    const installmentMatchDue = installmentStatus === 'Paid'
+      ? null // impossible: "Paid" installments cannot also be due
+      : {
+          'installments.dueDate': { $ne: null, $lte: endRange },
+          'installments.status': { $ne: 'Paid' },
+        };
+    if (installmentStatus && installmentStatus !== 'Paid') {
+      installmentMatchPaid['installments.status'] = installmentStatus;
+      installmentMatchDue['installments.status'] = installmentStatus;
+    }
+
+    const customerLookup = {
+      $lookup: {
+        from: 'customers',
+        localField: 'customerId',
+        foreignField: '_id',
+        as: 'customer',
       },
-      due: {
-        count: dueInstallments.length,
-        total: dueTotal,
-        data: dueInstallments,
+    };
+    const flattenCustomer = {
+      $addFields: {
+        customerNameResolved: {
+          $ifNull: ['$customerName', { $arrayElemAt: ['$customer.name', 0] }, 'Unknown'],
+        },
+        cellNumbersResolved: {
+          $cond: [
+            { $gt: [{ $size: { $ifNull: ['$cellNumbers', []] } }, 0] },
+            '$cellNumbers',
+            { $arrayElemAt: ['$customer.cellNumbers', 0] },
+          ],
+        },
+        addressResolved: {
+          $ifNull: ['$address', { $arrayElemAt: ['$customer.address', 0] }, ''],
+        },
       },
-    });
+    };
+    const projectCommon = {
+      $project: {
+        loanId: '$_id',
+        customerId: '$customerId',
+        customerName: '$customerNameResolved',
+        cellNumbers: {
+          $map: {
+            input: {
+              $filter: {
+                input: { $ifNull: ['$cellNumbersResolved', []] },
+                as: 'c',
+                cond: { $ne: ['$$c.number', null] },
+              },
+            },
+            as: 'c',
+            in: '$$c.number',
+          },
+        },
+        address: '$addressResolved',
+        vehicleType: '$vehicleType',
+        make: '$make',
+        model: '$model',
+        regNo: '$regNo',
+        loanAmount: '$loanAmount',
+        emiAmount: '$emiAmount',
+        sNo: '$installments.sNo',
+        dueDate: '$installments.dueDate',
+        dueAmount: '$installments.dueAmount',
+        amountReceived: { $ifNull: ['$installments.amountReceived', 0] },
+        dateReceived: '$installments.dateReceived',
+        status: '$installments.status',
+        pendingAmount: { $ifNull: ['$installments.pendingAmount', 0] },
+      },
+    };
+    const addDaysOverdue = {
+      $addFields: {
+        daysOverdue: {
+          $let: {
+            vars: { diff: { $divide: [{ $subtract: [new Date(), '$dueDate'] }, 1000 * 60 * 60 * 24] } },
+            in: { $cond: [{ $gt: ['$$diff', 0] }, { $floor: '$$diff' }, 0] },
+          },
+        },
+        carryingOutstanding: {
+          $cond: [
+            { $gt: ['$pendingAmount', 0] },
+            '$pendingAmount',
+            '$dueAmount',
+          ],
+        },
+      },
+    };
+
+    // Customer-name search applied after the customer lookup as a regex match on the
+    // resolved name field.
+    const matchCustomerName = customerSearch
+      ? { $match: { customerNameResolved: { $regex: customerSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } } }
+      : null;
+
+    async function fetchSection(installmentMatch, totalExpr, dataExpr) {
+      const pipeline = [
+        { $unwind: { path: '$installments', preserveNullAndEmptyArrays: false } },
+        { $match: { ...installmentMatch } },
+        ...(Object.keys(baseLoanMatch).length ? [{ $match: baseLoanMatch }] : []),
+        customerLookup,
+        flattenCustomer,
+        ...(matchCustomerName ? [matchCustomerName] : []),
+        projectCommon,
+        addDaysOverdue,
+      ];
+
+      const [totalRow] = await Loan.aggregate([
+        ...pipeline,
+        { $group: { _id: null, total: totalExpr, count: { $sum: 1 } } },
+      ]);
+      const total = totalRow?.total || 0;
+      const count = totalRow?.count || 0;
+
+      const data = await Loan.aggregate([
+        ...pipeline,
+        { $sort: { dateReceived: -1, dueDate: -1, sNo: 1 } },
+        { $skip: skip },
+        { $limit: limit },
+      ]);
+
+      return { total, count, data, hasMore: skip + data.length < count };
+    }
+
+    const response = { filters: { tab, startDate, endDate, vehicleType, status: installmentStatus, customerSearch, regNoSearch } };
+
+    if (wantPaid) {
+      const paid = await fetchSection(
+        installmentMatchPaid,
+        { $sum: '$amountReceived' },
+        '$amountReceived'
+      );
+      response.paid = {
+        count: paid.count,
+        total: roundMoney(paid.total),
+        data: paid.data,
+        page,
+        pageSize,
+        hasMore: paid.hasMore,
+      };
+    } else {
+      response.paid = { count: 0, total: 0, data: [], page, pageSize, hasMore: false };
+    }
+
+    if (wantDue) {
+      if (!installmentMatchDue) {
+        response.due = { count: 0, total: 0, data: [], page, pageSize, hasMore: false };
+      } else {
+        const due = await fetchSection(
+          installmentMatchDue,
+          {
+            $sum: {
+              $cond: [
+                { $gt: ['$pendingAmount', 0] },
+                '$pendingAmount',
+                '$dueAmount',
+              ],
+            },
+          },
+          null
+        );
+        response.due = {
+          count: due.count,
+          total: roundMoney(due.total),
+          data: due.data,
+          page,
+          pageSize,
+          hasMore: due.hasMore,
+        };
+      }
+    } else {
+      response.due = { count: 0, total: 0, data: [], page, pageSize, hasMore: false };
+    }
+
+    res.json(response);
   } catch (err) {
     console.error('Report error:', err);
     res.status(500).json({ message: 'Server error generating report.' });

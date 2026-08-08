@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const Customer = require('../models/Customer');
 const Loan = require('../models/Loan');
 const authMiddleware = require('../middleware/auth');
+const { parsePagination, paginatedResponse } = require('../utils/pagination');
 const {
   uploadBase64ToPcloud,
   deleteFromPcloud,
@@ -109,32 +110,24 @@ router.post('/', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const { search, searchType } = req.query;
-    let customers = await Customer.find().sort({ createdAt: -1 }).lean();
-    const seenCustomerIds = new Set();
-    customers = customers.filter(c => {
-      const id = c._id.toString();
-      if (seenCustomerIds.has(id)) return false;
-      seenCustomerIds.add(id);
-      return true;
-    });
-    let customerIds = null;
+    const { page, pageSize, skip, limit } = parsePagination(req.query);
+    const filter = {};
+    let customerIdsFromLoans = null;
 
     if (search && searchType === 'name') {
       const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(escapedSearch, 'i');
-      customers = customers.filter(c => regex.test(c.name || ''));
+      filter.name = { $regex: escapedSearch, $options: 'i' };
     } else if (search && searchType === 'fileId') {
       const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(escapedSearch, 'i');
-      customers = customers.filter(c => regex.test(c.fileId || ''));
+      filter.fileId = { $regex: escapedSearch, $options: 'i' };
     } else if (search && searchType === 'phone') {
       const phoneDigits = String(search).replace(/\D/g, '');
       const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(escapedSearch, 'i');
-      customers = customers.filter(c => {
-        const numbers = (c.cellNumbers || []).map(cell => String(cell.number || ''));
-        return numbers.some(n => regex.test(n) || (phoneDigits && n.replace(/\D/g, '').includes(phoneDigits)));
-      });
+      const phoneRegex = phoneDigits ? new RegExp(phoneDigits) : null;
+      filter.$or = [
+        { 'cellNumbers.number': { $regex: escapedSearch, $options: 'i' } },
+        ...(phoneRegex ? [{ 'cellNumbers.number': phoneRegex }] : []),
+      ];
     } else if (search && searchType === 'regNo') {
       const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const matchingLoans = await Loan.find({
@@ -142,23 +135,41 @@ router.get('/', async (req, res) => {
           { regNo: { $regex: escapedSearch, $options: 'i' } },
           { 'vehicles.regNo': { $regex: escapedSearch, $options: 'i' } }
         ]
-      }).select('customerId regNo vehicles').lean();
+      }).select('customerId').lean();
 
-      customerIds = [...new Set(
+      customerIdsFromLoans = [...new Set(
         matchingLoans
           .map(l => l.customerId ? l.customerId.toString() : null)
           .filter(Boolean)
       )];
-      customers = customers.filter(c => customerIds.includes(c._id.toString()));
+
+      if (customerIdsFromLoans.length === 0) {
+        return res.json(paginatedResponse({ data: [], total: 0, page, pageSize }));
+      }
+
+      filter._id = { $in: customerIdsFromLoans.map(id => new mongoose.Types.ObjectId(id)) };
+    } else if (search) {
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filter.$or = [
+        { name: { $regex: escapedSearch, $options: 'i' } },
+        { fileId: { $regex: escapedSearch, $options: 'i' } },
+        { 'cellNumbers.number': { $regex: escapedSearch, $options: 'i' } },
+      ];
     }
 
-    const matchStage = customerIds
-      ? { customerId: { $in: customerIds.map(id => new mongoose.Types.ObjectId(id)) } }
-      : {};
+    const total = await Customer.countDocuments(filter);
+    const customers = await Customer.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    if (customers.length === 0) {
+      return res.json(paginatedResponse({ data: [], total, page, pageSize }));
+    }
+
     const uniqueCustomerIds = [...new Set(customers.map(c => c._id.toString()))];
-    const loanMatchStage = Object.keys(matchStage).length > 0
-      ? { customerId: { $in: uniqueCustomerIds.map(id => new mongoose.Types.ObjectId(id)) } }
-      : {};
+    const loanMatchStage = { customerId: { $in: uniqueCustomerIds.map(id => new mongoose.Types.ObjectId(id)) } };
 
     const loanAgg = await Loan.aggregate([
       { $match: loanMatchStage },
@@ -182,22 +193,22 @@ router.get('/', async (req, res) => {
           totalOutstanding: { $first: '$outstandingPrincipal' },
           activeLoanIds: {
             $addToSet: {
-              $cond: [{ $eq: ['$status', 'Active'] }, '$_id', '$$REMOVE']
+              $cond: [{ $regexMatch: { input: '$status', regex: /^(active|ongoing)$/i } }, '$_id', '$$REMOVE']
             }
           },
           closedLoanIds: {
             $addToSet: {
-              $cond: [{ $eq: ['$status', 'Closed'] }, '$_id', '$$REMOVE']
+              $cond: [{ $regexMatch: { input: '$status', regex: /^closed$/i } }, '$_id', '$$REMOVE']
             }
           },
           completedLoanIds: {
             $addToSet: {
-              $cond: [{ $eq: ['$status', 'Completed'] }, '$_id', '$$REMOVE']
+              $cond: [{ $regexMatch: { input: '$status', regex: /^completed$/i } }, '$_id', '$$REMOVE']
             }
           },
           renewedLoanIds: {
             $addToSet: {
-              $cond: [{ $eq: ['$status', 'Renewed'] }, '$_id', '$$REMOVE']
+              $cond: [{ $regexMatch: { input: '$status', regex: /^renewed$/i } }, '$_id', '$$REMOVE']
             }
           },
           bikeRegNos: {
@@ -277,7 +288,7 @@ router.get('/', async (req, res) => {
       };
     }));
 
-    res.json(result);
+    res.json(paginatedResponse({ data: result, total, page, pageSize }));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error fetching customers.' });

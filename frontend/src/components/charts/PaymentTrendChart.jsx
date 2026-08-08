@@ -1,38 +1,58 @@
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 
-export function PaymentTrendChart({ loans = [] }) {
-  const monthlyData = {};
+export function PaymentTrendChart({ loans = [], monthlyCollections }) {
+  let chartData = [];
 
-  loans.forEach(loan => {
-    loan.installments?.forEach(installment => {
-      if (installment.status === 'Paid' && installment.dateReceived) {
-        const date = new Date(installment.dateReceived);
-        if (isNaN(date.getTime())) return;
-        const month = format(date, 'MMM yyyy');
-        monthlyData[month] = (monthlyData[month] || 0) + (installment.amountReceived || 0);
-      }
+  if (Array.isArray(monthlyCollections)) {
+    const now = new Date();
+    chartData = monthlyCollections
+      .map((entry) => {
+        const parsed = parse(entry.month, 'yyyy-MM', new Date());
+        if (Number.isNaN(parsed.getTime())) return null;
+        return {
+          month: format(parsed, 'MMM yyyy'),
+          collected: Number(entry.collected || 0),
+          _sortKey: parsed,
+        };
+      })
+      .filter(Boolean)
+      .filter((entry) => entry._sortKey <= now)
+      .sort((a, b) => a._sortKey - b._sortKey)
+      .slice(-12)
+      .map(({ month, collected }) => ({ month, collected }));
+  } else {
+    const monthlyData = {};
+    loans.forEach((loan) => {
+      loan.installments?.forEach((installment) => {
+        if (installment.status === 'Paid' && installment.dateReceived) {
+          const date = new Date(installment.dateReceived);
+          if (isNaN(date.getTime())) return;
+          const month = format(date, 'MMM yyyy');
+          monthlyData[month] = (monthlyData[month] || 0) + (installment.amountReceived || 0);
+        }
+      });
     });
-  });
 
-  const sortedMonths = Object.keys(monthlyData)
-    .filter(month => {
-      const date = new Date(month);
-      return date <= new Date();
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a);
-      const dateB = new Date(b);
-      if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
-      return dateA - dateB;
-    })
-    .slice(-12);
+    const sortedMonths = Object.keys(monthlyData)
+      .filter((month) => {
+        const date = new Date(month);
+        return date <= new Date();
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a);
+        const dateB = new Date(b);
+        if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
+        return dateA - dateB;
+      })
+      .slice(-12);
 
-  const chartData = sortedMonths.map(month => ({
-    month,
-    collected: monthlyData[month] || 0,
-  }));
+    chartData = sortedMonths.map((month) => ({
+      month,
+      collected: monthlyData[month] || 0,
+    }));
+  }
 
   return (
     <Card padding="" className="h-full">

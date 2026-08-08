@@ -3,15 +3,8 @@ import { Badge } from '@/components/ui/Badge';
 import { formatCurrency, formatDate } from '@/api';
 import { NavLink } from 'react-router-dom';
 
-export function PendingDuesTable({ dues, sortConfig, onSort, filter }) {
-  const filteredDues = dues.filter(due => {
-    if (filter.vehicleType && due.vehicleType !== filter.vehicleType) return false;
-    if (filter.minOverdueDays && due.daysOverdue < filter.minOverdueDays) return false;
-    if (filter.minAmount && due.outstandingForThisInstallment < filter.minAmount) return false;
-    return true;
-  });
-
-  const sortedDues = [...filteredDues].sort((a, b) => {
+export function PendingDuesTable({ dues, sortConfig, onSort }) {
+  const sortedDues = [...dues].sort((a, b) => {
     if (!sortConfig.key) return 0;
     const aVal = a[sortConfig.key];
     const bVal = b[sortConfig.key];
@@ -56,7 +49,7 @@ export function PendingDuesTable({ dues, sortConfig, onSort, filter }) {
           {sortedDues.length === 0 ? (
             <TableRow>
               <TableCell colSpan={7} className="text-center py-8 text-gray-500 dark:text-gray-400">
-                {dues.length === 0 ? 'No pending dues found' : 'No dues match current filters'}
+                No pending dues found
               </TableCell>
             </TableRow>
           ) : (

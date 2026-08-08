@@ -93,7 +93,21 @@ export const Loans = {
   remove: (id) => apiRequest(`/loans/${id}`, { method: 'DELETE' }),
   recordPayment: (id, sNo, data) =>
     apiRequest(`/loans/${id}/installments/${sNo}`, { method: 'PUT', body: data }),
-  pendingDues: () => apiRequest('/loans/pending-dues'),
+  pendingDues: (params = {}) => {
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== '')
+    );
+    const query = new URLSearchParams(cleanParams).toString();
+    return apiRequest(`/loans/pending-dues${query ? `?${query}` : ''}`);
+  },
+  pendingDuesSummary: () => apiRequest('/loans/pending-dues/summary'),
+  summary: (params = {}) => {
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== '')
+    );
+    const query = new URLSearchParams(cleanParams).toString();
+    return apiRequest(`/loans/summary${query ? `?${query}` : ''}`);
+  },
   uploadDocument: (id, data) =>
     apiRequest(`/loans/${id}/documents`, { method: 'POST', body: data }),
   deleteDocument: (id, docId) =>
@@ -104,8 +118,17 @@ export const Loans = {
     apiRequest(`/loans/${id}/restructure`, { method: 'PUT', body: data }),
   renewLoan: (id, data) =>
     apiRequest(`/loans/${id}/renew`, { method: 'POST', body: data }),
-  report: (startDate, endDate) =>
-    apiRequest(`/loans/report?startDate=${startDate}&endDate=${endDate}`),
+  report: (startDate, endDate, options = {}) => {
+    const params = new URLSearchParams({ startDate, endDate });
+    if (options.tab) params.set('tab', options.tab);
+    if (options.page) params.set('page', options.page);
+    if (options.pageSize) params.set('pageSize', options.pageSize);
+    if (options.vehicleType) params.set('vehicleType', options.vehicleType);
+    if (options.status) params.set('status', options.status);
+    if (options.customerSearch) params.set('customerSearch', options.customerSearch);
+    if (options.regNo) params.set('regNo', options.regNo);
+    return apiRequest(`/loans/report?${params.toString()}`);
+  },
 };
 
 export const System = {

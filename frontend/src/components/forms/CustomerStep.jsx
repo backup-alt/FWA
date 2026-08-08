@@ -22,7 +22,7 @@ export function CustomerStep({ form, control }) {
   const { showToast } = useToast();
 
   const { data: customersData, isLoading: loadingCustomers } = useCustomers();
-  const customers = Array.isArray(customersData) ? customersData : (customersData?.customers || []);
+  const customers = customersData?.data || [];
 
   const [showProfileModal, setShowProfileModal] = useState(false);
 

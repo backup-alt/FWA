@@ -7,11 +7,20 @@ const COLORS = {
   Auto: '#d97706',
 };
 
-export function VehicleTypeChart({ loans = [] }) {
-  const bikeLoans = loans.filter(loan => loan.vehicleType === 'Bike').length;
-  const carLoans = loans.filter(loan => loan.vehicleType === 'Car').length;
-  const autoLoans = loans.filter(loan => loan.vehicleType === 'Auto').length;
-  const total = loans.length;
+export function VehicleTypeChart({ loans = [], counts }) {
+  let bikeLoans, carLoans, autoLoans, total;
+
+  if (counts) {
+    bikeLoans = counts.Bike || 0;
+    carLoans = counts.Car || 0;
+    autoLoans = counts.Auto || 0;
+    total = bikeLoans + carLoans + autoLoans;
+  } else {
+    bikeLoans = loans.filter(loan => loan.vehicleType === 'Bike').length;
+    carLoans = loans.filter(loan => loan.vehicleType === 'Car').length;
+    autoLoans = loans.filter(loan => loan.vehicleType === 'Auto').length;
+    total = loans.length;
+  }
 
   const data = [
     { name: 'Bikes', value: bikeLoans, fill: COLORS.Bikes },

@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui';
 import { Select } from '@/components/ui/Select';
+import { CustomerSelect } from '@/components/ui/CustomerSelect';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useFieldArray, Controller } from 'react-hook-form';
 import { PlusIcon, TrashIcon, CameraIcon, EyeIcon, PencilIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useToast } from '@/context/ToastContext';
-import { useCustomers } from '@/hooks/useCustomers';
 
 export function CustomerStep({ form, control }) {
   const {
@@ -21,15 +21,11 @@ export function CustomerStep({ form, control }) {
   });
   const { showToast } = useToast();
 
-  const { data: customersData, isLoading: loadingCustomers } = useCustomers();
-  const customers = customersData?.data || [];
-
   const [showProfileModal, setShowProfileModal] = useState(false);
 
   const profileImage = watch('profileImage');
   const customerName = watch('customerName') || '?';
   const isNewCustomer = watch('isNewCustomer');
-  const existingCustomerId = watch('existingCustomerId') || '';
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
@@ -86,14 +82,10 @@ export function CustomerStep({ form, control }) {
             name="existingCustomerId"
             control={control}
             render={({ field }) => (
-              <Select
+              <CustomerSelect
                 {...field}
                 label="Select Existing Customer *"
-                options={customers.map(c => ({ 
-                  value: c._id, 
-                  label: `${c.name}${c.cellNumbers?.[0]?.number ? ` (${c.cellNumbers[0].number})` : ''}` 
-                }))}
-                placeholder={loadingCustomers ? 'Loading customers...' : 'Choose a customer'}
+                placeholder="Choose a customer"
                 error={errors.existingCustomerId?.message}
               />
             )}

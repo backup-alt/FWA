@@ -1,0 +1,145 @@
+<ion-header class="ram-modal-header">
+  <ion-toolbar class="ram-bg-card">
+    <ion-title class="heading-font" style="font-size: 1.125rem; font-weight: 700; color: var(--ram-ink);">
+      Restructure Loan
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="onCancel()" style="--color: var(--ram-ink);">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ram-bg-surface ram-page" fullscreen>
+  <form [formGroup]="restructureForm" class="ram-modal-content">
+    <!-- Current Loan Info -->
+    <ion-card class="ram-card-2 ion-padding-horizontal ion-padding-top">
+      <ion-card-header class="ion-padding-horizontal ion-padding-top">
+        <ion-card-title class="heading-font" style="font-size: 1rem; font-weight: 700; color: var(--ram-ink);">
+          Current Loan
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-padding">
+        <div class="ram-loan-summary">
+          <div class="ram-summary-row">
+            <span class="ram-summary-label">Outstanding Principal</span>
+            <span class="ram-summary-value ram-amount">{{ formatCurrency(loan?.outstandingPrincipal) }}</span>
+          </div>
+          <div class="ram-summary-row">
+            <span class="ram-summary-label">Current EMI</span>
+            <span class="ram-summary-value">{{ formatCurrency(currentEmi) }}</span>
+          </div>
+          <div class="ram-summary-row">
+            <span class="ram-summary-label">Remaining Period</span>
+            <span class="ram-summary-value">{{ currentPeriod }} months</span>
+          </div>
+          <div class="ram-summary-row">
+            <span class="ram-summary-label">Interest Rate</span>
+            <span class="ram-summary-value">{{ loan?.interestRate }}%</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Restructure Options -->
+    <ion-card class="ram-card-2 ion-padding-horizontal ion-padding-top" style="margin-top: var(--ram-stack-md);">
+      <ion-card-header class="ion-padding-horizontal ion-padding-top">
+        <ion-card-title class="heading-font" style="font-size: 1rem; font-weight: 700; color: var(--ram-ink);">
+          Restructure Options
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-padding">
+        <div class="ram-form-group">
+          <ion-item lines="none" class="ram-form-item">
+            <ion-label position="stacked" class="ram-label-required">Mode *</ion-label>
+            <ion-select formControlName="mode" interface="action-sheet" placeholder="Select restructure mode">
+              <ion-select-option *ngFor="let mode of restructureModes" [value]="mode.value">
+                {{ mode.label }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+        </div>
+
+        <div class="ram-mode-description ion-padding-vertical" *ngIf="restructureForm.get('mode')?.value">
+          <ion-icon [name]="restructureForm.get('mode')?.value === 'lower-emi' ? 'arrow-down-outline' : 'arrow-up-outline'" style="font-size: 20px; color: var(--ram-primary); margin-right: 0.5rem;"></ion-icon>
+          <span style="color: var(--ram-on-surface-variant); font-size: 13px;">
+            {{ getModeDescription() }}
+          </span>
+        </div>
+
+        <div class="ram-form-group">
+          <ion-item lines="none" class="ram-form-item">
+            <ion-label position="stacked" class="ram-label-required">
+              {{ restructureForm.get('mode')?.value === 'lower-emi' ? 'New EMI Amount *' : 'New Period (months) *' }}
+            </ion-label>
+            <ion-input
+              formControlName="targetValue"
+              type="number"
+              inputmode="decimal"
+              [placeholder]="restructureForm.get('mode')?.value === 'lower-emi' ? 'Enter new EMI amount' : 'Enter new period in months'"
+              step="0.01"
+              [min]="1">
+            </ion-input>
+          </ion-item>
+
+          <ion-item lines="none" class="ram-form-item" *ngIf="restructureForm.get('targetValue')?.touched && restructureForm.get('targetValue')?.errors">
+            <ion-label class="ram-field-error" style="--color: var(--ram-error);">
+              <span *ngIf="restructureForm.get('targetValue')?.errors?.['required']">Value is required</span>
+              <span *ngIf="restructureForm.get('targetValue')?.errors?.['min']">Must be greater than 0</span>
+            </ion-label>
+          </ion-item>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Preview -->
+    <ion-card class="ram-card-2 ion-padding-horizontal ion-padding-top" *ngIf="newEmi > 0 || newPeriod > 0" style="margin-top: var(--ram-stack-md);">
+      <ion-card-header class="ion-padding-horizontal ion-padding-top">
+        <ion-card-title class="heading-font" style="font-size: 1rem; font-weight: 700; color: var(--ram-ink);">
+          Preview
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-padding">
+        <div class="ram-preview-grid">
+          <div class="ram-preview-item">
+            <span class="ram-preview-label">New EMI</span>
+            <span class="ram-preview-value ram-primary">{{ formatCurrency(newEmi) }}</span>
+            <span class="ram-preview-diff" *ngIf="newEmi !== currentEmi">
+              <ion-icon [name]="newEmi < currentEmi ? 'arrow-down-outline' : 'arrow-up-outline'" style="font-size: 12px;"></ion-icon>
+              {{ formatCurrency(absolute(newEmi - currentEmi)) }}
+            </span>
+          </div>
+          <div class="ram-preview-item">
+            <span class="ram-preview-label">New Period</span>
+            <span class="ram-preview-value ram-primary">{{ newPeriod }} months</span>
+            <span class="ram-preview-diff" *ngIf="newPeriod !== currentPeriod">
+              <ion-icon [name]="newPeriod > currentPeriod ? 'arrow-up-outline' : 'arrow-down-outline'" style="font-size: 12px;"></ion-icon>
+              {{ absolute(newPeriod - currentPeriod) }} months
+            </span>
+          </div>
+        </div>
+
+        <div class="ram-preview-note ion-padding-top" style="border-top: 1px solid var(--ram-outline-variant); margin-top: var(--ram-gutter); padding-top: var(--ram-gutter);">
+          <ion-icon name="information-circle-outline" slot="start" style="font-size: 18px; color: var(--ram-primary);"></ion-icon>
+          <span style="color: var(--ram-on-surface-variant); font-size: 13px;">
+            Restructuring will create a new installment schedule. Previous pending installments will be adjusted.
+          </span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Submit Button -->
+    <div class="ram-modal-actions ion-padding-horizontal ion-padding-bottom">
+      <ion-button fill="outline" expand="block" (click)="onCancel()" style="--border-color: var(--ram-outline); --color: var(--ram-ink); margin-bottom: var(--ram-gutter); height: var(--ram-touch-target); border-radius: var(--ram-radius-md);">
+        <ion-icon name="close-outline" slot="start"></ion-icon>
+        Cancel
+      </ion-button>
+      <ion-button fill="solid" expand="block" (click)="onSubmit()" [disabled]="restructureForm.invalid || isSubmitting || newEmi === 0 || newPeriod === 0" style="--background: var(--ram-primary); --color: white; height: var(--ram-touch-target); border-radius: var(--ram-radius-md);">
+        <ion-spinner *ngIf="isSubmitting" name="crescent" slot="start" style="margin-right: 0.5rem;"></ion-spinner>
+        <ion-icon *ngIf="!isSubmitting" name="settings-outline" slot="start"></ion-icon>
+        {{ isSubmitting ? 'Restructuring...' : 'Restructure Loan' }}
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

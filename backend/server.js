@@ -20,6 +20,9 @@ const allowedOrigins = [
   'https://backup-alt.github.io',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
+  'https://localhost',
+  'capacitor://localhost',
+  'ionic://localhost',
 ];
 
 app.use(cors({

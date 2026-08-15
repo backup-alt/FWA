@@ -1,0 +1,385 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally.
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/* Design tokens from Mobile UI reference */
+:root {
+  /* Colors */
+  --ram-primary: #00355f;
+  --ram-primary-light: #0f4c81;
+  --ram-primary-container: #0f4c81;
+  --ram-on-primary-container: #8ebdf9;
+  --ram-primary-fixed: #d2e4ff;
+  --ram-secondary: #4c6269;
+  --ram-secondary-container: #cce4ec;
+  --ram-on-secondary-container: #50666d;
+
+  --ram-background: #f7f9fb;
+  --ram-surface: #f7f9fb;
+  --ram-surface-container: #eceef0;
+  --ram-surface-container-high: #e6e8ea;
+  --ram-surface-container-low: #f2f4f6;
+  --ram-surface-container-lowest: #ffffff;
+  --ram-surface-variant: #e0e3e5;
+
+  --ram-on-surface: #191c1e;
+  --ram-on-surface-variant: #42474f;
+  --ram-outline: #727780;
+  --ram-outline-variant: #c2c7d1;
+
+  --ram-error: #ba1a1a;
+  --ram-error-container: #ffdad6;
+  --ram-on-error-container: #93000a;
+
+  --ram-green: #18784d;
+  --ram-green-bg: #e2f5ea;
+  --ram-orange: #9b4d00;
+  --ram-orange-bg: #fff0dc;
+  --ram-red: #a52a25;
+  --ram-red-bg: #fde9e7;
+  --ram-navy: #073b66;
+  --ram-navy-2: #0d538c;
+  --ram-ink: #17212b;
+  --ram-muted: #64717f;
+  --ram-line: #dfe5eb;
+  --ram-soft: #eef3f7;
+  --ram-card: #ffffff;
+
+  /* Status colors for overdue/outstanding */
+  --ram-orange-50: #fff7ed;
+  --ram-orange-200: #fed7aa;
+  --ram-orange-500: #f97316;
+  --ram-orange-600: #ea580c;
+  --ram-orange-700: #c2410c;
+  --ram-emerald-50: #ecfdf5;
+  --ram-emerald-200: #a7f3d0;
+  --ram-emerald-500: #10b981;
+  --ram-emerald-600: #059669;
+  --ram-emerald-700: #047857;
+
+  /* Chart colors */
+  --ram-chart-bike: #00529B;
+  --ram-chart-car: #00A99D;
+  --ram-chart-auto: #F7931E;
+
+  /* Typography */
+  --ram-font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ram-font-heading: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ram-font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+
+  /* Spacing tokens */
+  --ram-gutter: 0.75rem;
+  --ram-touch-target: 2.75rem;
+  --ram-stack-sm: 0.25rem;
+  --ram-stack-md: 0.5rem;
+  --ram-stack-lg: 1rem;
+  --ram-margin-page: 1rem;
+
+  /* Border radius */
+  --ram-radius-sm: 0.25rem;
+  --ram-radius-md: 0.5rem;
+  --ram-radius-lg: 0.75rem;
+  --ram-radius-xl: 1rem;
+
+  /* Shadows */
+  --ram-shadow-card: 0 1px 4px rgba(0, 0, 0, 0.05);
+  --ram-shadow-card-2: 0 3px 14px rgba(21, 46, 70, 0.035);
+  --ram-shadow-hero: 0 8px 28px rgba(21, 46, 70, 0.07);
+  --ram-shadow-fab: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+* {
+  font-family: var(--ram-font-body);
+}
+
+h1, h2, h3, h4, h5, h6,
+.heading-font,
+.section-title {
+  font-family: var(--ram-font-heading);
+}
+
+/* Ionic variable overrides for dark mode */
+:root {
+  --ion-background-color: var(--ram-background);
+  --ion-background-color-rgb: 247, 249, 251;
+  --ion-text-color: var(--ram-on-surface);
+  --ion-text-color-rgb: 25, 28, 30;
+  --ion-toolbar-background: #ffffff;
+  --ion-toolbar-color: var(--ram-on-surface);
+  --ion-color-primary: #00355f;
+  --ion-color-primary-rgb: 0, 53, 95;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #002e53;
+  --ion-color-primary-tint: #1a496f;
+  --ion-font-family: var(--ram-font-body);
+}
+
+/* Safe area support */
+.safe-area-bottom {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+}
+
+.safe-area-top {
+  padding-top: calc(env(safe-area-inset-top) + 0.5rem);
+}
+
+/* Utility classes matching Mobile UI design system */
+.ram-bg-surface {
+  background-color: var(--ram-surface);
+}
+
+.ram-bg-card {
+  background-color: var(--ram-card);
+}
+
+.ram-text-primary {
+  color: var(--ram-primary);
+}
+
+.ram-text-muted {
+  color: var(--ram-on-surface-variant);
+}
+
+.ram-text-mono {
+  font-family: var(--ram-font-mono);
+  letter-spacing: -0.01em;
+}
+
+.ram-card {
+  background: var(--ram-surface-container-lowest);
+  border-radius: var(--ram-radius-xl);
+  padding: 1rem;
+  box-shadow: var(--ram-shadow-card);
+  border: 1px solid var(--ram-outline-variant);
+}
+
+.ram-card-2 {
+  background: var(--ram-surface-container-lowest);
+  border-radius: 16px;
+  box-shadow: var(--ram-shadow-card-2);
+  border: 1px solid var(--ram-line);
+}
+
+.ram-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.ram-pill-primary {
+  background: var(--ram-primary);
+  color: #fff;
+}
+
+.ram-pill-neutral {
+  background: var(--ram-surface-container);
+  color: var(--ram-on-surface-variant);
+  border: 1px solid var(--ram-outline-variant);
+}
+
+.ram-pill-green {
+  background: var(--ram-green-bg);
+  color: var(--ram-green);
+}
+
+.ram-pill-orange {
+  background: var(--ram-orange-bg);
+  color: var(--ram-orange);
+}
+
+.ram-pill-red {
+  background: var(--ram-error-container);
+  color: var(--ram-error);
+}
+
+.ram-pill-blue {
+  background: rgba(0, 53, 95, 0.1);
+  color: var(--ram-primary);
+}
+
+.ram-pill-emerald {
+  background: var(--ram-emerald-50);
+  color: var(--ram-emerald-700);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.ram-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.4;
+  text-transform: capitalize;
+}
+
+.ram-status-badge.closed {
+  background: var(--ram-orange-bg);
+  color: var(--ram-orange);
+}
+
+.ram-status-badge.active {
+  background: var(--ram-green-bg);
+  color: var(--ram-green);
+}
+
+.ram-status-badge.completed {
+  background: var(--ram-blue-bg, #e6f0fb);
+  color: var(--ram-primary);
+}
+
+.ram-status-badge.overdue {
+  background: var(--ram-error-container);
+  color: var(--ram-error);
+}
+
+.ram-status-badge.paid {
+  background: var(--ram-green-bg);
+  color: var(--ram-green);
+}
+
+.ram-status-badge.pending {
+  background: var(--ram-surface-container);
+  color: var(--ram-on-surface-variant);
+}
+
+.ram-status-badge.cancelled {
+  background: var(--ram-surface-container);
+  color: var(--ram-muted);
+}
+
+.ram-status-badge.partial {
+  background: var(--ram-orange-bg);
+  color: var(--ram-orange);
+}
+
+/* Number formatting */
+.ram-amount {
+  font-family: var(--ram-font-mono);
+  font-weight: 500;
+}
+
+/* Animation */
+.ram-press {
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+
+.ram-press:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+/* Loading & empty states */
+.ram-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--ram-on-surface-variant);
+}
+
+.ram-empty-state ion-icon {
+  font-size: 3rem;
+  opacity: 0.4;
+  margin-bottom: 1rem;
+}
+
+.ram-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--ram-on-surface-variant);
+}
+
+.ram-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--ram-error);
+}
+
+/* Page container constrained to phone width */
+.ram-page {
+  max-width: 540px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.ram-page-content {
+  padding: var(--ram-margin-page);
+  padding-bottom: calc(var(--ram-touch-target) + env(safe-area-inset-bottom) + 2rem);
+}
+
+/* Bottom nav offset */
+.ram-bottom-nav-offset {
+  padding-bottom: calc(3.5rem + env(safe-area-inset-bottom) + 1rem);
+}
+
+/* Form styling */
+.ram-form-field {
+  margin-bottom: var(--ram-stack-md);
+}
+
+.ram-input-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ram-on-surface-variant);
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.ram-required::after {
+  content: ' *';
+  color: var(--ram-error);
+}
+
+/* Custom button reset */
+button {
+  font-family: var(--ram-font-body);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ram-outline);
+  border-radius: 3px;
+}

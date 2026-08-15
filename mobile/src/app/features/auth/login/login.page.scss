@@ -1,0 +1,51 @@
+:host {
+  ion-content {
+    --background: var(--ram-background);
+  }
+
+  ion-toolbar {
+    --background: var(--ram-card);
+    --border-color: var(--ram-outline-variant);
+    --border-style: solid;
+    --border-width: 0 0 1px 0;
+    box-shadow: var(--ram-shadow-card);
+  }
+
+  ion-card {
+    --background: var(--ram-card);
+  }
+
+  ion-input {
+    --padding-start: 0.75rem;
+    --padding-end: 0.75rem;
+    --placeholder-color: var(--ram-muted);
+    --padding-top: 0.5rem;
+    --padding-bottom: 0.5rem;
+    --border-radius: var(--ram-radius-md);
+    --background: var(--ram-surface-container-lowest);
+    --border-color: var(--ram-outline-variant);
+    --border-style: solid;
+    --border-width: 1px;
+    height: var(--ram-touch-target);
+    font-size: 1rem;
+  }
+
+  ion-input.ion-invalid {
+    --border-color: var(--ram-error);
+  }
+
+  ion-button {
+    --padding-start: 1.5rem;
+    --padding-end: 1.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+  }
+
+  code {
+    background: var(--ram-surface-container);
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--ram-radius-sm);
+    font-size: 0.875rem;
+  }
+}

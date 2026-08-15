@@ -1,0 +1,171 @@
+<ion-content class="ram-bg-surface ram-page" fullscreen>
+  <!-- Sticky Header -->
+  <ion-header collapse="condense">
+    <ion-toolbar class="ram-bg-card" mode="md">
+      <ion-title class="heading-font" style="font-size: 1.25rem; font-weight: 700; color: var(--ram-ink);">
+        Customers
+      </ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="onAddCustomer()" fill="clear" style="--color: var(--ram-primary);">
+          <ion-icon name="person-add-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- Search Bar -->
+  <ion-toolbar class="ram-bg-card" mode="md" style="--border-color: var(--ram-outline-variant); --border-style: solid; --border-width: 0 0 1px 0;">
+    <ion-searchbar
+      [(ngModel)]="searchTerm"
+      (ionInput)="onSearchInput($event)"
+      placeholder="Search by name, file ID, phone..."
+      animated="true"
+      style="--background: var(--ram-background); --box-shadow: none; --border-radius: var(--ram-radius-md); --placeholder-color: var(--ram-muted);"
+      [debounce]="300">
+    </ion-searchbar>
+  </ion-toolbar>
+
+  <!-- Search Type Chips (shown when searching) -->
+  <div *ngIf="searchTerm" class="ram-search-type-chips ion-padding-horizontal ion-padding-top" style="background: var(--ram-background);">
+    <ion-segment [(ngModel)]="searchType" (ionChange)="onSearchTypeChange($event.detail.value)">
+      <ion-segment-button value="name">
+        <ion-label style="font-size: 12px; font-weight: 600;">Name</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="fileId">
+        <ion-label style="font-size: 12px; font-weight: 600;">File ID</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="phone">
+        <ion-label style="font-size: 12px; font-weight: 600;">Phone</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="regNo">
+        <ion-label style="font-size: 12px; font-weight: 600;">Reg No</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
+
+  <!-- Pull to Refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="arrow-down-outline"
+      pullingText="Pull to refresh"
+      refreshingSpinner="crescent"
+      refreshingText="Loading...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <div class="ram-page-content ram-bottom-nav-offset">
+    <!-- Loading State -->
+    <div *ngIf="isLoading && customers.length === 0" class="ram-loading-state ion-padding" style="text-align: center; padding: 3rem 0;">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p style="margin-top: 1rem; color: var(--ram-muted);">Loading customers...</p>
+    </div>
+
+    <!-- Customer List -->
+    <div *ngIf="!isLoading || customers.length > 0">
+      <!-- Results Summary -->
+      <div *ngIf="totalCustomers > 0" class="ram-results-summary ion-padding-horizontal ion-padding-top" style="font-size: 13px; color: var(--ram-on-surface-variant);">
+        <span>{{ totalCustomers }} customer{{ totalCustomers !== 1 ? 's' : '' }} found</span>
+        <ion-button *ngIf="searchTerm" fill="clear" size="small" (click)="clearSearch()" style="--color: var(--ram-primary); --padding-start: 0;">
+          <ion-icon name="close-outline" slot="start" style="font-size: 14px;"></ion-icon>
+          Clear search
+        </ion-button>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && customers.length === 0" class="ram-empty-state ion-padding" style="text-align: center; padding: 4rem 1.5rem;">
+        <ion-icon name="people-outline" style="font-size: 3rem; color: var(--ram-muted);"></ion-icon>
+        <h3 style="margin: 1rem 0 0.5rem; color: var(--ram-ink); font-family: var(--ram-font-heading);">
+          {{ searchTerm ? 'No customers found' : 'No customers yet' }}
+        </h3>
+        <p style="color: var(--ram-muted); font-size: 0.875rem;">
+          {{ searchTerm ? 'Try adjusting your search or clear filters.' : 'Add your first customer to get started.' }}
+        </p>
+        <ion-button fill="solid" (click)="onAddCustomer()" style="margin-top: 1.5rem; --background: var(--ram-primary); --color: white;">
+          <ion-icon name="person-add-outline" slot="start"></ion-icon>
+          Add Customer
+        </ion-button>
+      </div>
+
+      <!-- Customer Cards -->
+      <ion-list *ngIf="customers.length > 0" lines="none" class="ion-no-padding ram-customer-list">
+        <ion-item
+          *ngFor="let customer of customers; trackBy: trackByCustomerId"
+          class="ram-customer-item ram-card-2 ram-press"
+          (click)="onCustomerClick(customer)"
+          lines="none"
+          detail="true"
+          style="--background: var(--ram-card); margin-bottom: var(--ram-gutter); border-radius: var(--ram-radius-md); box-shadow: var(--ram-shadow-card);"
+        >
+          <div class="ram-customer-avatar" slot="start">
+            <div class="ram-avatar-circle" [style.background]="getAvatarColor(customer._id)">
+              {{ getInitials(customer.name) }}
+            </div>
+          </div>
+
+          <div class="ram-customer-info">
+            <div class="ram-customer-header">
+              <h3 class="ram-customer-name">{{ customer.name }}</h3>
+              <ion-badge *ngIf="customer.fileId" class="ram-file-id-badge" slot="end">
+                {{ customer.fileId }}
+              </ion-badge>
+            </div>
+
+            <div class="ram-customer-meta">
+              <span class="ram-meta-item" *ngIf="getPrimaryPhone(customer) !== '—'">
+                <ion-icon name="call-outline" class="ram-meta-icon"></ion-icon>
+                {{ getPrimaryPhone(customer) }}
+              </span>
+              <span class="ram-meta-item" *ngIf="customer.address">
+                <ion-icon name="location-outline" class="ram-meta-icon"></ion-icon>
+                {{ customer.address }}
+              </span>
+            </div>
+
+            <div class="ram-customer-stats" *ngIf="customer.loanCount && customer.loanCount > 0">
+              <span class="ram-stat">
+                <span class="ram-stat-value">{{ customer.activeLoans || 0 }}</span>
+                <span class="ram-stat-label">Active</span>
+              </span>
+              <span class="ram-stat">
+                <span class="ram-stat-value">{{ customer.completedLoans || 0 }}</span>
+                <span class="ram-stat-label">Completed</span>
+              </span>
+              <span class="ram-stat">
+                <span class="ram-stat-value ram-amount">{{ formatCurrency(customer.totalOutstanding) }}</span>
+                <span class="ram-stat-label">Outstanding</span>
+              </span>
+            </div>
+
+            <div class="ram-customer-vehicles" *ngIf="(customer.bikeCount || 0) + (customer.carCount || 0) + (customer.autoCount || 0) > 0">
+              <span class="ram-vehicle-chip" *ngIf="customer.bikeCount && customer.bikeCount > 0">
+                <ion-icon name="bicycle-outline"></ion-icon> {{ customer.bikeCount }}
+              </span>
+              <span class="ram-vehicle-chip" *ngIf="customer.carCount && customer.carCount > 0">
+                <ion-icon name="car-outline"></ion-icon> {{ customer.carCount }}
+              </span>
+              <span class="ram-vehicle-chip" *ngIf="customer.autoCount && customer.autoCount > 0">
+                <ion-icon name="car-sport-outline"></ion-icon> {{ customer.autoCount }}
+              </span>
+            </div>
+          </div>
+        </ion-item>
+      </ion-list>
+
+      <!-- Infinite Scroll -->
+      <ion-infinite-scroll threshold="100px" (ionInfinite)="loadMore($event)" *ngIf="hasMore && customers.length > 0">
+        <ion-infinite-scroll-content
+          loadingSpinner="crescent"
+          loadingText="Loading more..."
+          style="--background: var(--ram-background);">
+        </ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+    </div>
+  </div>
+
+  <!-- FAB -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" style="bottom: 5rem; right: 1rem;">
+    <ion-fab-button (click)="onAddCustomer()" class="ram-press" style="--background: var(--ram-primary); --color: white; --box-shadow: var(--ram-shadow-fab);">
+      <ion-icon name="person-add-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

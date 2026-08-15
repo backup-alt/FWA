@@ -1,0 +1,24 @@
+<ion-header><ion-toolbar class="ram-bg-card"><ion-title class="heading-font">Reports</ion-title></ion-toolbar></ion-header>
+<ion-content class="ram-bg-surface ram-page" fullscreen>
+  <ion-refresher slot="fixed" (ionRefresh)="loadReport($event)"><ion-refresher-content></ion-refresher-content></ion-refresher>
+  <div class="ram-page-content ram-bottom-nav-offset">
+    <ion-card class="ram-card-2 report-filters"><ion-card-content>
+      <div class="date-grid"><label>From<input type="date" [(ngModel)]="startDate"></label><label>To<input type="date" [(ngModel)]="endDate"></label></div>
+      <div class="date-grid"><ion-select [(ngModel)]="vehicleType" interface="popover" placeholder="All vehicles"><ion-select-option value="">All vehicles</ion-select-option><ion-select-option value="Bike">Bike</ion-select-option><ion-select-option value="Car">Car</ion-select-option><ion-select-option value="Auto">Auto</ion-select-option></ion-select><ion-input [(ngModel)]="customerSearch" placeholder="Customer or file number"></ion-input></div>
+      <ion-button expand="block" (click)="loadReport()">Apply filters</ion-button>
+    </ion-card-content></ion-card>
+
+    <section class="report-summary"><div><span>Total payments</span><strong>{{ formatCurrency(paidTotal) }}</strong><small>{{ paidCount }} records</small></div><div><span>Total dues</span><strong>{{ formatCurrency(dueTotal) }}</strong><small>{{ dueCount }} records</small></div></section>
+    <div class="report-tabs"><button [class.active]="activeTab === 'paid'" (click)="setTab('paid')">Payments</button><button [class.active]="activeTab === 'due'" (click)="setTab('due')">Pending dues</button></div>
+    <div class="ram-loading-state" *ngIf="isLoading"><ion-spinner name="crescent"></ion-spinner><p>Loading report...</p></div>
+    <div class="ram-empty-state" *ngIf="!isLoading && ((activeTab === 'paid' && !paidRows.length) || (activeTab === 'due' && !dueRows.length))"><ion-icon name="document-text-outline"></ion-icon><h3>No report records</h3><p>Try a different date range or filter.</p></div>
+
+    <section class="report-list" *ngIf="!isLoading && activeTab === 'paid'">
+      <button class="report-row" *ngFor="let row of paidRows" (click)="openLoan(row.loanId)"><div><span class="file">{{ row.customerFileId || 'No file number' }}</span><h2>{{ row.customerName }}</h2><p>{{ row.regNo }} · Installment #{{ row.sNo }}</p></div><div class="row-amount"><strong>{{ formatCurrency(row.amountReceived) }}</strong><small>{{ formatDate(row.dateReceived) }}</small></div></button>
+    </section>
+    <section class="report-list" *ngIf="!isLoading && activeTab === 'due'">
+      <button class="report-row" *ngFor="let row of dueRows" (click)="openLoan(row.loanId)"><div><span class="file">{{ row.customerFileId || 'No file number' }}</span><h2>{{ row.customerName }}</h2><p>{{ row.regNo }} · Due {{ formatDate(row.dueDate) }}</p></div><div class="row-amount overdue"><strong>{{ formatCurrency(row.carryingOutstanding || row.dueAmount) }}</strong><small>{{ row.daysOverdue }} days overdue</small></div></button>
+    </section>
+    <ion-infinite-scroll (ionInfinite)="loadMore($event)" *ngIf="(activeTab === 'paid' ? hasMorePaid : hasMoreDue)"><ion-infinite-scroll-content loadingText="Loading more records..."></ion-infinite-scroll-content></ion-infinite-scroll>
+  </div>
+</ion-content>

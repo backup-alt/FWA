@@ -1,0 +1,171 @@
+<ion-header class="ram-modal-header">
+  <ion-toolbar class="ram-bg-card">
+    <ion-title class="heading-font" style="font-size: 1.125rem; font-weight: 700; color: var(--ram-ink);">
+      Record Payment
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="onCancel()" style="--color: var(--ram-ink);">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ram-bg-surface ram-page" fullscreen>
+  <form [formGroup]="paymentForm" class="ram-modal-content">
+    <!-- Selected Installment Info -->
+    <ion-card class="ram-card-2 ion-padding-horizontal ion-padding-top" *ngIf="selectedInstallment">
+      <ion-card-header class="ion-padding-horizontal ion-padding-top">
+        <ion-card-title class="heading-font" style="font-size: 1rem; font-weight: 700; color: var(--ram-ink);">
+          Installment #{{ selectedInstallment.sNo }}
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-padding">
+        <div class="ram-installment-summary">
+          <div class="ram-summary-row">
+            <span class="ram-summary-label">Due Amount</span>
+            <span class="ram-summary-value">{{ formatCurrency(selectedInstallment.dueAmount) }}</span>
+          </div>
+          <div class="ram-summary-row">
+            <span class="ram-summary-label">Due Date</span>
+            <span class="ram-summary-value">{{ formatDate(selectedInstallment.dueDate) }}</span>
+          </div>
+          <div class="ram-summary-row" *ngIf="selectedInstallment.amountReceived">
+            <span class="ram-summary-label">Already Received</span>
+            <span class="ram-summary-value ram-received">{{ formatCurrency(selectedInstallment.amountReceived) }}</span>
+          </div>
+          <div class="ram-summary-row">
+            <span class="ram-summary-label">Pending</span>
+            <span class="ram-summary-value ram-pending">{{ formatCurrency(selectedInstallment.pendingAmount || selectedInstallment.dueAmount) }}</span>
+          </div>
+          <div class="ram-summary-row" *ngIf="selectedInstallment.shortfallAmount && selectedInstallment.shortfallAmount > 0">
+            <span class="ram-summary-label">Shortfall</span>
+            <span class="ram-summary-value ram-pending">{{ formatCurrency(selectedInstallment.shortfallAmount) }}</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Payment Form -->
+    <ion-card class="ram-card-2 ion-padding-horizontal ion-padding-top" style="margin-top: var(--ram-stack-md);">
+      <ion-card-header class="ion-padding-horizontal ion-padding-top">
+        <ion-card-title class="heading-font" style="font-size: 1rem; font-weight: 700; color: var(--ram-ink);">
+          Payment Details
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-padding">
+        <div class="ram-form-group">
+          <ion-item lines="none" class="ram-form-item">
+            <ion-label position="stacked" class="ram-label-required">Installment *</ion-label>
+            <ion-select formControlName="installmentId" interface="action-sheet" placeholder="Select installment">
+              <ion-select-option *ngFor="let inst of installments" [value]="inst.sNo">
+                #{{ inst.sNo }} - {{ formatCurrency(inst.dueAmount) }} (Due: {{ formatDate(inst.dueDate) }}) [{{ inst.status }}]
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item lines="none" class="ram-form-item" *ngIf="paymentForm.get('installmentId')?.touched && paymentForm.get('installmentId')?.errors?.['required']">
+            <ion-label class="ram-field-error" style="--color: var(--ram-error);">
+              Please select an installment
+            </ion-label>
+          </ion-item>
+        </div>
+
+        <div class="ram-form-group">
+          <ion-item lines="none" class="ram-form-item">
+            <ion-label position="stacked" class="ram-label-required">Amount Received *</ion-label>
+            <ion-input
+              formControlName="amountReceived"
+              type="number"
+              inputmode="decimal"
+              placeholder="Enter amount"
+              (ionInput)="onAmountInput($event)"
+              step="0.01"
+              [max]="getMaxAmount()">
+            </ion-input>
+          </ion-item>
+
+          <ion-item lines="none" class="ram-form-item" *ngIf="paymentForm.get('amountReceived')?.touched && paymentForm.get('amountReceived')?.errors">
+            <ion-label class="ram-field-error" style="--color: var(--ram-error);">
+              <span *ngIf="paymentForm.get('amountReceived')?.errors?.['required']">Amount is required</span>
+              <span *ngIf="paymentForm.get('amountReceived')?.errors?.['min']">Amount must be at least 1</span>
+              <span *ngIf="paymentForm.get('amountReceived')?.errors?.['max']">Amount cannot exceed pending amount ({{ formatCurrency(getMaxAmount()) }})</span>
+            </ion-label>
+          </ion-item>
+
+          <div class="ram-amount-hint" *ngIf="selectedInstallment">
+            Max allowed: {{ formatCurrency(getMaxAmount()) }}
+          </div>
+        </div>
+
+        <div class="ram-form-group">
+          <ion-item lines="none" class="ram-form-item">
+            <ion-label position="stacked" class="ram-label-required">Date Received *</ion-label>
+            <ion-input
+              formControlName="dateReceived"
+              type="date"
+              [max]="today">
+            </ion-input>
+          </ion-item>
+        </div>
+
+        <div class="ram-form-group">
+          <ion-item lines="none" class="ram-form-item">
+            <ion-label position="stacked">Payment Type</ion-label>
+            <ion-select formControlName="paymentType" interface="action-sheet" placeholder="Select payment type">
+              <ion-select-option *ngFor="let pt of paymentTypes" [value]="pt.value">
+                {{ pt.label }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+        </div>
+
+        <div class="ram-form-group">
+          <ion-item lines="none" class="ram-form-item">
+            <ion-label position="stacked">Signature / Collector</ion-label>
+            <ion-input
+              formControlName="sign"
+              type="text"
+              placeholder="Enter collector name or signature"
+              autocomplete="off">
+            </ion-input>
+          </ion-item>
+        </div>
+
+        <div class="ram-form-group">
+          <ion-item lines="none">
+            <ion-label>Mark as Completed</ion-label>
+            <ion-toggle formControlName="completed" slot="end"></ion-toggle>
+          </ion-item>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Quick Pay Buttons -->
+    <ion-card class="ram-card-2 ion-padding-horizontal ion-padding-top" style="margin-top: var(--ram-stack-md);" *ngIf="selectedInstallment">
+      <ion-card-content class="ion-padding">
+        <p class="heading-font" style="font-size: 0.875rem; font-weight: 600; color: var(--ram-on-surface-variant); margin: 0 0 var(--ram-gutter);">Quick Pay</p>
+        <div class="ram-quick-pay-buttons" style="display: flex; gap: var(--ram-gutter); flex-wrap: wrap;">
+          <ion-button fill="outline" (click)="setQuickAmount(selectedInstallment.pendingAmount || selectedInstallment.dueAmount)" style="flex: 1; min-width: 120px;">
+            Full Pending ({{ formatCurrency(selectedInstallment.pendingAmount || selectedInstallment.dueAmount) }})
+          </ion-button>
+          <ion-button fill="outline" (click)="setQuickAmount((selectedInstallment.pendingAmount || selectedInstallment.dueAmount) / 2)" style="flex: 1; min-width: 120px;">
+            Half ({{ formatCurrency((selectedInstallment.pendingAmount || selectedInstallment.dueAmount) / 2) }})
+          </ion-button>
+          <ion-button fill="outline" (click)="setQuickAmount(0)" style="flex: 1; min-width: 120px;" [disabled]="!paymentForm.get('amountReceived')?.value">
+            Clear
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Submit Button -->
+    <div class="ram-modal-actions ion-padding-horizontal ion-padding-bottom">
+      <ion-button fill="solid" expand="block" (click)="onSubmit()" [disabled]="paymentForm.invalid || isSubmitting" style="--background: var(--ram-primary); --color: white; height: var(--ram-touch-target); border-radius: var(--ram-radius-md);">
+        <ion-spinner *ngIf="isSubmitting" name="crescent" slot="start" style="margin-right: 0.5rem;"></ion-spinner>
+        <ion-icon *ngIf="!isSubmitting" name="checkmark-outline" slot="start"></ion-icon>
+        {{ isSubmitting ? 'Recording...' : 'Record Payment' }}
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

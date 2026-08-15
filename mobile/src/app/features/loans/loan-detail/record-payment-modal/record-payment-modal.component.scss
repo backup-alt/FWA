@@ -1,0 +1,155 @@
+:host {
+  ion-content {
+    --background: var(--ram-background);
+  }
+
+  ion-header {
+    --background: var(--ram-card);
+    --border-color: var(--ram-outline-variant);
+    --border-style: solid;
+    --border-width: 0 0 1px 0;
+    box-shadow: var(--ram-shadow-card);
+  }
+
+  ion-toolbar {
+    --padding-start: var(--ram-margin-page);
+    --padding-end: var(--ram-margin-page);
+  }
+
+  ion-item {
+    --background: transparent;
+    --border-color: transparent;
+    --padding-start: 0;
+    --padding-end: 0;
+    --inner-padding-start: 0;
+    --inner-padding-end: 0;
+  }
+
+  ion-input {
+    --padding-start: 0;
+    --padding-end: 0;
+    --placeholder-color: var(--ram-muted);
+  }
+
+  ion-select {
+    --padding-start: 0;
+    --padding-end: 0;
+    --placeholder-color: var(--ram-muted);
+  }
+
+  ion-card {
+    --background: var(--ram-card);
+  }
+
+  ion-label {
+    color: var(--ram-ink);
+  }
+
+  .ram-label-required::after {
+    content: ' *';
+    color: var(--ram-error);
+  }
+}
+
+.ram-modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.ram-modal-content {
+  padding: var(--ram-gutter) var(--ram-margin-page) calc(var(--ram-margin-page) + 80px);
+}
+
+.ram-installment-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ram-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--ram-outline-variant);
+}
+
+.ram-summary-row:last-child {
+  border-bottom: none;
+}
+
+.ram-summary-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ram-on-surface-variant);
+}
+
+.ram-summary-value {
+  font-family: var(--ram-font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ram-ink);
+  text-align: right;
+}
+
+.ram-summary-value.ram-received {
+  color: var(--ram-green);
+}
+
+.ram-summary-value.ram-pending {
+  color: var(--ram-error);
+}
+
+.ram-form-group {
+  margin-bottom: var(--ram-stack-md);
+}
+
+.ram-form-item {
+  margin-bottom: var(--ram-gutter);
+}
+
+.ram-field-error {
+  font-size: 12px;
+  color: var(--ram-error);
+  margin: 0.25rem 0 0;
+}
+
+.ram-amount-hint {
+  font-size: 12px;
+  color: var(--ram-muted);
+  margin-top: 0.25rem;
+  text-align: right;
+}
+
+.ram-quick-pay-buttons {
+  display: flex;
+  gap: var(--ram-gutter);
+  flex-wrap: wrap;
+}
+
+.ram-quick-pay-buttons ion-button {
+  flex: 1;
+  min-width: 100px;
+  height: 44px;
+}
+
+.ram-modal-actions {
+  position: sticky;
+  bottom: 0;
+  background: var(--ram-background);
+  padding-top: var(--ram-gutter);
+  z-index: 10;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .ram-quick-pay-buttons {
+    flex-direction: column;
+  }
+
+  .ram-quick-pay-buttons ion-button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,9 @@
+:host { --editor-border: var(--ram-outline-variant, #d7dee8); }
+.editor-section { border: 1px solid var(--editor-border); border-radius: 12px; padding: 14px; margin-bottom: 14px; background: var(--ram-card, var(--ion-card-background)); }
+.editor-section h2 { margin: 0 0 14px; font-size: 14px; font-weight: 700; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; }
+.section-heading ion-button { margin-top: -10px; margin-right: -10px; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; }
+ion-input, ion-select { min-width: 0; --border-radius: 8px; font-size: 13px; }
+.footer-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 4px 12px max(4px, env(safe-area-inset-bottom)); }
+@media (max-width: 370px) { .grid { grid-template-columns: 1fr; } }

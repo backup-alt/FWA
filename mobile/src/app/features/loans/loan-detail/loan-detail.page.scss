@@ -1,0 +1,739 @@
+:host {
+  ion-content {
+    --background: var(--ram-background);
+  }
+
+  ion-header {
+    --background: var(--ram-card);
+    --border-color: var(--ram-outline-variant);
+    --border-style: solid;
+    --border-width: 0 0 1px 0;
+    box-shadow: var(--ram-shadow-card);
+  }
+
+  ion-toolbar {
+    --padding-start: var(--ram-margin-page);
+    --padding-end: var(--ram-margin-page);
+  }
+
+  ion-segment {
+    --background: transparent;
+    --indicator-background: var(--ram-primary);
+    --indicator-height: 3px;
+    --indicator-border-radius: 1.5px;
+    --color: var(--ram-on-surface-variant);
+    --color-checked: var(--ram-primary);
+  }
+
+  ion-segment-button {
+    --padding-start: 0.5rem;
+    --padding-end: 0.5rem;
+  }
+
+  ion-badge {
+    --background: var(--ram-primary-container);
+    --color: var(--ram-primary);
+    --border-radius: var(--ram-radius-sm);
+    font-size: 11px;
+    font-weight: 600;
+    height: 20px;
+    --padding-start: 0.5rem;
+    --padding-end: 0.5rem;
+  }
+
+  ion-card {
+    --background: var(--ram-card);
+  }
+
+  ion-item {
+    --background: var(--ram-card);
+    --border-color: transparent;
+    --highlight-background: var(--ram-background);
+    --padding-start: var(--ram-margin-card);
+    --padding-end: var(--ram-margin-card);
+    --inner-padding-start: 0;
+    --inner-padding-end: 0;
+  }
+
+  ion-infinite-scroll-content {
+    --background: var(--ram-background);
+  }
+
+  ion-refresher {
+    --background: var(--ram-background);
+  }
+}
+.ram-section-title-row { display: flex; justify-content: space-between; align-items: center; }
+.ram-section-title-row ion-card-title { font-size: 1rem; font-weight: 700; }
+.ram-vehicles-card { margin-bottom: var(--ram-stack-md); }
+.ram-vehicle-row { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--ram-outline-variant); }
+.ram-vehicle-row:last-child { border-bottom: 0; }
+.ram-vehicle-icon-wrap { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 10px; background: var(--ram-background); }
+.ram-vehicle-icon-wrap ion-icon { display: block; width: 24px; height: 24px; }
+.ram-vehicle-row div { min-width: 0; display: grid; gap: 3px; }
+.ram-vehicle-row strong { font-size: 13px; }
+.ram-vehicle-row span, .ram-vehicle-row small { color: var(--ram-muted); font-size: 12px; overflow-wrap: anywhere; }
+
+.ram-page-content {
+  padding: var(--ram-gutter) var(--ram-margin-page) calc(var(--ram-margin-page) + 80px);
+}
+
+/* Loan Header Card */
+.ram-loan-header-card {
+  --background: var(--ram-card);
+  box-shadow: var(--ram-shadow-card);
+}
+
+.ram-header-content {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.ram-loan-avatar-large {
+  flex-shrink: 0;
+}
+
+.ram-loan-avatar-large ion-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ram-loan-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ram-loan-title {
+  font-family: var(--ram-font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ram-ink);
+  margin: 0;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ram-loan-id-badge-large {
+  --background: var(--ram-primary-container);
+  --color: var(--ram-primary);
+  --border-radius: var(--ram-radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  height: 22px;
+  --padding-start: 0.5rem;
+  --padding-end: 0.5rem;
+}
+
+.ram-loan-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+}
+
+.ram-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 13px;
+  color: var(--ram-on-surface-variant);
+}
+
+.ram-meta-icon {
+  font-size: 16px;
+  color: var(--ram-muted);
+  flex-shrink: 0;
+}
+
+.ram-status-badge {
+  flex-shrink: 0;
+}
+
+.ram-quick-stats {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ram-stat-item {
+  flex: 1;
+  min-width: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.ram-stat-value {
+  font-family: var(--ram-font-mono);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--ram-ink);
+  line-height: 1.2;
+}
+
+.ram-stat-value.ram-amount {
+  color: var(--ram-primary);
+}
+
+.ram-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ram-on-surface-variant);
+  text-align: center;
+}
+
+/* Progress Large */
+.ram-progress-large {
+  height: 12px;
+  background: var(--ram-outline-variant);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.ram-progress-bar {
+  height: 100%;
+  background: var(--ram-primary);
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+.ram-progress-text {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ram-on-surface-variant);
+  margin: 0;
+}
+
+/* Detail Grid */
+.ram-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.ram-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ram-detail-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ram-muted);
+}
+
+.ram-detail-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ram-ink);
+  font-family: var(--ram-font-mono);
+}
+
+/* Status Grid */
+.ram-status-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ram-status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.ram-status-item-icon {
+  font-size: 20px;
+  color: var(--ram-primary);
+  flex-shrink: 0;
+}
+
+.ram-status-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ram-status-item-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ram-muted);
+}
+
+.ram-status-item-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ram-ink);
+}
+
+/* Action Buttons */
+.ram-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ram-gutter);
+}
+
+.ram-action-row {
+  display: flex;
+  gap: var(--ram-gutter);
+}
+
+/* Installments Tab */
+.ram-installments-list {
+  padding-bottom: 6rem;
+}
+
+.ram-installment-item {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ram-installment-item.ram-installment-clickable:active {
+  transform: scale(0.99);
+  box-shadow: var(--ram-shadow-sm);
+}
+
+.ram-installment-content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ram-installment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+.ram-installment-no {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.ram-installment-no-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ram-muted);
+}
+
+.ram-installment-no-value {
+  font-family: var(--ram-font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ram-ink);
+}
+
+.ram-installment-status {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.ram-installment-icon {
+  font-size: 18px;
+}
+
+.ram-installment-icon.ram-installment-paid {
+  color: var(--ram-green);
+}
+
+.ram-installment-icon.ram-installment-partial {
+  color: var(--ram-blue);
+}
+
+.ram-installment-icon.ram-installment-overdue {
+  color: var(--ram-error);
+}
+
+.ram-installment-icon.ram-installment-cancelled {
+  color: var(--ram-gray);
+}
+
+.ram-installment-icon.ram-installment-pending {
+  color: var(--ram-muted);
+}
+
+.ram-installment-status span {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.ram-installment-status.ram-installment-paid span {
+  color: var(--ram-green);
+}
+
+.ram-installment-status.ram-installment-partial span {
+  color: var(--ram-blue);
+}
+
+.ram-installment-status.ram-installment-overdue span {
+  color: var(--ram-error);
+}
+
+.ram-installment-status.ram-installment-cancelled span {
+  color: var(--ram-gray);
+}
+
+.ram-installment-status.ram-installment-pending span {
+  color: var(--ram-on-surface-variant);
+}
+
+.ram-installment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 200px;
+}
+
+.ram-installment-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ram-installment-detail .ram-detail-label {
+  flex-shrink: 0;
+}
+
+.ram-installment-detail .ram-detail-value {
+  text-align: right;
+  flex: 1;
+  min-width: 80px;
+}
+
+.ram-received {
+  color: var(--ram-green) !important;
+}
+
+.ram-pending {
+  color: var(--ram-error) !important;
+}
+
+.ram-installment-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  min-width: 140px;
+  margin-top: 0.5rem;
+}
+
+.ram-installment-pay-btn {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* Payments Tab */
+.ram-payments-list {
+  padding-bottom: 6rem;
+}
+
+.ram-payment-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ram-payment-icon {
+  font-size: 24px;
+  color: var(--ram-primary);
+  flex-shrink: 0;
+}
+
+.ram-payment-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ram-payment-title {
+  font-family: var(--ram-font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ram-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ram-payment-date {
+  font-size: 12px;
+  color: var(--ram-on-surface-variant);
+}
+
+.ram-payment-amount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+  min-width: 100px;
+}
+
+.ram-payment-amount-value {
+  font-family: var(--ram-font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ram-green);
+}
+
+.ram-payment-type {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ram-primary);
+  background: var(--ram-primary-container);
+  padding: 2px 8px;
+  border-radius: var(--ram-radius-sm);
+}
+
+/* Documents Tab */
+.ram-doc-actions {
+  padding-bottom: var(--ram-gutter);
+}
+
+.ram-docs-list {
+  padding-bottom: 6rem;
+}
+
+.ram-doc-item {
+  transition: transform 0.15s ease;
+}
+
+.ram-doc-item:active {
+  transform: scale(0.99);
+}
+
+.ram-doc-icon {
+  font-size: 24px;
+  color: var(--ram-primary);
+  flex-shrink: 0;
+}
+
+.ram-doc-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ram-doc-name {
+  font-family: var(--ram-font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ram-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ram-doc-meta {
+  font-size: 12px;
+  color: var(--ram-on-surface-variant);
+}
+
+/* History Tab */
+.ram-history-list {
+  padding-bottom: 6rem;
+}
+
+.ram-history-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.ram-history-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ram-history-icon-payment {
+  background: var(--ram-green-container);
+}
+
+.ram-history-icon-restructure {
+  background: var(--ram-blue-container);
+}
+
+.ram-history-icon-renewal {
+  background: var(--ram-purple-container);
+}
+
+.ram-history-icon-closure {
+  background: var(--ram-gray-container);
+}
+
+.ram-history-icon-font {
+  font-size: 18px;
+}
+
+.ram-history-icon-payment .ram-history-icon-font {
+  color: var(--ram-green);
+}
+
+.ram-history-icon-restructure .ram-history-icon-font {
+  color: var(--ram-blue);
+}
+
+.ram-history-icon-renewal .ram-history-icon-font {
+  color: var(--ram-purple);
+}
+
+.ram-history-icon-closure .ram-history-icon-font {
+  color: var(--ram-gray);
+}
+
+.ram-history-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ram-history-desc {
+  font-family: var(--ram-font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ram-ink);
+}
+
+.ram-history-date {
+  font-size: 12px;
+  color: var(--ram-on-surface-variant);
+}
+
+.ram-history-extra {
+  font-size: 12px;
+  color: var(--ram-on-surface-variant);
+}
+
+/* Status Badges */
+.ram-status-active {
+  --background: var(--ram-green-container) !important;
+  --color: var(--ram-green) !important;
+}
+
+.ram-status-completed {
+  --background: var(--ram-primary-container) !important;
+  --color: var(--ram-primary) !important;
+}
+
+.ram-status-closed {
+  --background: var(--ram-gray-container) !important;
+  --color: var(--ram-gray) !important;
+}
+
+.ram-status-renewed {
+  --background: var(--ram-blue-container) !important;
+  --color: var(--ram-blue) !important;
+}
+
+.ram-status-default {
+  --background: var(--ram-background) !important;
+  --color: var(--ram-on-surface-variant) !important;
+  border: 1px solid var(--ram-outline);
+}
+
+/* Empty & Loading States */
+.ram-loading-state {
+  padding: 3rem 0 !important;
+}
+
+.ram-empty-state ion-icon {
+  display: block;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .ram-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ram-status-badge {
+    align-self: flex-start;
+  }
+
+  .ram-quick-stats {
+    gap: 0.5rem;
+  }
+
+  .ram-stat-item {
+    min-width: 60px;
+  }
+
+  .ram-stat-value {
+    font-size: 1rem;
+  }
+
+  .ram-installment-content {
+    flex-direction: column;
+  }
+
+  .ram-installment-progress {
+    width: 100%;
+    min-width: 0;
+    margin-top: 0.75rem;
+  }
+
+  .ram-installment-pay-btn {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+
+  .ram-installment-pay-btn ion-button {
+    width: 100%;
+  }
+
+  .ram-payment-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ram-payment-amount {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}

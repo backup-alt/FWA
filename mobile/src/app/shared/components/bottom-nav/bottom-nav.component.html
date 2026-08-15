@@ -1,0 +1,24 @@
+<ion-footer class="ram-bottom-nav">
+  <ion-toolbar mode="md" class="ram-bottom-nav-toolbar">
+    <div class="ram-nav-items">
+      <div
+        *ngFor="let tab of tabs"
+        class="ram-nav-item"
+        [class.active]="activeTab === tab.name"
+        (click)="onTabClick(tab)"
+        role="button"
+        tabindex="0"
+        (keydown.enter)="onTabClick(tab)"
+        (keydown.space)="onTabClick(tab)"
+      >
+        <ion-icon
+          [name]="activeTab === tab.name ? tab.iconFilled : tab.icon"
+          size="large"
+          class="ram-nav-icon"
+        ></ion-icon>
+        <span class="ram-nav-label">{{ tab.label }}</span>
+        <div class="ram-nav-indicator" *ngIf="activeTab === tab.name"></div>
+      </div>
+    </div>
+  </ion-toolbar>
+</ion-footer>

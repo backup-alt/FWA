@@ -1,0 +1,258 @@
+<ion-content class="ram-bg-surface ram-page" fullscreen>
+  <!-- Sticky Header -->
+  <ion-header collapse="condense">
+    <ion-toolbar class="ram-bg-card" mode="md">
+      <ion-buttons slot="start">
+        <ion-button (click)="onCancel()" fill="clear" style="--color: var(--ram-ink);">
+          <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+      <ion-title class="heading-font" style="font-size: 1.25rem; font-weight: 700; color: var(--ram-ink);">
+        {{ customer ? 'Add Loan for ' + customer.name : 'Add New Loan' }}
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <form [formGroup]="loanForm" class="ram-page-content ram-bottom-nav-offset">
+    <!-- Customer Selection -->
+    <ion-card class="ram-card-2 ion-padding-horizontal ion-padding-top" *ngIf="!customerId">
+      <ion-card-header class="ion-padding-horizontal ion-padding-top">
+        <ion-card-title class="heading-font" style="font-size: 1rem; font-weight: 700; color: var(--ram-ink);">
+          Customer
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-padding">
+        <ion-item lines="none" class="ram-form-item">
+          <ion-label position="stacked" class="ram-label-required">Select Customer *</ion-label>
+          <ion-select formControlName="customerId" interface="action-sheet" placeholder="Search and select customer">
+            <ion-select-option *ngFor="let cust of customers" [value]="cust._id">
+              {{ cust.name }} ({{ cust.fileId }})
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <div *ngIf="customer" class="ram-customer-banner ion-padding-horizontal ion-padding-top">
+      <ion-card class="ram-info-card">
+        <ion-card-content class="ion-padding">
+          <div class="ram-customer-banner-content">
+            <div class="ram-avatar-circle" [style.background]="getAvatarColor(customer._id)">
+              {{ getInitials(customer.name) }}
+            </div>
+            <div class="ram-customer-banner-info">
+              <span class="ram-customer-banner-name">{{ customer.name }}</span>
+              <span class="ram-customer-banner-id">{{ customer.fileId }}</span>
+            </div>
+            <ion-button fill="clear" (click)="onCancel()" style="--color: var(--ram-primary); --padding: 0;">
+              <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Vehicle Information -->
+    <ion-card class="ram-card-2 ion-padding-horizontal ion-padding-top" style="margin-top: var(--ram-stack-md);">
+      <ion-card-header class="ion-padding-horizontal ion-padding-top">
+        <ion-card-title class="heading-font" style="font-size: 1rem; font-weight: 700; color: var(--ram-ink);">
+          Vehicle Information
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-padding">
+        <div class="ram-form-group">
+          <ion-item lines="none" class="ram-form-item">
+            <ion-label position="stacked" class="ram-label-required">Vehicle Type *</ion-label>
+            <ion-select formControlName="vehicleType" interface="action-sheet" placeholder="Select vehicle type">
+              <ion-select-option *ngFor="let vt of vehicleTypes" [value]="vt.value">
+                {{ vt.label }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+        </div>
+
+        <div class="ram-form-row">
+          <div class="ram-form-group" style="flex: 1;">
+            <ion-item lines="none" class="ram-form-item">
+              <ion-label position="stacked" class="ram-label-required">Make *</ion-label>
+              <ion-input formControlName="make" placeholder="e.g., Honda, Hero, Bajaj" type="text" autocapitalize="words"></ion-input>
+            </ion-item>
+          </div>
+          <div class="ram-form-group" style="flex: 1;">
+            <ion-item lines="none" class="ram-form-item">
+              <ion-label position="stacked" class="ram-label-required">Model *</ion-label>
+              <ion-input formControlName="model" placeholder="e.g., Activa, Splendor, CNG" type="text" autocapitalize="words"></ion-input>
+            </ion-item>
+          </div>
+        </div>
+
+        <ion-item lines="none" class="ram-form-item">
+          <ion-label position="stacked" class="ram-label-required">Registration Number *</ion-label>
+          <ion-input formControlName="regNo" placeholder="e.g., MH12AB1234" type="text" autocapitalize="characters"></ion-input>
+        </ion-item>
+
+        <ion-item lines="none" class="ram-form-item">
+          <ion-label position="stacked">Loan Account Number</ion-label>
+          <ion-input formControlName="loanAccountNumber" placeholder="Auto-generated if left empty" type="text"></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ng-container formArrayName="additionalVehicles">
+      <ion-card class="ram-card-2 ion-padding-horizontal ion-padding-top" *ngFor="let vehicle of additionalVehicles.controls; let index = index" [formGroupName]="index">
+        <ion-card-header><ion-card-title class="heading-font" style="font-size: 1rem;">Vehicle {{ index + 2 }} <ion-button type="button" fill="clear" color="danger" (click)="removeVehicle(index)"><ion-icon name="trash-outline"></ion-icon></ion-button></ion-card-title></ion-card-header>
+        <ion-card-content>
+          <div class="ram-form-row"><ion-item class="ram-form-item" lines="none"><ion-label position="stacked">Type *</ion-label><ion-select formControlName="vehicleType"><ion-select-option *ngFor="let vt of vehicleTypes" [value]="vt.value">{{ vt.label }}</ion-select-option></ion-select></ion-item><ion-item class="ram-form-item" lines="none"><ion-label position="stacked">Reg. No. *</ion-label><ion-input formControlName="regNo"></ion-input></ion-item></div>
+          <div class="ram-form-row"><ion-item class="ram-form-item" lines="none"><ion-label position="stacked">Make *</ion-label><ion-input formControlName="make"></ion-input></ion-item><ion-item class="ram-form-item" lines="none"><ion-label position="stacked">Model *</ion-label><ion-input formControlName="model"></ion-input></ion-item></div>
+          <div class="ram-form-row"><ion-item class="ram-form-item" lines="none"><ion-label position="stacked">RC Status</ion-label><ion-input formControlName="rcStatus"></ion-input></ion-item><ion-item class="ram-form-item" lines="none"><ion-label position="stacked">NOC</ion-label><ion-input formControlName="noc"></ion-input></ion-item></div>
+          <div class="ram-form-row"><ion-item class="ram-form-item" lines="none"><ion-label position="stacked">Insurance</ion-label><ion-input formControlName="insurance"></ion-input></ion-item><ion-item class="ram-form-item" lines="none"><ion-label position="stacked">Key Status</ion-label><ion-input formControlName="keyStatus"></ion-input></ion-item></div>
+        </ion-card-content>
+      </ion-card>
+    </ng-container>
+    <div class="ion-padding-horizontal"><ion-button type="button" fill="clear" (click)="addVehicle()"><ion-icon name="add-outline" slot="start"></ion-icon>Add Vehicle</ion-button></div>
+
+    <!-- Financial Information -->
+    <ion-card class="ram-card-2 ion-padding-horizontal ion-padding-top" style="margin-top: var(--ram-stack-md);">
+      <ion-card-header class="ion-padding-horizontal ion-padding-top">
+        <ion-card-title class="heading-font" style="font-size: 1rem; font-weight: 700; color: var(--ram-ink);">
+          Financial Information
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-padding">
+        <div class="ram-form-row">
+          <div class="ram-form-group" style="flex: 1;">
+            <ion-item lines="none" class="ram-form-item">
+              <ion-label position="stacked" class="ram-label-required">Loan Amount *</ion-label>
+              <ion-input formControlName="loanAmount" type="number" inputmode="decimal" placeholder="0" step="0.01" [min]="1"></ion-input>
+            </ion-item>
+          </div>
+          <div class="ram-form-group" style="flex: 1;">
+            <ion-item lines="none" class="ram-form-item">
+              <ion-label position="stacked" class="ram-label-required">Finance Amount *</ion-label>
+              <ion-input formControlName="financeAmount" type="number" inputmode="decimal" placeholder="0" step="0.01" [min]="1"></ion-input>
+            </ion-item>
+          </div>
+        </div>
+
+        <div class="ram-form-row">
+          <div class="ram-form-group" style="flex: 1;">
+            <ion-item lines="none" class="ram-form-item">
+              <ion-label position="stacked" class="ram-label-required">Interest Rate (%) *</ion-label>
+              <ion-input formControlName="interestRate" type="number" inputmode="decimal" placeholder="12" step="0.01" [min]="0.1" [max]="50"></ion-input>
+            </ion-item>
+          </div>
+          <div class="ram-form-group" style="flex: 1;">
+            <ion-item lines="none" class="ram-form-item">
+              <ion-label position="stacked" class="ram-label-required">Installment Period *</ion-label>
+              <ion-input formControlName="installmentPeriod" type="number" inputmode="numeric" placeholder="12" [min]="1"></ion-input>
+            </ion-item>
+          </div>
+        </div>
+
+        <ion-item lines="none" class="ram-form-item">
+          <ion-label position="stacked" class="ram-label-required">Period Unit *</ion-label>
+          <ion-select formControlName="installmentPeriodUnit" interface="action-sheet" placeholder="Select period unit">
+            <ion-select-option *ngFor="let pu of periodUnits" [value]="pu.value">
+              {{ pu.label }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item lines="none" class="ram-form-item">
+          <ion-label position="stacked" class="ram-label-required">Loan Start Date *</ion-label>
+          <ion-input formControlName="loanStartDate" type="date" [max]="today"></ion-input>
+        </ion-item>
+
+        <ion-item lines="none" class="ram-form-item">
+          <ion-label position="stacked">Sales Done By</ion-label>
+          <ion-input formControlName="salesDoneBy" placeholder="Sales person name" type="text" autocapitalize="words"></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Vehicle Status (Optional) -->
+    <ion-card class="ram-card-2 ion-padding-horizontal ion-padding-top" style="margin-top: var(--ram-stack-md);">
+      <ion-card-header class="ion-padding-horizontal ion-padding-top">
+        <ion-card-title class="heading-font" style="font-size: 1rem; font-weight: 700; color: var(--ram-ink);">
+          Vehicle Status (Optional)
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-padding" formGroupName="rcDetails">
+        <ion-item lines="none" class="ram-form-item">
+          <ion-label position="stacked">RC Status</ion-label>
+          <ion-input formControlName="status" placeholder="e.g., Received, Pending" type="text"></ion-input>
+        </ion-item>
+
+        <ion-item lines="none" class="ram-form-item">
+          <ion-label position="stacked">RC Paid Through</ion-label>
+          <ion-input formControlName="paidThrough" placeholder="e.g., Cash, Cheque, Online" type="text"></ion-input>
+        </ion-item>
+
+        <ion-item lines="none" class="ram-form-item">
+          <ion-label position="stacked">RC Cheque Number</ion-label>
+          <ion-input formControlName="chequeNumber" placeholder="Cheque number if applicable" type="text"></ion-input>
+        </ion-item>
+
+        <ion-item lines="none" class="ram-form-item">
+          <ion-label position="stacked">RC Amount</ion-label>
+          <ion-input formControlName="amount" type="number" inputmode="decimal" placeholder="0" step="0.01" [min]="0"></ion-input>
+        </ion-item>
+
+        <ion-item lines="none" class="ram-form-item">
+          <ion-label position="stacked">NOC Status</ion-label>
+          <ion-input formControlName="noc" placeholder="e.g., Received, Not Received, NA" type="text"></ion-input>
+        </ion-item>
+
+        <ion-item lines="none" class="ram-form-item">
+          <ion-label position="stacked">Insurance Status</ion-label>
+          <ion-input formControlName="insurance" placeholder="e.g., Active, Expired, NA" type="text"></ion-input>
+        </ion-item>
+
+        <ion-item lines="none" class="ram-form-item">
+          <ion-label position="stacked">Key Status</ion-label>
+          <ion-input formControlName="keyStatus" placeholder="e.g., Given, Not Given, Original, Duplicate" type="text"></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- ID Proof (Optional) -->
+    <ion-card class="ram-card-2 ion-padding-horizontal ion-padding-top" style="margin-top: var(--ram-stack-md);">
+      <ion-card-header class="ion-padding-horizontal ion-padding-top">
+        <ion-card-title class="heading-font" style="font-size: 1rem; font-weight: 700; color: var(--ram-ink);">
+          ID Proof (Optional)
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-padding">
+        <ion-item lines="none" class="ram-form-item">
+          <ion-label position="stacked">ID Proof Type</ion-label>
+          <ion-select formControlName="idProofType" interface="action-sheet" placeholder="Select ID type">
+            <ion-select-option value="Aadhaar">Aadhaar</ion-select-option>
+            <ion-select-option value="PAN">PAN</ion-select-option>
+            <ion-select-option value="Driving License">Driving License</ion-select-option>
+            <ion-select-option value="Voter ID">Voter ID</ion-select-option>
+            <ion-select-option value="Passport">Passport</ion-select-option>
+            <ion-select-option value="Other">Other</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item lines="none" class="ram-form-item">
+          <ion-label position="stacked">ID Proof Number</ion-label>
+          <ion-input formControlName="idProofNumber" placeholder="Enter ID number" type="text"></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Submit Button -->
+    <div class="ram-form-actions ion-padding-horizontal ion-padding-bottom">
+      <ion-button fill="outline" expand="block" (click)="onCancel()" style="--border-color: var(--ram-outline); --color: var(--ram-ink); margin-bottom: var(--ram-gutter); height: var(--ram-touch-target); border-radius: var(--ram-radius-md);">
+        <ion-icon name="close-outline" slot="start"></ion-icon>
+        Cancel
+      </ion-button>
+      <ion-button fill="solid" expand="block" (click)="onSubmit()" [disabled]="loanForm.invalid || isSubmitting" style="--background: var(--ram-primary); --color: white; height: var(--ram-touch-target); border-radius: var(--ram-radius-md);">
+        <ion-spinner *ngIf="isSubmitting" name="crescent" slot="start" style="margin-right: 0.5rem;"></ion-spinner>
+        <ion-icon *ngIf="!isSubmitting" name="checkmark-outline" slot="start"></ion-icon>
+        {{ isSubmitting ? 'Creating...' : 'Create Loan' }}
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

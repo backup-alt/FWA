@@ -1,0 +1,204 @@
+<ion-header class="ram-modal-header">
+  <ion-toolbar class="ram-bg-card">
+    <ion-title class="heading-font" style="font-size: 1.125rem; font-weight: 700; color: var(--ram-ink);">
+      Renew Loan
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="onCancel()" style="--color: var(--ram-ink);">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ram-bg-surface ram-page" fullscreen>
+  <form [formGroup]="renewForm" class="ram-modal-content">
+    <!-- Current Loan Info -->
+    <ion-card class="ram-card-2 ion-padding-horizontal ion-padding-top">
+      <ion-card-header class="ion-padding-horizontal ion-padding-top">
+        <ion-card-title class="heading-font" style="font-size: 1rem; font-weight: 700; color: var(--ram-ink);">
+          Current Loan
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-padding">
+        <div class="ram-loan-summary">
+          <div class="ram-summary-row">
+            <span class="ram-summary-label">Outstanding Principal</span>
+            <span class="ram-summary-value ram-amount">{{ formatCurrency(loan?.outstandingPrincipal) }}</span>
+          </div>
+          <div class="ram-summary-row">
+            <span class="ram-summary-label">Current EMI</span>
+            <span class="ram-summary-value">{{ formatCurrency(loan?.emiAmount) }}</span>
+          </div>
+          <div class="ram-summary-row">
+            <span class="ram-summary-label">Remaining Period</span>
+            <span class="ram-summary-value">{{ loan?.installmentPeriod }} months</span>
+          </div>
+          <div class="ram-summary-row">
+            <span class="ram-summary-label">Interest Rate</span>
+            <span class="ram-summary-value">{{ loan?.interestRate }}%</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Renewal Form -->
+    <ion-card class="ram-card-2 ion-padding-horizontal ion-padding-top" style="margin-top: var(--ram-stack-md);">
+      <ion-card-header class="ion-padding-horizontal ion-padding-top">
+        <ion-card-title class="heading-font" style="font-size: 1rem; font-weight: 700; color: var(--ram-ink);">
+          New Loan Terms
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-padding">
+        <div class="ram-form-group">
+          <ion-item lines="none" class="ram-form-item">
+            <ion-label position="stacked" class="ram-label-required">Extra Amount *</ion-label>
+            <ion-input
+              formControlName="extraAmount"
+              type="number"
+              inputmode="decimal"
+              placeholder="Enter additional amount"
+              step="0.01"
+              [min]="0">
+            </ion-input>
+          </ion-item>
+
+          <ion-item lines="none" class="ram-form-item" *ngIf="renewForm.get('extraAmount')?.touched && renewForm.get('extraAmount')?.errors">
+            <ion-label class="ram-field-error" style="--color: var(--ram-error);">
+              <span *ngIf="renewForm.get('extraAmount')?.errors?.['required']">Extra amount is required</span>
+              <span *ngIf="renewForm.get('extraAmount')?.errors?.['min']">Cannot be negative</span>
+            </ion-label>
+          </ion-item>
+        </div>
+
+        <div class="ram-form-group">
+          <ion-item lines="none" class="ram-form-item">
+            <ion-label position="stacked" class="ram-label-required">Installment Period (months) *</ion-label>
+            <ion-input
+              formControlName="installmentPeriod"
+              type="number"
+              inputmode="numeric"
+              placeholder="Enter period in months"
+              [min]="1">
+            </ion-input>
+          </ion-item>
+
+          <ion-item lines="none" class="ram-form-item" *ngIf="renewForm.get('installmentPeriod')?.touched && renewForm.get('installmentPeriod')?.errors">
+            <ion-label class="ram-field-error" style="--color: var(--ram-error);">
+              <span *ngIf="renewForm.get('installmentPeriod')?.errors?.['required']">Period is required</span>
+              <span *ngIf="renewForm.get('installmentPeriod')?.errors?.['min']">Must be at least 1 month</span>
+            </ion-label>
+          </ion-item>
+        </div>
+
+        <div class="ram-form-group">
+          <ion-item lines="none" class="ram-form-item">
+            <ion-label position="stacked" class="ram-label-required">Interest Rate (%) *</ion-label>
+            <ion-input
+              formControlName="interestRate"
+              type="number"
+              inputmode="decimal"
+              placeholder="Enter interest rate"
+              step="0.01"
+              [min]="0.1"
+              [max]="50">
+            </ion-input>
+          </ion-item>
+
+          <ion-item lines="none" class="ram-form-item" *ngIf="renewForm.get('interestRate')?.touched && renewForm.get('interestRate')?.errors">
+            <ion-label class="ram-field-error" style="--color: var(--ram-error);">
+              <span *ngIf="renewForm.get('interestRate')?.errors?.['required']">Interest rate is required</span>
+              <span *ngIf="renewForm.get('interestRate')?.errors?.['min']">Must be greater than 0</span>
+              <span *ngIf="renewForm.get('interestRate')?.errors?.['max']">Cannot exceed 50%</span>
+            </ion-label>
+          </ion-item>
+        </div>
+
+        <div class="ram-form-group">
+          <ion-item lines="none" class="ram-form-item">
+            <ion-label position="stacked" class="ram-label-required">Renewal Date *</ion-label>
+            <ion-input
+              formControlName="renewalDate"
+              type="date"
+              [max]="today">
+            </ion-input>
+          </ion-item>
+
+          <ion-item lines="none" class="ram-form-item" *ngIf="renewForm.get('renewalDate')?.touched && renewForm.get('renewalDate')?.errors?.['required']">
+            <ion-label class="ram-field-error" style="--color: var(--ram-error);">
+              Renewal date is required
+            </ion-label>
+          </ion-item>
+        </div>
+
+        <div class="ram-form-group ion-padding-top">
+          <ion-item lines="none">
+            <ion-label>Close Existing Loan</ion-label>
+            <ion-toggle formControlName="closeExistingLoan" slot="end" checked="true"></ion-toggle>
+          </ion-item>
+          <p class="ram-toggle-hint" style="font-size: 12px; color: var(--ram-muted); margin-top: 0.25rem;">
+            If enabled, the existing loan will be closed and a new loan will be created
+          </p>
+        </div>
+
+        <div class="ram-form-group">
+          <ion-item lines="none">
+            <ion-label>Charge Interest on Outstanding</ion-label>
+            <ion-toggle formControlName="chargeInterestOnOutstanding" slot="end"></ion-toggle>
+          </ion-item>
+        </div>
+
+        <div class="ram-form-group">
+          <ion-item lines="none">
+            <ion-label>Charge Interest on Extra Amount</ion-label>
+            <ion-toggle formControlName="chargeInterestOnExtra" slot="end"></ion-toggle>
+          </ion-item>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Total Amount Preview -->
+    <ion-card class="ram-card-2 ion-padding-horizontal ion-padding-top" style="margin-top: var(--ram-stack-md);">
+      <ion-card-header class="ion-padding-horizontal ion-padding-top">
+        <ion-card-title class="heading-font" style="font-size: 1rem; font-weight: 700; color: var(--ram-ink);">
+          Loan Summary
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-padding">
+        <div class="ram-summary-row">
+          <span class="ram-summary-label">Outstanding Principal</span>
+          <span class="ram-summary-value">{{ formatCurrency(loan?.outstandingPrincipal) }}</span>
+        </div>
+        <div class="ram-summary-row">
+          <span class="ram-summary-label">Extra Amount</span>
+          <span class="ram-summary-value">{{ formatCurrency(renewForm.get('extraAmount')?.value) }}</span>
+        </div>
+        <div class="ram-summary-row" *ngIf="renewForm.get('chargeInterestOnOutstanding')?.value && loan?.interestRate">
+          <span class="ram-summary-label">Interest on Outstanding</span>
+          <span class="ram-summary-value ram-amount">{{ formatCurrency(calculateInterest(loan?.outstandingPrincipal || 0)) }}</span>
+        </div>
+        <div class="ram-summary-row" *ngIf="renewForm.get('chargeInterestOnExtra')?.value && renewForm.get('extraAmount')?.value">
+          <span class="ram-summary-label">Interest on Extra</span>
+          <span class="ram-summary-value ram-amount">{{ formatCurrency(calculateInterest(renewForm.get('extraAmount')?.value)) }}</span>
+        </div>
+        <div class="ram-summary-row ram-total-row" style="border-top: 2px solid var(--ram-primary); padding-top: 1rem; margin-top: 0.5rem;">
+          <span class="ram-summary-label">Total New Loan Amount</span>
+          <span class="ram-summary-value ram-primary">{{ formatCurrency(totalAmount) }}</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Submit Button -->
+    <div class="ram-modal-actions ion-padding-horizontal ion-padding-bottom">
+      <ion-button fill="outline" expand="block" (click)="onCancel()" style="--border-color: var(--ram-outline); --color: var(--ram-ink); margin-bottom: var(--ram-gutter); height: var(--ram-touch-target); border-radius: var(--ram-radius-md);">
+        <ion-icon name="close-outline" slot="start"></ion-icon>
+        Cancel
+      </ion-button>
+      <ion-button fill="solid" expand="block" (click)="onSubmit()" [disabled]="renewForm.invalid || isSubmitting" style="--background: var(--ram-primary); --color: white; height: var(--ram-touch-target); border-radius: var(--ram-radius-md);">
+        <ion-spinner *ngIf="isSubmitting" name="crescent" slot="start" style="margin-right: 0.5rem;"></ion-spinner>
+        <ion-icon *ngIf="!isSubmitting" name="refresh-outline" slot="start"></ion-icon>
+        {{ isSubmitting ? 'Renewing...' : 'Renew Loan' }}
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

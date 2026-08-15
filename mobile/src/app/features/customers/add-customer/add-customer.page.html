@@ -1,0 +1,332 @@
+<ion-content class="ram-bg-surface ram-page" fullscreen>
+  <!-- Sticky Header -->
+  <ion-header collapse="condense">
+    <ion-toolbar class="ram-bg-card" mode="md">
+      <ion-title class="heading-font" style="font-size: 1.25rem; font-weight: 700; color: var(--ram-ink);">
+        {{ useExistingCustomer && selectedExistingCustomer ? 'Edit Customer' : 'Add Customer' }}
+      </ion-title>
+      <ion-buttons slot="start">
+        <ion-button (click)="onBack()" fill="clear" style="--color: var(--ram-ink);">
+          <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- Step Progress Indicator -->
+  <div class="ram-step-progress ion-padding-horizontal ion-padding-top" style="background: var(--ram-background);">
+    <div class="ram-step-track">
+      <div class="ram-step-progress-bar" [style.width.%]="getOverallProgress()"></div>
+    </div>
+    <div class="ram-step-indicators">
+      <div *ngFor="let step of [1,2,3,4]; let i = index" class="ram-step-indicator" [class.active]="currentStep >= step" [class.completed]="currentStep > step">
+        <div class="ram-step-circle">
+          <span *ngIf="currentStep > step" class="ram-step-check">✓</span>
+          <span *ngIf="currentStep === step">{{ step }}</span>
+          <span *ngIf="currentStep < step">{{ step }}</span>
+        </div>
+        <span class="ram-step-label">{{ getStepShortLabel(step) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="ram-page-content ram-bottom-nav-offset">
+    <!-- Step Content -->
+    <div class="ram-step-content" [@slideAnimation]="currentStep">
+
+      <!-- STEP 1: Customer Info -->
+      <div *ngIf="currentStep === 1" class="ram-step-panel">
+        <div class="ram-step-header ion-padding-horizontal ion-padding-top">
+          <h2 class="heading-font" style="font-size: 1.25rem; font-weight: 700; color: var(--ram-ink); margin: 0;">
+            Customer Information
+          </h2>
+          <p style="margin: 0.5rem 0 0; color: var(--ram-on-surface-variant); font-size: 0.875rem;">
+            Enter customer details and contact information
+          </p>
+        </div>
+
+        <form [formGroup]="step1Form" class="ion-padding-horizontal ion-padding-top">
+          <!-- Existing Customer Search -->
+          <div class="ram-section" *ngIf="!useExistingCustomer && !selectedExistingCustomer">
+            <h3 class="ram-section-title">Find Existing Customer</h3>
+            <p class="ram-section-subtitle">Search by name to link an existing customer</p>
+
+            <ion-searchbar
+              [(ngModel)]="existingCustomerSearch"
+              (ionInput)="searchExistingCustomers()"
+              placeholder="Search existing customers by name..."
+              animated="true"
+              style="--background: var(--ram-background); --box-shadow: none; --border-radius: var(--ram-radius-md);"
+              [debounce]="300">
+            </ion-searchbar>
+
+            <div *ngIf="isSearching" class="ram-search-loading ion-padding-top">
+              <ion-spinner name="crescent" color="primary" style="margin: 0 auto;"></ion-spinner>
+            </div>
+
+            <ion-list *ngIf="existingCustomerResults.length > 0 && !isSearching" lines="none" class="ion-no-padding ram-search-results">
+              <ion-item *ngFor="let customer of existingCustomerResults" class="ram-search-result-item" (click)="selectExistingCustomer(customer)" lines="none" detail="true">
+                <div class="ram-search-result-avatar" slot="start">
+                  <div class="ram-avatar-circle" [style.background]="getAvatarColor(customer._id)">
+                    {{ getInitials(customer.name) }}
+                  </div>
+                </div>
+                <div class="ram-search-result-info">
+                  <h4 class="ram-search-result-name">{{ customer.name }}</h4>
+                  <p class="ram-search-result-meta" *ngIf="customer.fileId">
+                    <ion-icon name="id-card-outline" slot="start" style="font-size: 12px;"></ion-icon>
+                    File ID: {{ customer.fileId }}
+                  </p>
+                  <p class="ram-search-result-meta" *ngIf="customer.cellNumbers?.length">
+                    <ion-icon name="call-outline" slot="start" style="font-size: 12px;"></ion-icon>
+                    {{ customer.cellNumbers[0].number }}
+                  </p>
+                </div>
+              </ion-item>
+            </ion-list>
+
+            <ion-button fill="outline" (click)="useNewCustomer()" class="ram-use-new-btn ion-padding-top" expand="block">
+              <ion-icon name="person-add-outline" slot="start"></ion-icon>
+              Create New Customer
+            </ion-button>
+          </div>
+
+          <!-- New Customer Form / Edit Form -->
+          <div class="ram-section" *ngIf="useExistingCustomer || !existingCustomerSearch">
+            <h3 class="ram-section-title">{{ useExistingCustomer ? 'Edit Customer' : 'New Customer Details' }}</h3>
+
+            <ion-item lines="none" class="ram-form-item">
+              <ion-label position="stacked" class="ram-label-required">Full Name *</ion-label>
+              <ion-input formControlName="name" placeholder="Enter full name" type="text" autocapitalize="words"></ion-input>
+            </ion-item>
+
+            <ion-item lines="none" class="ram-form-item">
+              <ion-label position="stacked">File ID</ion-label>
+              <ion-input formControlName="fileId" placeholder="Auto-generated or enter manually" type="text"></ion-input>
+            </ion-item>
+
+            <ion-item lines="none" class="ram-form-item">
+              <ion-label position="stacked">Permanent Address</ion-label>
+              <ion-textarea formControlName="address" placeholder="Enter permanent address" rows="2" auto-grow="true"></ion-textarea>
+            </ion-item>
+
+            <ion-item lines="none" class="ram-form-item">
+              <ion-label position="stacked">Temporary Address</ion-label>
+              <ion-textarea formControlName="temporaryAddress" placeholder="Enter temporary address (if different)" rows="2" auto-grow="true"></ion-textarea>
+            </ion-item>
+
+            <ion-item lines="none" class="ram-form-item">
+              <ion-label position="stacked">Monthly Salary</ion-label>
+              <ion-input formControlName="monthlySalary" placeholder="0" type="number" inputmode="decimal"></ion-input>
+            </ion-item>
+
+            <!-- Cell Numbers -->
+            <div class="ram-form-group">
+              <div class="ram-form-group-header">
+                <ion-label class="ram-label-required">Phone Numbers *</ion-label>
+                <ion-button fill="clear" size="small" (click)="addCellNumber()" *ngIf="cellNumbers.length < 5" style="--color: var(--ram-primary); --padding-start: 0;">
+                  <ion-icon name="add-outline" slot="start"></ion-icon>
+                  Add
+                </ion-button>
+              </div>
+
+              <div class="ram-cell-numbers-list">
+                <div *ngFor="let cell of cellNumbers; let i = index" class="ram-cell-number-row">
+                  <ion-input
+                    [(ngModel)]="cell.number"
+                    [ngModelOptions]="{standalone: true}"
+                    placeholder="Enter 10-digit mobile number"
+                    type="tel"
+                    inputmode="tel"
+                    maxlength="10"
+                    (ionBlur)="step1Form.updateValueAndValidity()"
+                    style="flex: 1;">
+                  </ion-input>
+                  <ion-button
+                    *ngIf="cellNumbers.length > 1"
+                    fill="clear"
+                    color="danger"
+                    (click)="removeCellNumber(i)"
+                    style="--padding-start: 0.5rem; --padding-end: 0.5rem;"
+                    aria-label="Remove phone number">
+                    <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </div>
+              </div>
+
+              <p *ngIf="!hasPhoneNumber()" class="ram-field-error">
+                At least one phone number is required
+              </p>
+            </div>
+
+            <!-- ID Proof -->
+            <ion-item lines="none" class="ram-form-item" style="margin-top: var(--ram-stack-md);">
+              <ion-label position="stacked">ID Proof Type</ion-label>
+              <ion-select formControlName="idProofType" interface="action-sheet" placeholder="Select ID type">
+                <ion-select-option value="Aadhaar">Aadhaar</ion-select-option>
+                <ion-select-option value="PAN">PAN</ion-select-option>
+                <ion-select-option value="Driving License">Driving License</ion-select-option>
+                <ion-select-option value="Voter ID">Voter ID</ion-select-option>
+                <ion-select-option value="Passport">Passport</ion-select-option>
+                <ion-select-option value="Other">Other</ion-select-option>
+              </ion-select>
+            </ion-item>
+
+            <ion-item lines="none" class="ram-form-item">
+              <ion-label position="stacked">ID Proof Number</ion-label>
+              <ion-input formControlName="idProofNumber" placeholder="Enter ID number" type="text"></ion-input>
+            </ion-item>
+
+            <ion-item lines="none" class="ram-form-item">
+              <ion-label position="stacked">ID Status</ion-label>
+              <ion-select formControlName="idStatus" interface="action-sheet" placeholder="Select status">
+                <ion-select-option value="Yes">Yes (Verified)</ion-select-option>
+                <ion-select-option value="No">No (Pending)</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </div>
+        </form>
+      </div>
+
+      <!-- STEP 2: Guarantor -->
+      <div *ngIf="currentStep === 2" class="ram-step-panel">
+        <div class="ram-step-header ion-padding-horizontal ion-padding-top">
+          <h2 class="heading-font" style="font-size: 1.25rem; font-weight: 700; color: var(--ram-ink); margin: 0;">
+            Guarantor Details
+          </h2>
+          <p style="margin: 0.5rem 0 0; color: var(--ram-on-surface-variant); font-size: 0.875rem;">
+            Add guarantor information (optional)
+          </p>
+        </div>
+
+        <form [formGroup]="step2Form" class="ion-padding-horizontal ion-padding-top">
+          <div class="ram-section">
+            <ion-item lines="none" class="ram-form-item">
+              <ion-label position="stacked">Guarantor Name</ion-label>
+              <ion-input formControlName="guarantorName" placeholder="Enter guarantor full name" type="text" autocapitalize="words"></ion-input>
+            </ion-item>
+
+            <ion-item lines="none" class="ram-form-item">
+              <ion-label position="stacked">Guarantor Address</ion-label>
+              <ion-textarea formControlName="guarantorAddress" placeholder="Enter guarantor address" rows="2" auto-grow="true"></ion-textarea>
+            </ion-item>
+
+            <ion-item lines="none" class="ram-form-item">
+              <ion-label position="stacked">Guarantor Mobile</ion-label>
+              <ion-input formControlName="guarantorMobile" placeholder="Enter 10-digit mobile number" type="tel" inputmode="tel" maxlength="10"></ion-input>
+            </ion-item>
+
+            <p class="ram-optional-note ion-padding-top">
+              <ion-icon name="information-circle-outline" slot="start" style="font-size: 14px;"></ion-icon>
+              Guarantor details are optional but recommended for loan applications.
+            </p>
+          </div>
+        </form>
+      </div>
+
+      <!-- STEP 3: Vehicle & Finance -->
+      <div *ngIf="currentStep === 3" class="ram-step-panel">
+        <div class="ram-step-header ion-padding-horizontal ion-padding-top">
+          <h2 class="heading-font" style="font-size: 1.25rem; font-weight: 700; color: var(--ram-ink); margin: 0;">
+            Vehicle & Finance
+          </h2>
+          <p style="margin: 0.5rem 0 0; color: var(--ram-on-surface-variant); font-size: 0.875rem;">
+            Add vehicle and financing details (optional - can be added later)
+          </p>
+        </div>
+
+        <div class="ion-padding-horizontal ion-padding-top">
+          <div class="ram-section">
+            <ion-card class="ram-info-card">
+              <ion-card-content class="ion-padding">
+                <div class="ram-info-card-content">
+                  <ion-icon name="information-circle-outline" slot="start" class="ram-info-icon"></ion-icon>
+                  <div>
+                    <p style="margin: 0; color: var(--ram-on-surface-variant); font-size: 0.875rem;">
+                      Vehicle and loan details can be added after creating the customer from the Customer Details page.
+                    </p>
+                  </div>
+                </div>
+              </ion-card-content>
+            </ion-card>
+
+            <ion-button fill="outline" expand="block" (click)="nextStep()" style="margin-top: var(--ram-stack-md); --border-color: var(--ram-primary); --color: var(--ram-primary);">
+              <ion-icon name="skip-forward-outline" slot="start"></ion-icon>
+              Skip to Summary
+            </ion-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: Summary -->
+      <div *ngIf="currentStep === 4" class="ram-step-panel">
+        <div class="ram-step-header ion-padding-horizontal ion-padding-top">
+          <h2 class="heading-font" style="font-size: 1.25rem; font-weight: 700; color: var(--ram-ink); margin: 0;">
+            Review & Confirm
+          </h2>
+          <p style="margin: 0.5rem 0 0; color: var(--ram-on-surface-variant); font-size: 0.875rem;">
+            Please review the information before saving
+          </p>
+        </div>
+
+        <div class="ion-padding-horizontal ion-padding-top">
+          <ion-card class="ram-summary-card">
+            <ion-card-content class="ion-padding">
+              <div *ngFor="let section of getSummarySections()" class="ram-summary-section">
+                <h4 class="ram-summary-section-title">{{ section.title }}</h4>
+                <div class="ram-summary-fields">
+                  <ng-container *ngFor="let field of section.fields">
+                    <div class="ram-summary-field" *ngIf="field.value">
+                      <span class="ram-summary-label">{{ field.label }}</span>
+                      <span class="ram-summary-value">{{ field.value }}</span>
+                    </div>
+                  </ng-container>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+
+          <div class="ram-summary-actions ion-padding-top">
+            <ion-button fill="outline" (click)="previousStep()" expand="block" style="--border-color: var(--ram-outline); --color: var(--ram-ink);">
+              <ion-icon name="chevron-back-outline" slot="start"></ion-icon>
+              Back to Edit
+            </ion-button>
+            <ion-button fill="solid" (click)="submit()" expand="block" [disabled]="isSubmitting" style="--background: var(--ram-primary); --color: white; margin-top: var(--ram-gutter); height: var(--ram-touch-target);">
+              <ion-spinner *ngIf="isSubmitting" name="crescent" slot="start" style="margin-right: 0.5rem;"></ion-spinner>
+              <ion-icon *ngIf="!isSubmitting" name="checkmark-outline" slot="start"></ion-icon>
+              {{ useExistingCustomer ? 'Update Customer' : 'Create Customer' }}
+            </ion-button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Navigation Buttons (Steps 1-3) -->
+    <div *ngIf="currentStep < 4" class="ram-step-nav ion-padding-horizontal ion-padding-bottom" style="background: var(--ram-background); position: sticky; bottom: 0; z-index: 10; box-shadow: 0 -4px 12px rgba(0,0,0,0.04);">
+      <div class="ram-nav-buttons">
+        <ion-button
+          *ngIf="currentStep > 1"
+          fill="outline"
+          (click)="previousStep()"
+          style="--border-color: var(--ram-outline); --color: var(--ram-ink); min-width: 80px;"
+        >
+          <ion-icon name="chevron-back-outline" slot="start"></ion-icon>
+          Back
+        </ion-button>
+
+        <div style="flex: 1;"></div>
+
+        <ion-button
+          fill="solid"
+          (click)="nextStep()"
+          [disabled]="!canProceed()"
+          style="--background: var(--ram-primary); --color: white; min-width: 100px;"
+        >
+          Next
+          <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+  </div>
+</ion-content>

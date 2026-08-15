@@ -1,0 +1,238 @@
+<ion-content class="ram-bg-surface ram-page" fullscreen>
+  <!-- Sticky Header -->
+  <ion-header collapse="condense">
+    <ion-toolbar class="ram-bg-card" mode="md">
+      <ion-title class="heading-font" style="font-size: 1.25rem; font-weight: 700; color: var(--ram-ink);">
+        Dashboard
+      </ion-title>
+      <ion-buttons slot="end"><ion-button (click)="onLogout()" aria-label="Sign out"><ion-icon name="log-out-outline"></ion-icon></ion-button></ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- Pull to Refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="arrow-down-outline"
+      pullingText="Pull to refresh"
+      refreshingSpinner="crescent"
+      refreshingText="Loading...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <div class="ram-page-content ram-bottom-nav-offset">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="ram-loading-state">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p style="margin-top: 1rem;">Loading dashboard...</p>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div *ngIf="!isLoading && summary" class="ram-page-content-inner">
+      <!-- Metric Cards Grid -->
+      <div class="ram-metric-grid">
+        <ion-card class="ram-card-2 ram-metric-card ram-press" (click)="onPaymentsReport()">
+          <ion-card-content class="ion-padding">
+            <p class="ram-metric-label">Total Outstanding</p>
+            <p class="ram-metric-value ram-amount">{{ formatCurrency(summary.totalOutstanding || 0) }}</p>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card class="ram-card-2 ram-metric-card ram-press">
+          <ion-card-content class="ion-padding">
+            <p class="ram-metric-label">Overdue Amount</p>
+            <p class="ram-metric-value ram-amount" style="color: var(--ram-error);">{{ formatCurrency(summary.overdueAmount || 0) }}</p>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card class="ram-card-2 ram-metric-card ram-press">
+          <ion-card-content class="ion-padding">
+            <p class="ram-metric-label">Total Collected</p>
+            <p class="ram-metric-value ram-amount" style="color: var(--ram-green);">{{ formatCurrency(summary.totalCollected || 0) }}</p>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card class="ram-card-2 ram-metric-card ram-press">
+          <ion-card-content class="ion-padding">
+            <p class="ram-metric-label">Active Loans</p>
+            <p class="ram-metric-value ram-amount">{{ summary.counts?.active || 0 }}</p>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card class="ram-card-2 ram-metric-card ram-press">
+          <ion-card-content class="ion-padding">
+            <p class="ram-metric-label">Completed Loans</p>
+            <p class="ram-metric-value ram-amount">{{ summary.counts?.completed || 0 }}</p>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card class="ram-card-2 ram-metric-card ram-press">
+          <ion-card-content class="ion-padding">
+            <p class="ram-metric-label">Total Customers</p>
+            <p class="ram-metric-value ram-amount">{{ summary.counts?.uniqueCustomers || 0 }}</p>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- Payments Report CTA -->
+      <ion-button
+        expand="block"
+        fill="solid"
+        class="ram-press ram-cta-button"
+        (click)="onPaymentsReport()"
+        style="--background: var(--ram-primary); --color: white; margin-top: var(--ram-stack-lg); height: var(--ram-touch-target); border-radius: var(--ram-radius-md);"
+      >
+        <ion-icon name="document-text-outline" slot="start"></ion-icon>
+        Payments Report
+        <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+      </ion-button>
+
+      <!-- Charts Section -->
+      <div class="ram-charts-section">
+        <!-- Vehicle Distribution -->
+        <ion-card class="ram-card-2" style="margin-top: var(--ram-stack-lg);">
+          <ion-card-header class="ion-padding-horizontal ion-padding-top">
+            <ion-card-title class="heading-font" style="font-size: 1.125rem; font-weight: 700; color: var(--ram-ink);">
+              Vehicle Distribution
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content class="ion-padding">
+            <!-- Filter Chips -->
+            <div class="ram-filter-chips ion-padding-horizontal" style="margin-bottom: 1rem;">
+              <ion-button
+                fill="solid"
+                size="small"
+                class="ram-filter-chip ram-press"
+                [class.active]="selectedVehicleFilter === 'all'"
+                (click)="selectedVehicleFilter = 'all'"
+                style="--background: var(--ram-primary); --color: white; --border-radius: 9999px; height: 2rem; font-size: 12px;"
+              >
+                All
+              </ion-button>
+              <ion-button
+                fill="outline"
+                size="small"
+                class="ram-filter-chip ram-press"
+                [class.active]="selectedVehicleFilter === 'bike'"
+                (click)="selectedVehicleFilter = 'bike'"
+                style="--border-radius: 9999px; height: 2rem; font-size: 12px; --border-color: var(--ram-outline-variant);"
+              >
+                Bike
+              </ion-button>
+              <ion-button
+                fill="outline"
+                size="small"
+                class="ram-filter-chip ram-press"
+                [class.active]="selectedVehicleFilter === 'car'"
+                (click)="selectedVehicleFilter = 'car'"
+                style="--border-radius: 9999px; height: 2rem; font-size: 12px; --border-color: var(--ram-outline-variant);"
+              >
+                Car
+              </ion-button>
+              <ion-button
+                fill="outline"
+                size="small"
+                class="ram-filter-chip ram-press"
+                [class.active]="selectedVehicleFilter === 'auto'"
+                (click)="selectedVehicleFilter = 'auto'"
+                style="--border-radius: 9999px; height: 2rem; font-size: 12px; --border-color: var(--ram-outline-variant);"
+              >
+                Auto
+              </ion-button>
+            </div>
+
+            <!-- Donut Chart -->
+            <div class="ram-chart-container" style="height: 12rem; position: relative;">
+              <div class="ram-donut" [style.background]="vehicleDonut()"></div>
+              <div class="ram-chart-center">
+                <span class="ram-chart-center-value ram-amount" style="font-size: 2rem; font-weight: 700; color: var(--ram-ink);">
+                  {{ getVehicleTotal() }}
+                </span>
+                <span class="ram-chart-center-label" style="font-size: 12px; color: var(--ram-muted); display: block; margin-top: 2px;">Loans</span>
+              </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="ram-chart-legend" style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap;">
+              <div class="ram-legend-item" style="display: flex; align-items: center; gap: 0.375rem;">
+                <span class="ram-legend-dot" style="width: 10px; height: 10px; border-radius: 50%; background: #00529B;"></span>
+                <span style="font-size: 12px; color: var(--ram-on-surface-variant);">Bikes: {{ summary.vehicleTypeCounts.Bike || 0 }}</span>
+              </div>
+              <div class="ram-legend-item" style="display: flex; align-items: center; gap: 0.375rem;">
+                <span class="ram-legend-dot" style="width: 10px; height: 10px; border-radius: 50%; background: #00A99D;"></span>
+                <span style="font-size: 12px; color: var(--ram-on-surface-variant);">Cars: {{ summary.vehicleTypeCounts.Car || 0 }}</span>
+              </div>
+              <div class="ram-legend-item" style="display: flex; align-items: center; gap: 0.375rem;">
+                <span class="ram-legend-dot" style="width: 10px; height: 10px; border-radius: 50%; background: #F7931E;"></span>
+                <span style="font-size: 12px; color: var(--ram-on-surface-variant);">Auto: {{ summary.vehicleTypeCounts.Auto || 0 }}</span>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Collections Trend -->
+        <ion-card class="ram-card-2" style="margin-top: var(--ram-stack-lg);">
+          <ion-card-header class="ion-padding-horizontal ion-padding-top">
+            <ion-card-title class="heading-font" style="font-size: 1.125rem; font-weight: 700; color: var(--ram-ink);">
+              Collections Trend
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content class="ion-padding">
+            <!-- Filter Chips -->
+            <div class="ram-filter-chips ion-padding-horizontal" style="margin-bottom: 1rem;">
+              <ion-button
+                fill="solid"
+                size="small"
+                class="ram-filter-chip ram-press"
+                [class.active]="selectedTrendFilter === '6m'"
+                (click)="selectedTrendFilter = '6m'"
+                style="--background: var(--ram-primary); --color: white; --border-radius: 9999px; height: 2rem; font-size: 12px;"
+              >
+                6 Months
+              </ion-button>
+              <ion-button
+                fill="outline"
+                size="small"
+                class="ram-filter-chip ram-press"
+                [class.active]="selectedTrendFilter === '1y'"
+                (click)="selectedTrendFilter = '1y'"
+                style="--border-radius: 9999px; height: 2rem; font-size: 12px; --border-color: var(--ram-outline-variant);"
+              >
+                1 Year
+              </ion-button>
+              <ion-button
+                fill="outline"
+                size="small"
+                class="ram-filter-chip ram-press"
+                [class.active]="selectedTrendFilter === 'max'"
+                (click)="selectedTrendFilter = 'max'"
+                style="--border-radius: 9999px; height: 2rem; font-size: 12px; --border-color: var(--ram-outline-variant);"
+              >
+                Max
+              </ion-button>
+            </div>
+
+            <div class="ram-collection-chart" *ngIf="visibleCollections().length; else noCollections">
+              <div class="ram-collection-row" *ngFor="let item of visibleCollections()"><span>{{ item.month }}</span><div><i [style.width.%]="collectionBarWidth(item.collected)"></i></div><strong>{{ formatCurrency(item.collected) }}</strong></div>
+            </div>
+            <ng-template #noCollections><div class="ram-chart-empty">No collections in this period</div></ng-template>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </div>
+
+    <!-- Empty/Error State -->
+    <div *ngIf="!isLoading && !summary" class="ram-empty-state">
+      <ion-icon name="analytics-outline"></ion-icon>
+      <h3 style="margin: 1rem 0 0.5rem; color: var(--ram-ink);">No Data Available</h3>
+      <p>Unable to load dashboard data. Pull to refresh or check your connection.</p>
+      <ion-button fill="outline" (click)="loadData()" style="margin-top: 1rem;">Retry</ion-button>
+    </div>
+  </div>
+
+  <!-- FAB -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" style="bottom: 5rem; right: 1rem;">
+    <ion-fab-button (click)="onFabClick()" class="ram-press" style="--background: var(--ram-primary); --color: white; --box-shadow: var(--ram-shadow-fab);">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

@@ -1,0 +1,645 @@
+:host {
+  ion-content {
+    --background: var(--ram-background);
+  }
+
+  ion-header {
+    --background: var(--ram-card);
+    --border-color: var(--ram-outline-variant);
+    --border-style: solid;
+    --border-width: 0 0 1px 0;
+    box-shadow: var(--ram-shadow-card);
+  }
+
+  ion-toolbar {
+    --padding-start: var(--ram-margin-page);
+    --padding-end: var(--ram-margin-page);
+  }
+
+  ion-segment {
+    --background: transparent;
+    --indicator-background: var(--ram-primary);
+    --color: var(--ram-on-surface-variant);
+    --color-checked: var(--ram-primary);
+  }
+
+  ion-segment-button {
+    --padding-start: 1rem;
+    --padding-end: 1rem;
+  }
+
+  ion-badge {
+    --background: var(--ram-primary-container);
+    --color: var(--ram-primary);
+    --border-radius: var(--ram-radius-sm);
+    font-size: 11px;
+    font-weight: 600;
+    height: 20px;
+    --padding-start: 0.5rem;
+    --padding-end: 0.5rem;
+  }
+
+  ion-card {
+    --background: var(--ram-card);
+  }
+
+  ion-item {
+    --background: var(--ram-card);
+    --border-color: transparent;
+    --highlight-background: var(--ram-background);
+    --padding-start: var(--ram-margin-card);
+    --padding-end: var(--ram-margin-card);
+    --inner-padding-start: 0;
+    --inner-padding-end: 0;
+  }
+
+  ion-infinite-scroll-content {
+    --background: var(--ram-background);
+  }
+
+  ion-refresher {
+    --background: var(--ram-background);
+  }
+}
+
+.ram-page-content {
+  padding: var(--ram-gutter) var(--ram-margin-page) calc(var(--ram-margin-page) + 80px);
+}
+
+/* Customer Header Card */
+.ram-customer-header-card {
+  --background: var(--ram-card);
+  box-shadow: var(--ram-shadow-card);
+}
+
+.ram-header-content {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.ram-customer-avatar-large {
+  flex-shrink: 0;
+}
+
+.ram-avatar-circle-large {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1.5rem;
+  font-family: var(--ram-font-heading);
+  box-shadow: var(--ram-shadow-md);
+}
+
+.ram-customer-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ram-customer-name {
+  font-family: var(--ram-font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ram-ink);
+  margin: 0;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ram-file-id-badge-large {
+  --background: var(--ram-primary-container);
+  --color: var(--ram-primary);
+  --border-radius: var(--ram-radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  height: 22px;
+  --padding-start: 0.5rem;
+  --padding-end: 0.5rem;
+}
+
+.ram-customer-header-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+}
+
+.ram-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 13px;
+  color: var(--ram-on-surface-variant);
+}
+
+.ram-meta-icon {
+  font-size: 16px;
+  color: var(--ram-muted);
+  flex-shrink: 0;
+}
+
+/* Quick Stats */
+.ram-quick-stats {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ram-stat-item {
+  flex: 1;
+  min-width: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.ram-stat-value {
+  font-family: var(--ram-font-mono);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--ram-ink);
+  line-height: 1.2;
+}
+
+.ram-stat-value.ram-amount {
+  color: var(--ram-primary);
+}
+
+.ram-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ram-on-surface-variant);
+  text-align: center;
+}
+
+/* Contact Info Card */
+.ram-contact-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ram-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.ram-contact-icon {
+  font-size: 20px;
+  color: var(--ram-primary);
+  flex-shrink: 0;
+}
+
+.ram-contact-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ram-contact-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ram-muted);
+}
+
+.ram-contact-value {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ram-ink);
+  font-family: var(--ram-font-mono);
+}
+
+/* Guarantor Section */
+.ram-guarantor-section {
+  padding-top: var(--ram-stack-md) !important;
+}
+
+.ram-guarantor-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.ram-guarantor-icon {
+  font-size: 20px;
+  color: var(--ram-green);
+  flex-shrink: 0;
+}
+
+.ram-guarantor-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ram-muted);
+  display: block;
+}
+
+.ram-guarantor-name {
+  font-family: var(--ram-font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ram-ink);
+}
+
+.ram-guarantor-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ram-guarantor-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 13px;
+  color: var(--ram-on-surface-variant);
+}
+
+.ram-detail-icon {
+  font-size: 16px;
+  color: var(--ram-muted);
+  flex-shrink: 0;
+}
+
+/* ID Section */
+.ram-id-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.ram-id-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ram-on-surface-variant);
+}
+
+.ram-id-value {
+  font-family: var(--ram-font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ram-ink);
+}
+
+/* Vehicles Summary */
+.ram-vehicles-summary {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: var(--ram-stack-md);
+}
+
+.ram-vehicle-type {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  background: var(--ram-background);
+  border-radius: var(--ram-radius-md);
+  border: 1px solid var(--ram-outline-variant);
+  min-width: 80px;
+}
+
+.ram-vehicle-icon {
+  font-size: 1.5rem;
+}
+
+.ram-vehicle-type-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ram-on-surface-variant);
+}
+
+.ram-vehicle-type-count {
+  font-family: var(--ram-font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ram-ink);
+}
+
+.ram-vehicle-regnos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ram-regno-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ram-regno-group-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ram-muted);
+}
+
+.ram-regno-list {
+  font-family: var(--ram-font-mono);
+  font-size: 13px;
+  color: var(--ram-ink);
+}
+
+/* Loans Tab */
+.ram-add-loan-action {
+  padding-bottom: var(--ram-gutter);
+}
+
+.ram-loans-list {
+  padding-bottom: 6rem;
+}
+
+.ram-loan-item {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ram-loan-item.ram-press:active {
+  transform: scale(0.99);
+  box-shadow: var(--ram-shadow-sm);
+}
+
+.ram-loan-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.ram-loan-id-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ram-loan-id-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ram-muted);
+}
+
+.ram-loan-id-value {
+  font-family: var(--ram-font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ram-ink);
+}
+
+.ram-loan-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.ram-loan-vehicle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.ram-vehicle-icon-small {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.ram-vehicle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ram-vehicle-type {
+  font-family: var(--ram-font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ram-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ram-vehicle-regno {
+  font-family: var(--ram-font-mono);
+  font-size: 12px;
+  color: var(--ram-on-surface-variant);
+}
+
+.ram-loan-amounts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+  flex-shrink: 0;
+  min-width: 120px;
+}
+
+.ram-amount-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.ram-amount-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ram-muted);
+}
+
+.ram-amount-value {
+  font-family: var(--ram-font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ram-ink);
+}
+
+.ram-amount-value.ram-amount {
+  color: var(--ram-primary);
+}
+
+.ram-loan-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--ram-outline-variant);
+}
+
+.ram-loan-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ram-date-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 12px;
+  color: var(--ram-on-surface-variant);
+}
+
+.ram-date-icon {
+  font-size: 14px;
+  color: var(--ram-muted);
+  flex-shrink: 0;
+}
+
+.ram-loan-installments {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.ram-installment-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ram-on-surface-variant);
+}
+
+.ram-progress-mini {
+  background: var(--ram-outline-variant);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.ram-progress-bar {
+  height: 100%;
+  background: var(--ram-primary);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Status Badges */
+.ram-status-active {
+  --background: var(--ram-green-container) !important;
+  --color: var(--ram-green) !important;
+}
+
+.ram-status-completed {
+  --background: var(--ram-primary-container) !important;
+  --color: var(--ram-primary) !important;
+}
+
+.ram-status-closed {
+  --background: var(--ram-gray-container) !important;
+  --color: var(--ram-gray) !important;
+}
+
+.ram-status-overdue {
+  --background: var(--ram-error-container) !important;
+  --color: var(--ram-error) !important;
+}
+
+.ram-status-default {
+  --background: var(--ram-background) !important;
+  --color: var(--ram-on-surface-variant) !important;
+  border: 1px solid var(--ram-outline);
+}
+
+/* Empty & Loading States */
+.ram-loading-state {
+  padding: 3rem 0 !important;
+}
+
+.ram-empty-state ion-icon {
+  display: block;
+}
+
+/* Helper */
+.ram-avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  font-family: var(--ram-font-heading);
+  box-shadow: var(--ram-shadow-sm);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .ram-quick-stats {
+    gap: 0.5rem;
+  }
+
+  .ram-stat-item {
+    min-width: 60px;
+  }
+
+  .ram-stat-value {
+    font-size: 1rem;
+  }
+
+  .ram-loan-main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ram-loan-amounts {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+  }
+
+  .ram-amount-row {
+    align-items: flex-start;
+  }
+
+  .ram-loan-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .ram-loan-installments {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .ram-progress-mini {
+    flex: 1;
+    max-width: 120px;
+  }
+}

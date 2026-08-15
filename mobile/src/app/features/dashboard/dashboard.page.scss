@@ -1,0 +1,163 @@
+:host {
+  ion-content {
+    --background: var(--ram-background);
+  }
+
+  ion-header {
+    --background: var(--ram-card);
+    --border-color: var(--ram-outline-variant);
+    --border-style: solid;
+    --border-width: 0 0 1px 0;
+    box-shadow: var(--ram-shadow-card);
+  }
+
+  ion-toolbar {
+    --padding-start: var(--ram-margin-page);
+    --padding-end: var(--ram-margin-page);
+  }
+
+  ion-card {
+    --background: var(--ram-card);
+  }
+
+  ion-card-header {
+    --padding-bottom: 0;
+  }
+
+  ion-card-content {
+    --padding-top: 0.5rem;
+  }
+}
+
+.ram-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--ram-gutter);
+  margin-bottom: var(--ram-stack-md);
+}
+
+.ram-metric-card {
+  min-height: 6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ram-metric-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ram-on-surface-variant);
+  margin: 0 0 0.25rem;
+}
+
+.ram-metric-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-family: var(--ram-font-mono);
+  color: var(--ram-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.ram-cta-button {
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.ram-charts-section {
+  margin-top: var(--ram-stack-lg);
+}
+
+.ram-filter-chips {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0 !important;
+}
+
+.ram-filter-chip {
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.ram-filter-chip.active {
+  --background: var(--ram-primary) !important;
+  --color: white !important;
+  --border-color: var(--ram-primary) !important;
+}
+
+.ram-chart-container {
+  position: relative;
+  width: 100%;
+}
+.ram-donut { width: 150px; height: 150px; border-radius: 50%; margin: 18px auto; position: relative; }
+.ram-donut::after { content: ''; position: absolute; inset: 25px; border-radius: 50%; background: var(--ram-card); }
+.ram-collection-chart { display: grid; gap: 12px; padding: 8px 0; }
+.ram-collection-row { display: grid; grid-template-columns: 58px 1fr 82px; gap: 8px; align-items: center; font-size: 11px; }
+.ram-collection-row > div { height: 10px; background: var(--ram-outline-variant); border-radius: 5px; overflow: hidden; }
+.ram-collection-row i { display: block; height: 100%; background: var(--ram-primary); border-radius: inherit; }
+.ram-collection-row strong { text-align: right; font-family: var(--ram-font-mono); font-size: 11px; }
+.ram-chart-empty { padding: 48px 0; text-align: center; color: var(--ram-muted); }
+
+.ram-chart-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.ram-chart-center-value {
+  font-family: var(--ram-font-mono);
+}
+
+.ram-chart-center-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.ram-empty-state {
+  padding: 3rem 1.5rem !important;
+}
+
+.ram-empty-state h3 {
+  font-family: var(--ram-font-heading);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.ram-empty-state p {
+  font-size: 0.875rem;
+  margin: 0.5rem 0 0;
+}
+
+/* Refresher styling */
+ion-refresher {
+  --background: var(--ram-background);
+}
+
+/* FAB styling */
+ion-fab-button {
+  --background: var(--ram-primary);
+  --color: white;
+  --box-shadow: var(--ram-shadow-fab);
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+}
+
+ion-fab-button.ram-press:active {
+  transform: scale(0.95);
+}

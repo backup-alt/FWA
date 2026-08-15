@@ -1,0 +1,87 @@
+<ion-content class="ram-bg-surface ram-page" fullscreen>
+  <div class="ram-page-content ram-bottom-nav-offset">
+    <!-- Header -->
+    <ion-toolbar class="ram-bg-card" mode="md">
+      <ion-title class="heading-font" style="font-size: 1.25rem; font-weight: 700;">
+        RAM Finance
+      </ion-title>
+    </ion-toolbar>
+
+    <!-- Login Card -->
+    <ion-card class="ram-card-2 ram-press" style="margin-top: 2rem;">
+      <ion-card-header class="ion-text-center ion-padding-top ion-padding-horizontal">
+        <ion-card-title class="heading-font" style="font-size: 1.5rem; font-weight: 700; color: var(--ram-ink);">
+          Sign In
+        </ion-card-title>
+        <ion-card-subtitle style="color: var(--ram-muted); margin-top: 0.25rem;">
+          Enter your credentials to access your account
+        </ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content class="ion-padding-horizontal ion-padding-bottom">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="ram-form-field">
+          <!-- Username Field -->
+          <div class="ram-form-field">
+            <label class="ram-input-label">Username</label>
+            <ion-input
+              formControlName="username"
+              type="text"
+              placeholder="Enter username"
+              [class.ion-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
+              autocomplete="username"
+            ></ion-input>
+            <ion-text color="danger" *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched">
+              <p style="font-size: 12px; margin-top: 4px;">Username is required</p>
+            </ion-text>
+          </div>
+
+          <!-- Password Field -->
+          <div class="ram-form-field">
+            <label class="ram-input-label">Password</label>
+            <ion-input
+              formControlName="password"
+              [type]="showPassword ? 'text' : 'password'"
+              placeholder="Enter password"
+              [class.ion-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+              autocomplete="current-password"
+            >
+              <ion-buttons slot="end">
+                <ion-button (click)="togglePasswordVisibility()" fill="clear" mode="md">
+                  <ion-icon [name]="showPassword ? 'eye-off' : 'eye'"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+            </ion-input>
+            <ion-text color="danger" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+              <p style="font-size: 12px; margin-top: 4px;">Password is required (min 4 characters)</p>
+            </ion-text>
+          </div>
+
+          <!-- Error Message -->
+          <div *ngIf="errorMessage" class="ram-error-state" style="padding: 0.75rem; background: var(--ram-red-bg); border-radius: var(--ram-radius-md);">
+            <ion-icon name="alert-circle-outline" style="font-size: 1.25rem; margin-bottom: 0.5rem;"></ion-icon>
+            <p>{{ errorMessage }}</p>
+          </div>
+
+          <!-- Submit Button -->
+          <ion-button
+            expand="block"
+            type="submit"
+            [disabled]="loginForm.invalid || isLoading"
+            class="ram-press"
+            style="--background: var(--ram-primary); --background-hover: var(--ram-primary-light); --color: white; height: var(--ram-touch-target); border-radius: var(--ram-radius-md); margin-top: 1rem;"
+            [class.ion-loading]="isLoading"
+          >
+            <ion-spinner name="crescent" *ngIf="isLoading"></ion-spinner>
+            <span *ngIf="!isLoading">Sign In</span>
+          </ion-button>
+        </form>
+
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Version Info -->
+    <div class="ion-text-center ion-padding-top" style="font-size: 12px; color: var(--ram-muted);">
+      <p>RAM Finance Mobile v1.0.0</p>
+    </div>
+  </div>
+</ion-content>

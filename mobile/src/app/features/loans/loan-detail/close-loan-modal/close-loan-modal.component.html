@@ -1,0 +1,145 @@
+<ion-header class="ram-modal-header">
+  <ion-toolbar class="ram-bg-card">
+    <ion-title class="heading-font" style="font-size: 1.125rem; font-weight: 700; color: var(--ram-ink);">
+      Close Loan
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="onCancel()" style="--color: var(--ram-ink);">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ram-bg-surface ram-page" fullscreen>
+  <form [formGroup]="closeForm" class="ram-modal-content">
+    <!-- Loan Summary -->
+    <ion-card class="ram-card-2 ion-padding-horizontal ion-padding-top">
+      <ion-card-header class="ion-padding-horizontal ion-padding-top">
+        <ion-card-title class="heading-font" style="font-size: 1rem; font-weight: 700; color: var(--ram-ink);">
+          Loan Summary
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-padding">
+        <div class="ram-loan-summary">
+          <div class="ram-summary-row">
+            <span class="ram-summary-label">Outstanding Principal</span>
+            <span class="ram-summary-value ram-amount">{{ formatCurrency(loan?.outstandingPrincipal) }}</span>
+          </div>
+          <div class="ram-summary-row">
+            <span class="ram-summary-label">Total Paid</span>
+            <span class="ram-summary-value">{{ formatCurrency(loan?.totalPaid) }}</span>
+          </div>
+          <div class="ram-summary-row" *ngIf="loan?.closureInfo?.amountReceived">
+            <span class="ram-summary-label">Previous Closure Amount</span>
+            <span class="ram-summary-value">{{ formatCurrency(loan.closureInfo.amountReceived) }}</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Closure Form -->
+    <ion-card class="ram-card-2 ion-padding-horizontal ion-padding-top" style="margin-top: var(--ram-stack-md);">
+      <ion-card-header class="ion-padding-horizontal ion-padding-top">
+        <ion-card-title class="heading-font" style="font-size: 1rem; font-weight: 700; color: var(--ram-ink);">
+          Closure Details
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-padding">
+        <div class="ram-form-group">
+          <ion-item lines="none" class="ram-form-item">
+            <ion-label position="stacked" class="ram-label-required">Closure Reason *</ion-label>
+            <ion-select formControlName="closureReason" interface="action-sheet" placeholder="Select reason">
+              <ion-select-option *ngFor="let cr of closureReasons" [value]="cr.value">
+                {{ cr.label }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item lines="none" class="ram-form-item" *ngIf="closeForm.get('closureReason')?.touched && closeForm.get('closureReason')?.errors?.['required']">
+            <ion-label class="ram-field-error" style="--color: var(--ram-error);">
+              Please select a closure reason
+            </ion-label>
+          </ion-item>
+        </div>
+
+        <div class="ram-form-group">
+          <ion-item lines="none" class="ram-form-item">
+            <ion-label position="stacked" class="ram-label-required">Remarks *</ion-label>
+            <ion-textarea
+              formControlName="closureRemarks"
+              placeholder="Enter closure remarks"
+              rows="3"
+              auto-grow="true">
+            </ion-textarea>
+          </ion-item>
+
+          <ion-item lines="none" class="ram-form-item" *ngIf="closeForm.get('closureRemarks')?.touched && closeForm.get('closureRemarks')?.errors?.['required']">
+            <ion-label class="ram-field-error" style="--color: var(--ram-error);">
+              Remarks are required
+            </ion-label>
+          </ion-item>
+        </div>
+
+        <div class="ram-form-group">
+          <ion-item lines="none" class="ram-form-item">
+            <ion-label position="stacked" class="ram-label-required">Amount Received *</ion-label>
+            <ion-input
+              formControlName="amountReceived"
+              type="number"
+              inputmode="decimal"
+              placeholder="Enter amount received"
+              step="0.01"
+              [max]="loan?.outstandingPrincipal">
+            </ion-input>
+          </ion-item>
+
+          <ion-item lines="none" class="ram-form-item" *ngIf="closeForm.get('amountReceived')?.touched && closeForm.get('amountReceived')?.errors">
+            <ion-label class="ram-field-error" style="--color: var(--ram-error);">
+              <span *ngIf="closeForm.get('amountReceived')?.errors?.['required']">Amount is required</span>
+              <span *ngIf="closeForm.get('amountReceived')?.errors?.['min']">Amount cannot be negative</span>
+              <span *ngIf="closeForm.get('amountReceived')?.errors?.['max']">Amount cannot exceed outstanding principal</span>
+            </ion-label>
+          </ion-item>
+        </div>
+
+        <div class="ram-form-group">
+          <ion-item lines="none" class="ram-form-item">
+            <ion-label position="stacked" class="ram-label-required">Closure Date *</ion-label>
+            <ion-input
+              formControlName="closureDate"
+              type="date"
+              [max]="today">
+            </ion-input>
+          </ion-item>
+
+          <ion-item lines="none" class="ram-form-item" *ngIf="closeForm.get('closureDate')?.touched && closeForm.get('closureDate')?.errors?.['required']">
+            <ion-label class="ram-field-error" style="--color: var(--ram-error);">
+              Closure date is required
+            </ion-label>
+          </ion-item>
+        </div>
+
+        <div class="ram-warning-note ion-padding-top">
+          <ion-icon name="warning-outline" slot="start" style="font-size: 18px; color: var(--ram-warning);"></ion-icon>
+          <span style="color: var(--ram-on-surface-variant); font-size: 13px;">
+            This action cannot be undone. The loan will be marked as Closed.
+          </span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Submit Button -->
+    <div class="ram-modal-actions ion-padding-horizontal ion-padding-bottom">
+      <ion-button fill="outline" expand="block" (click)="onCancel()" style="--border-color: var(--ram-outline); --color: var(--ram-ink); margin-bottom: var(--ram-gutter); height: var(--ram-touch-target); border-radius: var(--ram-radius-md);">
+        <ion-icon name="close-outline" slot="start"></ion-icon>
+        Cancel
+      </ion-button>
+      <ion-button fill="solid" expand="block" (click)="onSubmit()" [disabled]="closeForm.invalid || isSubmitting" style="--background: var(--ram-error); --color: white; height: var(--ram-touch-target); border-radius: var(--ram-radius-md);">
+        <ion-spinner *ngIf="isSubmitting" name="crescent" slot="start" style="margin-right: 0.5rem;"></ion-spinner>
+        <ion-icon *ngIf="!isSubmitting" name="lock-closed-outline" slot="start"></ion-icon>
+        {{ isSubmitting ? 'Closing...' : 'Close Loan' }}
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

@@ -153,6 +153,21 @@ router.get('/', async (req, res) => {
     if (req.query.vehicleType) filter.vehicleType = req.query.vehicleType;
     if (req.query.status) filter.status = req.query.status;
     if (req.query.customerId) filter.customerId = req.query.customerId;
+    const search = String(req.query.search || '').trim();
+    if (search) {
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escaped, 'i');
+      const customers = await Customer.find({
+        $or: [{ name: regex }, { fileId: regex }, { 'cellNumbers.number': regex }],
+      }).select('_id').lean();
+      filter.$or = [
+        { customerId: { $in: customers.map(customer => customer._id) } },
+        { customerName: regex },
+        { loanAccountNumber: regex },
+        { regNo: regex },
+        { 'vehicles.regNo': regex },
+      ];
+    }
 
     const { page, pageSize, skip, limit } = parsePagination(req.query);
 
@@ -648,7 +663,7 @@ router.put('/:id', async (req, res) => {
     if (!loan) return res.status(404).json({ message: 'Loan not found.' });
 
     const updatableFields = [
-      'make', 'model', 'regNo', 'loanAmount', 'loanAccountNumber',
+      'vehicleType', 'make', 'model', 'regNo', 'loanAmount', 'loanAccountNumber',
       'rcDetails', 'noc', 'insurance', 'idProof', 'keyStatus', 'salesDoneBy',
       'customerName', 'address', 'cellNumbers', 'guarantor', 'chequesReceived',
       'installmentPeriodUnit', 'vehicles', 'isRenewal', 'renewedFromLoanId', 'renewedToLoanId',

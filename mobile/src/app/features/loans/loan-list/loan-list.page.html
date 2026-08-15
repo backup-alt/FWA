@@ -1,0 +1,167 @@
+<ion-content class="ram-bg-surface ram-page" fullscreen>
+  <!-- Sticky Header -->
+  <ion-header collapse="condense">
+    <ion-toolbar class="ram-bg-card" mode="md">
+      <ion-title class="heading-font" style="font-size: 1.25rem; font-weight: 700; color: var(--ram-ink);">
+        Loans
+      </ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="onAddLoan()" fill="solid" style="--background: var(--ram-primary); --color: white; height: var(--ram-touch-target); border-radius: var(--ram-radius-md);">
+          <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- Search & Filter Bar -->
+  <ion-toolbar class="ram-bg-card" mode="md" style="--border-color: var(--ram-outline-variant); --border-style: solid; --border-width: 0 0 1px 0; padding: var(--ram-gutter) var(--ram-margin-page);">
+    <ion-searchbar
+      [(ngModel)]="searchQuery"
+      (ionInput)="onSearchInput($event)"
+      placeholder="Search by customer name, file ID, reg no..."
+      animated="true"
+      style="--background: var(--ram-background); --box-shadow: none; --border-radius: var(--ram-radius-md);"
+      [debounce]="300">
+    </ion-searchbar>
+  </ion-toolbar>
+
+  <!-- Filter Chips Row -->
+  <div class="ram-filter-chips ion-padding-horizontal ion-padding-bottom" *ngIf="!isLoading">
+    <ion-segment [(ngModel)]="selectedVehicleType" (ionChange)="onVehicleTypeChange($event)" style="--background: transparent;">
+      <ion-segment-button *ngFor="let vt of vehicleTypes" [value]="vt.value">
+        <ion-label style="font-size: 12px; font-weight: 600; text-transform: capitalize;">{{ vt.label }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <ion-segment [(ngModel)]="selectedStatus" (ionChange)="onStatusChange($event)" style="--background: transparent; margin-top: var(--ram-gutter);">
+      <ion-segment-button *ngFor="let st of statuses" [value]="st.value">
+        <ion-label style="font-size: 12px; font-weight: 600; text-transform: capitalize;">{{ st.label }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <div *ngIf="hasActiveFilters()" class="ram-clear-filters ion-padding-top">
+      <ion-button fill="clear" size="small" (click)="clearFilters()" style="--color: var(--ram-primary); --padding-start: 0;">
+        <ion-icon name="close-outline" slot="start" style="font-size: 14px;"></ion-icon>
+        Clear Filters
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Pull to Refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="arrow-down-outline"
+      pullingText="Pull to refresh"
+      refreshingSpinner="crescent"
+      refreshingText="Loading...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Content -->
+  <div class="ram-page-content ram-bottom-nav-offset" *ngIf="!isLoading">
+    <!-- Results Count -->
+    <div class="ram-results-count ion-padding-horizontal ion-padding-top" style="font-size: 13px; color: var(--ram-on-surface-variant);">
+      <span *ngIf="total > 0">{{ total }} loan{{ total !== 1 ? 's' : '' }} found</span>
+      <span *ngIf="total === 0 && !hasActiveFilters()">No loans yet</span>
+      <span *ngIf="total === 0 && hasActiveFilters()">No loans match your filters</span>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="loans.length === 0" class="ram-empty-state ion-padding-horizontal ion-padding-top" style="text-align: center; padding: 4rem 1.5rem;">
+      <ion-icon name="document-text-outline" style="font-size: 3rem; color: var(--ram-muted);"></ion-icon>
+      <h3 style="margin: 1rem 0 0.5rem; color: var(--ram-ink); font-family: var(--ram-font-heading);">
+        {{ hasActiveFilters() ? 'No Matching Loans' : 'No Loans Yet' }}
+      </h3>
+      <p style="color: var(--ram-muted); font-size: 0.875rem;">
+        {{ hasActiveFilters() ? 'Try adjusting your search or filters' : 'Create your first loan to get started' }}
+      </p>
+      <ion-button fill="solid" (click)="onAddLoan()" style="margin-top: 1.5rem; --background: var(--ram-primary); --color: white;">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        {{ hasActiveFilters() ? 'Clear Filters' : 'Add Loan' }}
+      </ion-button>
+    </div>
+
+    <!-- Loans List -->
+    <ion-list *ngIf="loans.length > 0" lines="none" class="ion-no-padding ram-loans-list ion-padding-horizontal ion-padding-top">
+      <ion-item
+        *ngFor="let loan of loans; trackBy: trackByLoanId"
+        class="ram-loan-item ram-card-2 ram-press"
+        (click)="onLoanClick(loan)"
+        lines="none"
+        detail="true"
+        style="--background: var(--ram-card); margin-bottom: var(--ram-gutter); border-radius: var(--ram-radius-md); box-shadow: var(--ram-shadow-card);"
+      >
+        <div class="ram-loan-header">
+          <div class="ram-loan-id-section">
+            <span class="ram-loan-id-label">Loan ID</span>
+            <span class="ram-loan-id-value">{{ loan.loanAccountNumber || loan._id.slice(-8).toUpperCase() }}</span>
+          </div>
+          <ion-badge [class]="getStatusClass(loan.status)">
+            {{ loan.status }}
+          </ion-badge>
+        </div>
+
+        <div class="ram-loan-main">
+          <div class="ram-loan-customer">
+            <div class="ram-customer-avatar-small" [style.background]="getAvatarColor(loan.customerId)">
+              {{ getInitials(loan.customerName || 'C') }}
+            </div>
+            <div class="ram-customer-info">
+              <span class="ram-customer-name">{{ loan.customerName || 'Unknown Customer' }}</span>
+              <span class="ram-customer-file" *ngIf="loan.customerId">{{ loan.customerId }}</span>
+            </div>
+          </div>
+
+          <div class="ram-loan-vehicle">
+            <ion-icon [name]="getVehicleIcon(loan.vehicleType)" class="ram-vehicle-icon-small" [style.color]="getVehicleColor(loan.vehicleType)"></ion-icon>
+            <div class="ram-vehicle-info">
+              <span class="ram-vehicle-type">{{ loan.vehicleType }}</span>
+              <span class="ram-vehicle-regno" *ngIf="loan.regNo">{{ loan.regNo }}</span>
+            </div>
+          </div>
+
+          <div class="ram-loan-amounts">
+            <div class="ram-amount-row">
+              <span class="ram-amount-label">Principal</span>
+              <span class="ram-amount-value">{{ formatCurrency(loan.loanAmount) }}</span>
+            </div>
+            <div class="ram-amount-row">
+              <span class="ram-amount-label">Outstanding</span>
+              <span class="ram-amount-value ram-amount">{{ formatCurrency(loan.outstandingPrincipal) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ram-loan-footer">
+          <div class="ram-loan-dates">
+            <span class="ram-date-item">
+              <ion-icon name="calendar-outline" class="ram-date-icon"></ion-icon>
+              <span>Start: {{ formatDate(loan.loanStartDate) }}</span>
+            </span>
+          </div>
+          <div class="ram-loan-installments">
+            <span class="ram-installment-label">{{ getPaidInstallmentCount(loan) }} / {{ loan.installments.length }} paid</span>
+            <div class="ram-progress-mini" style="width: 80px; height: 4px;">
+              <div class="ram-progress-bar" [style.width.%]="getInstallmentProgress(loan)"></div>
+            </div>
+          </div>
+        </div>
+      </ion-item>
+    </ion-list>
+
+    <!-- Infinite Scroll for Loans -->
+    <ion-infinite-scroll threshold="100px" (ionInfinite)="loadMoreLoans($event)" *ngIf="hasMore && loans.length > 0">
+      <ion-infinite-scroll-content
+        loadingSpinner="crescent"
+        loadingText="Loading more loans..."
+        style="--background: var(--ram-background);">
+      </ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="ram-loading-state ion-padding" style="text-align: center; padding: 3rem 0;">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p style="margin-top: 1rem; color: var(--ram-muted);">Loading loans...</p>
+  </div>
+</ion-content>

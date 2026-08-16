@@ -1,61 +1,14 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Edit Loan</ion-title>
-    <ion-buttons slot="end"><ion-button (click)="cancel()"><ion-icon name="close-outline"></ion-icon></ion-button></ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content class="ion-padding">
-  <form [formGroup]="form" (ngSubmit)="save()">
-    <section class="editor-section">
-      <h2>Loan details</h2>
-      <div class="grid">
-        <ion-input label="Loan / File No." labelPlacement="stacked" fill="outline" formControlName="loanAccountNumber"></ion-input>
-        <ion-input label="Loan Amount" labelPlacement="stacked" fill="outline" type="number" inputmode="decimal" formControlName="loanAmount"></ion-input>
-        <ion-input label="Installment Period" labelPlacement="stacked" fill="outline" type="number" inputmode="numeric" formControlName="installmentPeriod"></ion-input>
-        <ion-select label="Period Unit" labelPlacement="stacked" fill="outline" formControlName="installmentPeriodUnit">
-          <ion-select-option value="Days">Days</ion-select-option><ion-select-option value="Weeks">Weeks</ion-select-option><ion-select-option value="Months">Months</ion-select-option>
-        </ion-select>
-        <ion-input label="Interest Rate (%)" labelPlacement="stacked" fill="outline" type="number" inputmode="decimal" formControlName="interestRate"></ion-input>
-        <ion-input label="Sales Done By" labelPlacement="stacked" fill="outline" formControlName="salesDoneBy"></ion-input>
-      </div>
-    </section>
-
+<form class="vehicle-editor" [formGroup]="form" (ngSubmit)="save()">
+  <div class="modal-head"><div><span>LOAN WORKSPACE</span><h2>Edit finance record</h2><p>Update the agreement and every linked vehicle.</p></div><button class="icon-btn" type="button" (click)="cancel()"><span class="material-symbols-rounded">close</span></button></div>
+  <div class="vehicle-scroll">
+    <section class="loan-form-card"><div class="vehicle-form-head"><span>Loan details</span></div><div class="vehicle-form-grid"><div class="field"><label>Loan / File No.</label><input formControlName="loanAccountNumber"></div><div class="field"><label>Loan Amount</label><input type="number" inputmode="decimal" formControlName="loanAmount"></div><div class="field"><label>Installment Period</label><input type="number" inputmode="numeric" formControlName="installmentPeriod"></div><div class="field"><label>Period Unit</label><select formControlName="installmentPeriodUnit"><option>Days</option><option>Weeks</option><option>Months</option></select></div><div class="field"><label>Interest Rate (%)</label><input type="number" inputmode="decimal" formControlName="interestRate"></div><div class="field"><label>Sales Done By</label><input formControlName="salesDoneBy"></div></div></section>
     <div formArrayName="vehicles">
-      <section class="editor-section" *ngFor="let vehicle of vehicles.controls; let index = index" [formGroupName]="index">
-        <div class="section-heading">
-          <h2>Vehicle {{ index + 1 }}</h2>
-          <ion-button *ngIf="vehicles.length > 1" type="button" fill="clear" color="danger" (click)="removeVehicle(index)" aria-label="Delete vehicle">
-            <ion-icon name="trash-outline"></ion-icon>
-          </ion-button>
-        </div>
-        <div class="grid">
-          <ion-select label="Type" labelPlacement="stacked" fill="outline" formControlName="vehicleType">
-            <ion-select-option value="Bike">Bike</ion-select-option><ion-select-option value="Car">Car</ion-select-option><ion-select-option value="Auto">Auto</ion-select-option>
-          </ion-select>
-          <ion-input label="Reg. No." labelPlacement="stacked" fill="outline" formControlName="regNo"></ion-input>
-          <ion-input label="Make" labelPlacement="stacked" fill="outline" formControlName="make"></ion-input>
-          <ion-input label="Model" labelPlacement="stacked" fill="outline" formControlName="model"></ion-input>
-          <ion-input label="RC Status" labelPlacement="stacked" fill="outline" formControlName="rcStatus"></ion-input>
-          <ion-select label="NOC" labelPlacement="stacked" fill="outline" formControlName="noc">
-            <ion-select-option value="Received">Received</ion-select-option><ion-select-option value="Not Received">Not Received</ion-select-option><ion-select-option value="NA">NA</ion-select-option>
-          </ion-select>
-          <ion-select label="Insurance" labelPlacement="stacked" fill="outline" formControlName="insurance">
-            <ion-select-option value="Active">Active</ion-select-option><ion-select-option value="Expired">Expired</ion-select-option><ion-select-option value="NA">NA</ion-select-option>
-          </ion-select>
-          <ion-select label="Key Status" labelPlacement="stacked" fill="outline" formControlName="keyStatus">
-            <ion-select-option value="Given">Given</ion-select-option><ion-select-option value="Not Given">Not Given</ion-select-option><ion-select-option value="Original">Original</ion-select-option><ion-select-option value="Duplicate">Duplicate</ion-select-option>
-          </ion-select>
-        </div>
+      <section class="vehicle-form-card" *ngFor="let vehicle of vehicles.controls; let index = index" [formGroupName]="index">
+        <div class="vehicle-form-head"><span>Vehicle {{ index + 1 }}</span><button class="delete-vehicle" *ngIf="vehicles.length > 1" type="button" (click)="removeVehicle(index)" [attr.aria-label]="'Delete vehicle '+(index+1)"><span class="material-symbols-rounded">delete</span></button></div>
+        <div class="vehicle-form-grid"><div class="field"><label>Type</label><select formControlName="vehicleType"><option>Bike</option><option>Car</option><option>Auto</option></select></div><div class="field"><label>Reg. No.</label><input formControlName="regNo"></div><div class="field"><label>Make</label><input formControlName="make"></div><div class="field"><label>Model</label><input formControlName="model"></div><div class="field"><label>RC Status</label><input formControlName="rcStatus"></div><div class="field"><label>NOC</label><select formControlName="noc"><option>Received</option><option>Not Received</option><option>NA</option></select></div><div class="field"><label>Insurance</label><select formControlName="insurance"><option>Active</option><option>Expired</option><option>Not Expired</option><option>NA</option></select></div><div class="field"><label>Key Status</label><select formControlName="keyStatus"><option>Given</option><option>Not Given</option><option>Original</option><option>Duplicate</option></select></div></div>
       </section>
     </div>
-
-    <ion-button type="button" fill="clear" (click)="addVehicle()"><ion-icon name="add-outline" slot="start"></ion-icon>Add Vehicle</ion-button>
-  </form>
-</ion-content>
-
-<ion-footer>
-  <ion-toolbar>
-    <div class="footer-actions"><ion-button fill="clear" color="medium" (click)="cancel()">Cancel</ion-button><ion-button (click)="save()" [disabled]="form.invalid || saving"><ion-spinner *ngIf="saving" name="crescent"></ion-spinner><span *ngIf="!saving">Save</span></ion-button></div>
-  </ion-toolbar>
-</ion-footer>
+    <button class="add-vehicle" type="button" (click)="addVehicle()"><span class="material-symbols-rounded">add</span>Add another vehicle</button>
+  </div>
+  <div class="vehicle-footer"><button class="action" type="button" (click)="cancel()">Cancel</button><button class="action primary" type="submit" [disabled]="form.invalid || saving"><ion-spinner *ngIf="saving" name="crescent"></ion-spinner><span *ngIf="!saving">Save</span></button></div>
+</form>

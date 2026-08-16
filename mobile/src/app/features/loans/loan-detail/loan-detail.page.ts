@@ -25,7 +25,7 @@ export class LoanDetailPage implements OnInit, OnDestroy {
   isLoading = true;
 
   // Tabs data
-  activeTab = 'overview';
+  activeTab = 'schedule';
   installments: Installment[] = [];
   installmentsPage = 1;
   installmentsPageSize = 50;
@@ -36,6 +36,8 @@ export class LoanDetailPage implements OnInit, OnDestroy {
   paymentsHasMore = true;
   documents: Document[] = [];
   history: any[] = [];
+  documentPreviewUrl = '';
+  documentPreviewName = '';
 
   private subscriptions = new Subscription();
   private handledInitialAction = false;
@@ -53,7 +55,7 @@ export class LoanDetailPage implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.layoutService.setActiveTab('loans');
+    this.layoutService.setActiveTab('customers');
     this.loanId = this.route.snapshot.paramMap.get('id') || '';
     if (this.loanId) {
       this.loadLoan();
@@ -179,7 +181,7 @@ export class LoanDetailPage implements OnInit, OnDestroy {
 
   // Navigation
   onBack() {
-    this.router.navigate(['/loans']);
+    this.router.navigate(this.loan?.customerId ? ['/customers', this.loan.customerId] : ['/loans']);
   }
 
   // Actions
@@ -443,7 +445,7 @@ export class LoanDetailPage implements OnInit, OnDestroy {
   }
 
   getTotalPending(): number {
-    return this.loan?.installments?.reduce((sum, i) => sum + (i.pendingAmount || 0), 0) || 0;
+    return Number(this.loan?.outstandingPrincipal || 0);
   }
 
   getOverdueCount(): number {
@@ -525,12 +527,24 @@ export class LoanDetailPage implements OnInit, OnDestroy {
     try {
       const file = await firstValueFrom(this.loanService.getDocumentFile(this.loanId, doc._id));
       const url = URL.createObjectURL(file);
+      if ((doc.type || file.type).startsWith('image/')) {
+        this.closeDocumentPreview();
+        this.documentPreviewUrl = url;
+        this.documentPreviewName = doc.name;
+        return;
+      }
       window.open(url, '_blank', 'noopener');
       window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (error) {
       console.error('Document open failed:', error);
       await this.showErrorToast('Could not open document');
     }
+  }
+
+  closeDocumentPreview(): void {
+    if (this.documentPreviewUrl) URL.revokeObjectURL(this.documentPreviewUrl);
+    this.documentPreviewUrl = '';
+    this.documentPreviewName = '';
   }
 
   async deleteDocument(doc: Document) {

@@ -8,7 +8,7 @@ import { Customer } from '../../../core/models/customer.model';
 import { Loan, VehicleType } from '../../../core/models/loan.model';
 import { LayoutService } from '../../../core/services/layout.service';
 import { EditLoanModalComponent } from '../../loans/loan-detail/edit-loan-modal/edit-loan-modal.component';
-import { ToastController, AlertController, LoadingController, ActionSheetController, ModalController } from '@ionic/angular';
+import { ToastController, AlertController, LoadingController, ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-customer-detail',
@@ -32,6 +32,7 @@ export class CustomerDetailPage implements OnInit, OnDestroy {
   loansTotal = 0;
 
   activeTab = 'overview';
+  photoPreviewOpen = false;
 
   private subscriptions = new Subscription();
 
@@ -44,7 +45,6 @@ export class CustomerDetailPage implements OnInit, OnDestroy {
     private toastCtrl: ToastController,
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
-    private actionSheetCtrl: ActionSheetController,
     private modalCtrl: ModalController
   ) {}
 
@@ -142,7 +142,7 @@ export class CustomerDetailPage implements OnInit, OnDestroy {
   }
 
   onAddLoan() {
-    this.router.navigate(['/loans/add'], { queryParams: { customerId: this.customerId } });
+    this.router.navigate(['/customers/add'], { queryParams: { customerId: this.customerId } });
   }
 
   onLoanClick(loan: Loan) {
@@ -261,6 +261,10 @@ export class CustomerDetailPage implements OnInit, OnDestroy {
   formatCurrency(amount: number | undefined): string {
     if (!amount) return '₹0';
     return '₹' + new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(amount);
+  }
+
+  formatOptionalCurrency(amount: number | undefined): string {
+    return amount ? this.formatCurrency(amount) : '—';
   }
 
   formatDate(dateStr: string | undefined): string {

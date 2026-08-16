@@ -1,38 +1,24 @@
-<ion-header>
-  <ion-toolbar class="ram-bg-card"><ion-title class="heading-font">Pending Dues</ion-title></ion-toolbar>
-</ion-header>
-<ion-content class="ram-bg-surface ram-page" fullscreen>
-  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)"><ion-refresher-content></ion-refresher-content></ion-refresher>
-  <div class="ram-page-content ram-bottom-nav-offset">
-    <section class="dues-summary" *ngIf="summary">
-      <div><span>Pending accounts</span><strong>{{ summary.count }}</strong></div>
-      <div><span>Total outstanding</span><strong>{{ formatCurrency(summary.totalOutstanding) }}</strong></div>
-    </section>
-
-    <ion-card class="ram-card-2 filters-card">
-      <ion-card-content>
-        <ion-searchbar [(ngModel)]="fileId" (ionInput)="scheduleFilter()" placeholder="Search by file number" [debounce]="300"></ion-searchbar>
-        <div class="filter-grid">
-          <ion-select [(ngModel)]="vehicleType" (ionChange)="refresh()" interface="popover" placeholder="All vehicles">
-            <ion-select-option value="">All vehicles</ion-select-option><ion-select-option value="Bike">Bike</ion-select-option><ion-select-option value="Car">Car</ion-select-option><ion-select-option value="Auto">Auto</ion-select-option>
-          </ion-select>
-          <ion-input [(ngModel)]="minOverdueDays" (ionBlur)="refresh()" type="number" inputmode="numeric" placeholder="Min overdue days"></ion-input>
-          <ion-input [(ngModel)]="minAmount" (ionBlur)="refresh()" type="number" inputmode="decimal" placeholder="Minimum amount"></ion-input>
-          <ion-button fill="clear" (click)="clearFilters()">Clear filters</ion-button>
-        </div>
-      </ion-card-content>
-    </ion-card>
-
-    <div class="ram-loading-state" *ngIf="isLoading"><ion-spinner name="crescent"></ion-spinner><p>Loading pending dues...</p></div>
-    <div class="ram-empty-state" *ngIf="!isLoading && dues.length === 0"><ion-icon name="checkmark-done-circle-outline"></ion-icon><h3>No pending dues</h3><p>No installments match the selected filters.</p></div>
-
-    <section class="dues-list" *ngIf="!isLoading">
-      <button type="button" class="due-card" *ngFor="let due of dues" (click)="openDue(due)">
-        <div class="due-top"><div><span class="file-number">{{ due.customerFileId || 'No file number' }}</span><h2>{{ due.customerName }}</h2><p>{{ due.vehicleType }} · {{ due.regNo || 'No registration' }}</p></div><span class="days" [class.urgent]="due.daysOverdue > 30">{{ due.daysOverdue }} days</span></div>
-        <div class="due-money"><div><span>Due</span><strong>{{ formatCurrency(due.dueAmount) }}</strong></div><div><span>Outstanding</span><strong>{{ formatCurrency(due.outstandingForThisInstallment || due.pendingAmount) }}</strong></div><ion-icon name="chevron-forward-outline"></ion-icon></div>
-        <div class="due-footer">Installment #{{ due.sNo }} · Due {{ formatDate(due.dueDate) }}<span>Record payment</span></div>
+<ion-content fullscreen class="dues-content">
+  <div class="screen">
+    <header class="page-head"><div><span class="kicker">COLLECTIONS</span><h1>Pending dues</h1><p>Prioritise overdue installments that need action.</p></div><button type="button" class="filter-toggle" [class.active]="showFilters" (click)="showFilters=!showFilters"><span class="material-symbols-rounded">tune</span>{{ showFilters ? 'Hide filters' : 'Show filters' }}</button></header>
+    <ion-refresher slot="fixed" (ionRefresh)="refresh($event)"><ion-refresher-content></ion-refresher-content></ion-refresher>
+    <main>
+      <section class="filter-card" *ngIf="showFilters">
+        <label class="filter-field"><span>Vehicle Type</span><select [(ngModel)]="vehicleType" (change)="refresh()"><option value="">All Types</option><option>Bike</option><option>Car</option><option>Auto</option></select></label>
+        <label class="filter-field"><span>Min Overdue Days</span><input type="number" min="0" inputmode="numeric" [(ngModel)]="minOverdueDays" (change)="refresh()" placeholder="0"></label>
+        <label class="filter-field"><span>Min Amount (INR)</span><input type="number" min="0" inputmode="decimal" [(ngModel)]="minAmount" (change)="refresh()" placeholder="0"></label>
+        <label class="filter-field"><span>Search by File ID</span><input [(ngModel)]="fileId" (input)="scheduleFilter()" placeholder="e.g. F139"></label>
+        <button type="button" class="clear-filters" (click)="clearFilters()"><span class="material-symbols-rounded">filter_alt_off</span>Clear filters</button>
+      </section>
+      <div class="section-heading" *ngIf="dues.length"><div><span>ACTION LIST</span><h2>{{ dues.length }} installments shown</h2></div></div>
+      <button class="due-card" *ngFor="let due of dues" (click)="openDue(due)">
+        <div class="due-head"><span class="file">{{ due.customerFileId||'UNFILED' }}</span><span class="age" [class.urgent]="due.daysOverdue>30">{{ due.daysOverdue>0 ? due.daysOverdue+'d late' : 'Due today' }}</span></div>
+        <h3>{{ due.customerName }}</h3><p>{{ due.vehicleType }} · {{ due.regNo||'No registration' }} · EMI {{ due.sNo }}</p>
+        <div class="amount-row"><div><small>Installment outstanding</small><strong>{{ formatCurrency(due.outstandingForThisInstallment) }}</strong></div><span>Record payment <span class="material-symbols-rounded">arrow_forward</span></span></div>
       </button>
-    </section>
-    <ion-infinite-scroll [disabled]="!hasMore" (ionInfinite)="loadMore($event)"><ion-infinite-scroll-content loadingText="Loading more dues..."></ion-infinite-scroll-content></ion-infinite-scroll>
+      <div class="state" *ngIf="isLoading"><ion-spinner name="crescent"></ion-spinner><p>Building payment queue...</p></div>
+      <div class="state" *ngIf="!isLoading&&!dues.length"><span class="material-symbols-rounded">task_alt</span><h2>Queue is clear</h2><p>No installments match these filters.</p></div>
+      <ion-infinite-scroll [disabled]="!hasMore" (ionInfinite)="loadMore($event)"><ion-infinite-scroll-content loadingText="Loading more dues..."></ion-infinite-scroll-content></ion-infinite-scroll>
+    </main>
   </div>
 </ion-content>

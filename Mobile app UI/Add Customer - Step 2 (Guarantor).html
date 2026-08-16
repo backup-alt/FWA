@@ -1,0 +1,295 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>RAM Finance - Ledger Entry</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#004a77",
+                    "primary": "#00355f",
+                    "surface-container-low": "#f2f4f6",
+                    "on-secondary-container": "#50666d",
+                    "secondary-container": "#cce4ec",
+                    "surface-tint": "#2d6197",
+                    "on-background": "#191c1e",
+                    "outline": "#727780",
+                    "primary-fixed": "#d2e4ff",
+                    "error-container": "#ffdad6",
+                    "on-surface": "#191c1e",
+                    "secondary": "#4c6269",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-container": "#7ec0ff",
+                    "tertiary-fixed-dim": "#98cbff",
+                    "error": "#ba1a1a",
+                    "on-error-container": "#93000a",
+                    "on-surface-variant": "#42474f",
+                    "secondary-fixed": "#cfe6ee",
+                    "secondary-fixed-dim": "#b3cad2",
+                    "on-error": "#ffffff",
+                    "tertiary-container": "#004e7d",
+                    "background": "#f7f9fb",
+                    "inverse-primary": "#a0c9ff",
+                    "on-secondary-fixed-variant": "#344a51",
+                    "tertiary-fixed": "#cfe5ff",
+                    "surface": "#f7f9fb",
+                    "on-secondary-fixed": "#071e24",
+                    "on-primary-container": "#8ebdf9",
+                    "surface-container": "#eceef0",
+                    "primary-container": "#0f4c81",
+                    "surface-container-high": "#e6e8ea",
+                    "on-primary-fixed-variant": "#07497d",
+                    "on-primary-fixed": "#001c37",
+                    "tertiary": "#00365a",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-secondary": "#ffffff",
+                    "surface-container-highest": "#e0e3e5",
+                    "surface-variant": "#e0e3e5",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-dim": "#d8dadc",
+                    "primary-fixed-dim": "#a0c9ff",
+                    "outline-variant": "#c2c7d1",
+                    "surface-bright": "#f7f9fb",
+                    "on-tertiary-fixed": "#001d33",
+                    "inverse-surface": "#2d3133"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-sm": "0.25rem",
+                    "touch-target": "2.75rem",
+                    "gutter": "0.75rem",
+                    "stack-md": "0.5rem",
+                    "stack-lg": "1rem",
+                    "margin-page": "1rem"
+            },
+            "fontFamily": {
+                    "body-sm": [
+                            "Inter"
+                    ],
+                    "label-md": [
+                            "Inter"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "headline-lg": [
+                            "Manrope"
+                    ],
+                    "data-mono": [
+                            "JetBrains Mono"
+                    ],
+                    "display-sm": [
+                            "Manrope"
+                    ],
+                    "headline-sm": [
+                            "Manrope"
+                    ]
+            },
+            "fontSize": {
+                    "body-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-md": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg": [
+                            "20px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "data-mono": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "display-sm": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-sm": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        /* Smooth scrolling and basic reset */
+        html { scroll-behavior: smooth; }
+        body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        /* Hide scrollbar for clean mobile look */
+        ::-webkit-scrollbar { display: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md min-h-screen flex flex-col pb-[3.5rem] md:pb-0">
+<!-- TopAppBar -->
+<header class="w-full sticky top-0 z-50 bg-surface-container border-b border-outline-variant flex items-center justify-between px-margin-page h-14">
+    <!-- Leading Avatar -->
+    <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-highest transition-colors active:scale-90 text-on-surface">
+        <span class="material-symbols-outlined">arrow_back</span>
+    </button>
+    <!-- Headline -->
+    <h1 class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight flex-1 text-center">
+        Add Customer
+    </h1>
+    <!-- Trailing Icon -->
+    <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-highest transition-colors active:scale-90 text-on-surface">
+        <span class="material-symbols-outlined">close</span>
+    </button>
+</header>
+<main class="flex-1 flex flex-col pt-6 md:pt-8 max-w-2xl mx-auto w-full pb-8">
+<!-- Page Header -->
+<div class="px-margin-page mb-6 text-center">
+<h2 class="font-headline-lg text-headline-lg text-on-surface text-left">Ledger Entry</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 text-left">Page 116 fields first, then the repayment tracker is generated automatically</p>
+</div>
+<!-- Step Indicator -->
+<div class="flex items-center justify-center w-full px-4 mb-8">
+<!-- Background Track -->
+<div class="flex flex-col items-center relative z-10">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+</div>
+<div class="flex-grow h-[2px] bg-primary -mx-2 relative z-0"></div>
+<!-- Step 2 (Active) -->
+<div class="flex flex-col items-center relative z-10">
+<div class="w-8 h-8 rounded-full border-2 border-primary bg-surface flex items-center justify-center text-primary font-label-md">
+                    2
+                </div>
+</div>
+<div class="flex-grow h-[2px] bg-surface-variant -mx-2 relative z-0"></div>
+<!-- Step 2 (Active) -->
+<div class="flex flex-col items-center relative z-10">
+<div class="w-8 h-8 rounded-full border-2 border-surface-variant bg-surface flex items-center justify-center text-on-surface-variant font-label-md">
+                    3
+                </div>
+</div>
+<div class="flex-grow h-[2px] bg-surface-variant -mx-2 relative z-0"></div>
+<!-- Step 4 (Pending) -->
+<div class="flex flex-col items-center relative z-10">
+<div class="w-8 h-8 rounded-full border-2 border-surface-variant bg-surface flex items-center justify-center text-on-surface-variant font-label-md">
+                    4
+                </div>
+</div>
+</div>
+<!-- Form Area (Glassmorphism inspired card structure for high-end feel) -->
+<div class="flex-1 px-margin-page w-full">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-4">Guarantor Details</h3>
+<form class="bg-surface-container-lowest rounded-xl shadow-sm p-6 flex flex-col gap-6 border border-outline-variant">
+<div class="md:grid md:grid-cols-2 md:gap-6">
+<!-- Guarantor Name -->
+<div class="flex flex-col gap-1.5 relative group mb-4 md:mb-0">
+<label class="text-sm font-medium text-on-surface-variant group-focus-within:text-primary transition-colors" for="guarantor_name">Guarantor Name</label>
+<div class="relative">
+<input class="h-12 px-4 rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary outline-none bg-surface-lowest text-on-surface font-body-lg text-body-lg transition-all w-full placeholder:text-outline-variant shadow-sm" id="guarantor_name" placeholder="" type="text">
+</div>
+</div>
+<!-- Guarantor Mobile -->
+<div class="flex flex-col gap-1.5 relative group">
+<label class="text-sm font-medium text-on-surface-variant group-focus-within:text-primary transition-colors" for="guarantor_mobile">Guarantor Mobile</label>
+<div class="relative">
+<input class="h-12 px-4 rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary outline-none bg-surface-lowest text-on-surface font-body-lg text-body-lg transition-all w-full placeholder:text-outline-variant shadow-sm" id="guarantor_mobile" inputmode="tel" placeholder="Phone number" type="tel">
+</div>
+</div>
+</div>
+<!-- Guarantor Address -->
+<div class="flex flex-col gap-1.5 relative group md:w-1/2">
+<label class="text-sm font-medium text-on-surface-variant group-focus-within:text-primary transition-colors" for="guarantor_address">Guarantor Address</label>
+<div class="relative">
+<input class="h-12 px-4 rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary outline-none bg-surface-lowest text-on-surface font-body-lg text-body-lg transition-all w-full placeholder:text-outline-variant shadow-sm" id="guarantor_address" placeholder="" type="text">
+</div>
+</div>
+</form>
+</div>
+<!-- Bottom Actions -->
+<div class="w-full bg-surface-container-lowest border-t border-surface-variant p-4 flex justify-between gap-4 safe-area-bottom mt-8">
+<button class="flex-1 h-12 flex items-center justify-center font-label-md text-primary border border-primary rounded-full hover:bg-surface-container transition-colors">
+            Back
+        </button>
+<button class="flex-1 h-12 flex items-center justify-center font-label-md text-on-primary bg-primary rounded-full shadow-sm hover:opacity-90 transition-opacity">
+            Next Step
+        </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 border-t border-outline-variant dark:border-on-secondary-container bg-surface dark:bg-on-background flex justify-around items-center h-[3.5rem] px-2 pb-safe md:hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+<!-- Dashboard (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant w-16 h-full scale-95 active:scale-90 transition-transform duration-100 active:bg-secondary-container dark:active:bg-secondary-fixed-variant rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1">dashboard</span>
+<span class="font-label-md text-label-md text-[10px] leading-none">Dashboard</span>
+</a>
+<!-- Customers (Active) -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim font-bold w-16 h-full scale-95 active:scale-90 transition-transform duration-100 active:bg-secondary-container dark:active:bg-secondary-fixed-variant rounded-lg relative" href="#">
+<div class="absolute top-0 w-8 h-[3px] bg-primary rounded-b-full"></div>
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: &quot;FILL&quot; 1;">group</span>
+<span class="font-label-md text-label-md text-[10px] leading-none">Customers</span>
+</a>
+<!-- Dues (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant w-16 h-full scale-95 active:scale-90 transition-transform duration-100 active:bg-secondary-container dark:active:bg-secondary-fixed-variant rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1">payments</span>
+<span class="font-label-md text-label-md text-[10px] leading-none">Dues</span>
+</a>
+<!-- Reports (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant w-16 h-full scale-95 active:scale-90 transition-transform duration-100 active:bg-secondary-container dark:active:bg-secondary-fixed-variant rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1">assessment</span>
+<span class="font-label-md text-label-md text-[10px] leading-none">Reports</span>
+</a>
+</nav>
+
+
+</body></html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>RAM Finance - Add Customer Step 3</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#727780",
+                        "tertiary-fixed": "#cfe5ff",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-surface": "#2d3133",
+                        "on-error": "#ffffff",
+                        "primary-container": "#0f4c81",
+                        "surface": "#f7f9fb",
+                        "surface-dim": "#d8dadc",
+                        "on-primary-container": "#8ebdf9",
+                        "on-secondary-fixed-variant": "#344a51",
+                        "secondary-fixed": "#cfe6ee",
+                        "on-secondary-fixed": "#071e24",
+                        "surface-container-high": "#e6e8ea",
+                        "on-primary-fixed": "#001c37",
+                        "on-secondary-container": "#50666d",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "outline-variant": "#c2c7d1",
+                        "primary-fixed-dim": "#a0c9ff",
+                        "tertiary-container": "#004e7d",
+                        "on-surface": "#191c1e",
+                        "surface-variant": "#e0e3e5",
+                        "on-tertiary-fixed-variant": "#004a77",
+                        "primary-fixed": "#d2e4ff",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#cce4ec",
+                        "on-tertiary-fixed": "#001d33",
+                        "surface-container-low": "#f2f4f6",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary-container": "#7ec0ff",
+                        "on-surface-variant": "#42474f",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#98cbff",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed-variant": "#07497d",
+                        "background": "#f7f9fb",
+                        "primary": "#00355f",
+                        "secondary-fixed-dim": "#b3cad2",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-tint": "#2d6197",
+                        "tertiary": "#00365a",
+                        "inverse-primary": "#a0c9ff",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-background": "#191c1e",
+                        "secondary": "#4c6269",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#eceef0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-sm": "0.25rem",
+                        "touch-target": "3.5rem",
+                        "gutter": "1rem",
+                        "stack-md": "0.5rem",
+                        "stack-lg": "1rem",
+                        "margin-page": "1rem"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Manrope"],
+                        "data-mono": ["JetBrains Mono"],
+                        "display-sm": ["Manrope"],
+                        "headline-sm": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "display-sm": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["16px", { "lineHeight": "24px", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        .floating-input:focus ~ label,
+        .floating-input:not(:placeholder-shown) ~ label {
+            transform: translateY(-50%) scale(0.75);
+            top: 0;
+            background-color: white;
+            padding: 0 4px;
+            color: #00355f; /* primary */
+        }
+        
+        .safe-area-bottom {
+            padding-bottom: env(safe-area-inset-bottom, 1rem);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col font-body-md pb-[4rem] safe-area-bottom">
+<!-- TopAppBar -->
+<header class="w-full sticky top-0 z-50 bg-surface-container border-b border-outline-variant flex items-center justify-between px-4 h-14"><div class="flex items-center justify-center w-10 h-10 text-on-surface-variant hover:bg-surface-container-highest rounded-full cursor-pointer transition-colors active:scale-90">
+    <span class="material-symbols-outlined">arrow_back</span>
+</div>
+<h1 class="font-headline-sm text-headline-sm text-on-surface flex-grow text-center">Add Customer</h1>
+<div class="flex items-center justify-center w-10 h-10 text-on-surface-variant hover:bg-surface-container-highest rounded-full cursor-pointer transition-colors active:scale-90">
+    <span class="material-symbols-outlined">close</span>
+</div></header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col w-full max-w-md mx-auto relative px-margin-page py-stack-lg gap-stack-lg pb-32">
+<!-- Step Indicator -->
+<div class="flex items-center justify-center w-full px-4 mb-2">
+<!-- Step 1 (Completed) -->
+<div class="flex flex-col items-center relative z-10">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+</div>
+<div class="flex-grow h-[2px] bg-primary -mx-2 relative z-0"></div>
+<!-- Step 2 (Completed) -->
+<div class="flex flex-col items-center relative z-10">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+</div>
+<div class="flex-grow h-[2px] bg-primary -mx-2 relative z-0"></div>
+<!-- Step 3 (Active) -->
+<div class="flex flex-col items-center relative z-10">
+<div class="w-8 h-8 rounded-full border-2 border-primary bg-surface flex items-center justify-center text-primary font-label-md">
+                    3
+                </div>
+</div>
+<div class="flex-grow h-[2px] bg-surface-variant -mx-2 relative z-0"></div>
+<!-- Step 4 (Pending) -->
+<div class="flex flex-col items-center relative z-10">
+<div class="w-8 h-8 rounded-full border-2 border-surface-variant bg-surface flex items-center justify-center text-on-surface-variant font-label-md">
+                    4
+                </div>
+</div>
+</div>
+<div class="text-center font-headline-sm text-headline-sm text-on-surface mb-4">Step 3: Vehicle &amp; Finance Details</div>
+<!-- Section 1: Vehicle Details -->
+<section class="bg-surface-container-lowest rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-outline-variant flex flex-col gap-5">
+<h2 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">directions_car</span>
+                Vehicle Details
+            </h2>
+<div class="grid grid-cols-2 gap-gutter">
+<!-- Vehicle Type -->
+<div class="relative col-span-2 sm:col-span-1 group">
+<select class="w-full h-touch-target px-4 pt-5 pb-1 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 appearance-none font-body-md hover:bg-surface transition-colors cursor-pointer">
+<option selected="" value="bike">Bike</option>
+<option value="car">Car</option>
+<option value="auto">Auto</option>
+</select>
+<label class="absolute left-4 top-2 text-on-surface-variant font-body-sm pointer-events-none scale-75 origin-left text-primary group-focus-within:text-primary transition-colors">Vehicle Type</label>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none group-focus-within:text-primary transition-colors">expand_more</span>
+</div>
+<!-- Make -->
+<div class="relative col-span-2 sm:col-span-1 group">
+<select class="w-full h-touch-target px-4 pt-5 pb-1 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 appearance-none font-body-md hover:bg-surface transition-colors cursor-pointer">
+<option disabled="" selected="">Select Make</option>
+<option value="honda">Honda</option>
+<option value="bajaj">Bajaj</option>
+<option value="maruti">Maruti Suzuki</option>
+</select>
+<label class="absolute left-4 top-2 text-on-surface-variant font-body-sm pointer-events-none scale-75 origin-left group-focus-within:text-primary transition-colors">Make</label>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none group-focus-within:text-primary transition-colors">expand_more</span>
+</div>
+<!-- Model -->
+<div class="relative col-span-2">
+<input class="floating-input w-full h-touch-target px-4 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 font-body-md hover:bg-surface transition-colors" placeholder=" " type="text">
+<label class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md transition-all pointer-events-none">Model</label>
+</div>
+<!-- Reg No -->
+<div class="relative col-span-2 sm:col-span-1">
+<input class="floating-input w-full h-touch-target px-4 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 font-data-mono uppercase hover:bg-surface transition-colors" placeholder=" " type="text">
+<label class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md transition-all pointer-events-none">Reg. No.</label>
+</div>
+<!-- RC Status -->
+<div class="relative col-span-2 sm:col-span-1">
+<input class="floating-input w-full h-touch-target px-4 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 font-body-md hover:bg-surface transition-colors" placeholder=" " type="text">
+<label class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md transition-all pointer-events-none">RC Status</label>
+</div>
+<!-- NOC -->
+<div class="relative col-span-2 sm:col-span-1 group">
+<select class="w-full h-touch-target px-4 pt-5 pb-1 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 appearance-none font-body-md hover:bg-surface transition-colors cursor-pointer">
+<option disabled="" selected="">Select</option>
+<option value="yes">Yes</option>
+<option value="no">No</option>
+</select>
+<label class="absolute left-4 top-2 text-on-surface-variant font-body-sm pointer-events-none scale-75 origin-left group-focus-within:text-primary transition-colors">NOC</label>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none group-focus-within:text-primary transition-colors">expand_more</span>
+</div>
+<!-- Insurance -->
+<div class="relative col-span-2 sm:col-span-1 group">
+<select class="w-full h-touch-target px-4 pt-5 pb-1 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 appearance-none font-body-md hover:bg-surface transition-colors cursor-pointer">
+<option disabled="" selected="">Select</option>
+<option value="active">Active</option>
+<option value="expired">Expired</option>
+</select>
+<label class="absolute left-4 top-2 text-on-surface-variant font-body-sm pointer-events-none scale-75 origin-left group-focus-within:text-primary transition-colors">Insurance</label>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none group-focus-within:text-primary transition-colors">expand_more</span>
+</div>
+<!-- ID Proof -->
+<div class="relative col-span-2 sm:col-span-1 group">
+<select class="w-full h-touch-target px-4 pt-5 pb-1 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 appearance-none font-body-md hover:bg-surface transition-colors cursor-pointer">
+<option disabled="" selected="">Select</option>
+<option value="aadhar">Aadhar</option>
+<option value="pan">PAN</option>
+</select>
+<label class="absolute left-4 top-2 text-on-surface-variant font-body-sm pointer-events-none scale-75 origin-left group-focus-within:text-primary transition-colors">ID Proof</label>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none group-focus-within:text-primary transition-colors">expand_more</span>
+</div>
+<!-- ID Number -->
+<div class="relative col-span-2 sm:col-span-1">
+<input class="floating-input w-full h-touch-target px-4 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 font-data-mono uppercase hover:bg-surface transition-colors" placeholder=" " type="text">
+<label class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md transition-all pointer-events-none">ID Number</label>
+</div>
+<!-- Key Status -->
+<div class="relative col-span-2 sm:col-span-1 group">
+<select class="w-full h-touch-target px-4 pt-5 pb-1 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 appearance-none font-body-md hover:bg-surface transition-colors cursor-pointer">
+<option disabled="" selected="">Select</option>
+<option value="original">Original</option>
+<option value="duplicate">Duplicate</option>
+</select>
+<label class="absolute left-4 top-2 text-on-surface-variant font-body-sm pointer-events-none scale-75 origin-left group-focus-within:text-primary transition-colors">Key Status</label>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none group-focus-within:text-primary transition-colors">expand_more</span>
+</div>
+</div>
+<button class="w-full h-12 mt-2 flex items-center justify-center gap-2 text-primary border-2 border-primary border-dashed rounded-lg font-label-md hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                Add Another Vehicle
+            </button>
+</section>
+<!-- Section 2: Finance Details -->
+<section class="bg-surface-container-lowest rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-outline-variant flex flex-col gap-5">
+<h2 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+                Finance Details
+            </h2>
+<div class="grid grid-cols-2 gap-gutter">
+<!-- Loan Account Number -->
+<div class="relative col-span-2">
+<input class="floating-input w-full h-touch-target px-4 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 font-data-mono hover:bg-surface transition-colors" placeholder=" " type="text">
+<label class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md transition-all pointer-events-none">Loan Account Number</label>
+</div>
+<!-- Loan Amount -->
+<div class="relative col-span-2 sm:col-span-1">
+<input class="floating-input w-full h-touch-target px-4 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 font-data-mono hover:bg-surface transition-colors" inputmode="decimal" placeholder=" " type="number">
+<label class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md transition-all pointer-events-none">Loan Amount (L.AMT) *</label>
+</div>
+<!-- Finance Amount -->
+<div class="relative col-span-2 sm:col-span-1">
+<input class="floating-input w-full h-touch-target px-4 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 font-data-mono hover:bg-surface transition-colors" inputmode="decimal" placeholder=" " type="number">
+<label class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md transition-all pointer-events-none">Finance Amount (F.AMT) *</label>
+</div>
+<!-- Interest Rate -->
+<div class="relative col-span-2 sm:col-span-1">
+<input class="floating-input w-full h-touch-target px-4 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 font-data-mono hover:bg-surface transition-colors" inputmode="decimal" placeholder=" " type="number">
+<label class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md transition-all pointer-events-none">Monthly Interest Rate (%) *</label>
+</div>
+<!-- Installment Period -->
+<div class="relative col-span-2 sm:col-span-1">
+<input class="floating-input w-full h-touch-target px-4 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 font-data-mono hover:bg-surface transition-colors" inputmode="numeric" placeholder=" " type="number">
+<label class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md transition-all pointer-events-none">Installment Period *</label>
+</div>
+<!-- Unit -->
+<div class="relative col-span-2 sm:col-span-1 group">
+<select class="w-full h-touch-target px-4 pt-5 pb-1 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 appearance-none font-body-md hover:bg-surface transition-colors cursor-pointer">
+<option selected="" value="months">Months</option>
+<option value="years">Years</option>
+</select>
+<label class="absolute left-4 top-2 text-on-surface-variant font-body-sm pointer-events-none scale-75 origin-left group-focus-within:text-primary transition-colors">Unit *</label>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none group-focus-within:text-primary transition-colors">expand_more</span>
+</div>
+<!-- Start Date -->
+<div class="relative col-span-2 sm:col-span-1">
+<input class="w-full h-touch-target px-4 pt-5 pb-1 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 font-body-md hover:bg-surface transition-colors" type="date">
+<label class="absolute left-4 top-2 text-on-surface-variant font-body-sm pointer-events-none scale-75 origin-left text-primary transition-colors">Start Date</label>
+</div>
+<!-- Sales Done By -->
+<div class="relative col-span-2">
+<input class="floating-input w-full h-touch-target px-4 rounded-lg border-2 border-surface-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:border-primary focus:ring-0 font-body-md hover:bg-surface transition-colors" placeholder=" " type="text">
+<label class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md transition-all pointer-events-none">Sales Done By</label>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Action Bar for Form Steps -->
+<div class="fixed bottom-[2.75rem] left-0 w-full bg-surface-container-lowest border-t border-surface-variant p-4 z-40 flex justify-between gap-4 safe-area-bottom">
+<button class="flex-1 h-12 flex items-center justify-center font-label-md text-primary border border-primary rounded-full hover:bg-surface-container transition-colors">
+            Back
+        </button>
+<button class="flex-1 h-12 flex items-center justify-center font-label-md text-on-primary bg-primary rounded-full shadow-sm hover:opacity-90 transition-opacity">
+            Next Step
+        </button>
+</div>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-0 w-full z-50 border-t border-outline-variant bg-surface flex justify-around items-center h-[2.75rem] px-2 pb-safe md:hidden shadow-[0_-2px_8px_rgba(0,0,0,0.05)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-colors w-full h-full" href="#">
+<span class="material-symbols-outlined text-[24px]">dashboard</span>
+<span class="font-label-md text-[10px] mt-0.5 hidden">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary font-bold active:bg-secondary-container scale-95 active:scale-90 transition-transform duration-100 w-full h-full relative" href="#">
+<div class="absolute top-0 w-1/2 h-0.5 bg-primary rounded-b-full"></div>
+<span class="material-symbols-outlined icon-fill text-[24px]">group</span>
+<span class="font-label-md text-[10px] mt-0.5 hidden">Customers</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-colors w-full h-full" href="#">
+<span class="material-symbols-outlined text-[24px]">payments</span>
+<span class="font-label-md text-[10px] mt-0.5 hidden">Dues</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-colors w-full h-full" href="#">
+<span class="material-symbols-outlined text-[24px]">assessment</span>
+<span class="font-label-md text-[10px] mt-0.5 hidden">Reports</span>
+</a>
+</nav>
+</body></html>

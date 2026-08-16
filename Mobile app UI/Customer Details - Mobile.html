@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f8fb">
+  <title>Vijayanathan — Customer Details</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&family=Material+Symbols+Rounded:opsz,wght,FILL@20..48,400,0..1" rel="stylesheet">
+  <style>
+    :root{--navy:#073b66;--navy-2:#0d538c;--ink:#17212b;--muted:#64717f;--line:#dfe5eb;--soft:#eef3f7;--bg:#f6f8fb;--card:#fff;--green:#18784d;--green-bg:#e2f5ea;--orange:#9b4d00;--orange-bg:#fff0dc;--red:#a52a25;--red-bg:#fde9e7;--shadow:0 8px 28px rgba(21,46,70,.07)}
+    *{box-sizing:border-box}html{background:#e8edf2}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,system-ui,sans-serif;min-height:100vh;-webkit-tap-highlight-color:transparent}.material-symbols-rounded{font-size:22px;line-height:1;font-variation-settings:'FILL' 0,'wght' 450}.app{width:100%;max-width:540px;min-height:100vh;margin:auto;background:var(--bg);position:relative;box-shadow:0 0 35px rgba(0,0,0,.08)}
+    button,a{font:inherit}button{cursor:pointer}.topbar{height:58px;padding:env(safe-area-inset-top) 14px 0;position:sticky;top:0;z-index:20;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;background:rgba(246,248,251,.94);backdrop-filter:blur(16px);border-bottom:1px solid rgba(223,229,235,.8)}.icon-btn{width:40px;height:40px;border:0;border-radius:12px;background:transparent;color:var(--ink);display:grid;place-items:center}.icon-btn:active{background:var(--soft)}.top-title{text-align:center;font:700 17px Manrope,sans-serif}.content{padding:16px 16px 104px}.profile{padding:19px 18px 17px;background:linear-gradient(145deg,#fff 45%,#edf5fc);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}.profile-row{display:flex;gap:14px;align-items:center}.avatar{width:64px;height:64px;flex:0 0 auto;border-radius:20px;display:grid;place-items:center;background:linear-gradient(145deg,var(--navy-2),var(--navy));color:#fff;font:800 22px Manrope;box-shadow:inset 0 0 0 3px rgba(255,255,255,.2)}.eyebrow{font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--navy-2)}h1{font:800 24px/1.15 Manrope,sans-serif;margin:2px 0}.customer-name{font:700 14px Manrope;margin:4px 0 2px}.meta{color:var(--muted);font-size:11px}.quick-actions{display:grid;grid-template-columns:1fr 1.15fr;gap:8px;margin-top:17px}.action{min-height:44px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}.action.primary{background:var(--navy);border-color:var(--navy);color:#fff}.action .material-symbols-rounded{font-size:19px}
+    .tabs{position:sticky;top:58px;z-index:10;margin:17px -16px 0;padding:0 16px;background:rgba(246,248,251,.95);backdrop-filter:blur(12px);display:flex;border-bottom:1px solid var(--line)}.tab{flex:1;padding:14px 8px 12px;border:0;border-bottom:3px solid transparent;background:transparent;color:var(--muted);font-weight:700}.tab.active{color:var(--navy);border-bottom-color:var(--navy)}.panel{display:none}.panel.active{display:block}.section{margin-top:18px}.section-head{display:flex;align-items:end;justify-content:space-between;margin:0 2px 9px}.section-title{font:700 16px Manrope;margin:0}.section-sub{font-size:11px;color:var(--muted);margin-top:2px}.text-btn{border:0;background:transparent;color:var(--navy-2);font-size:12px;font-weight:700;padding:7px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 3px 14px rgba(21,46,70,.035);overflow:hidden}.info-row{display:grid;grid-template-columns:38px minmax(0,1fr);gap:10px;padding:13px 14px;border-bottom:1px solid #edf0f3}.info-row:last-child{border:0}.info-icon{width:34px;height:34px;border-radius:10px;background:var(--soft);color:var(--navy);display:grid;place-items:center}.info-icon .material-symbols-rounded{font-size:19px}.label{font-size:11px;color:var(--muted);margin-bottom:2px}.value{font-weight:600;color:var(--ink);overflow-wrap:anywhere}.value a{color:var(--navy-2);text-decoration:none}.empty{color:#9aa4ae;font-weight:500}.loan-filter{display:flex;gap:5px;padding:4px;background:#e9eef3;border-radius:12px}.filter{border:0;background:transparent;border-radius:9px;padding:7px 10px;color:var(--muted);font-size:11px;font-weight:700}.filter.active{background:#fff;color:var(--ink);box-shadow:0 2px 7px rgba(0,0,0,.07)}
+    .loan-card{border-top:4px solid #b8610b}.loan-main{padding:14px}.loan-top{display:flex;align-items:flex-start;gap:11px}.vehicle-icon{width:42px;height:42px;border-radius:13px;background:#e5f0fa;display:grid;place-items:center;flex:0 0 auto}.vehicle-svg{display:block;width:26px;height:26px;object-fit:contain}.loan-name{font:700 15px Manrope;margin:0 0 2px}.loan-id{font:500 11px/1.4 Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:var(--muted)}.loan-actions{margin-left:auto;display:flex;align-items:center;gap:6px}.mini-edit{width:30px;height:30px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--navy);display:grid;place-items:center}.mini-edit .material-symbols-rounded{font-size:17px}.badge{border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800;white-space:nowrap}.badge.closed{background:var(--orange-bg);color:var(--orange)}.money-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}.metric{padding:11px;background:var(--soft);border-radius:12px}.metric strong{display:block;font:700 16px Manrope;margin-top:2px}.metric .zero{color:var(--green)}.loan-link{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-top:1px solid var(--line);color:var(--navy);font-size:12px;font-weight:800;text-decoration:none;background:#fbfdff}.vehicles{padding:13px 14px;border-top:1px solid var(--line)}.vehicles-head{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:9px}.vehicle-mini{display:grid;grid-template-columns:26px minmax(0,1fr) 8px;align-items:center;gap:10px;padding:10px;border:1px solid var(--line);border-radius:12px;margin-top:8px}.vehicle-mini:first-of-type{margin-top:0}.vehicle-mini strong{font-size:12px}.vehicle-mini small{display:block;color:var(--muted);margin-top:1px}.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green)}.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:30;width:100%;max-width:540px;height:68px;padding:6px 9px max(6px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(4,1fr);background:rgba(255,255,255,.96);backdrop-filter:blur(16px);border-top:1px solid var(--line)}.nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:var(--muted);font-size:10px;font-weight:600;border-radius:10px}.nav-item.active{color:var(--navy)}.nav-item.active .material-symbols-rounded{font-variation-settings:'FILL' 1}.modal-backdrop{position:fixed;inset:0;z-index:60;display:none;align-items:flex-end;justify-content:center;background:rgba(11,25,37,.48);backdrop-filter:blur(3px)}.modal-backdrop.open{display:flex}.modal{width:100%;max-width:540px;max-height:88vh;overflow:auto;background:#fff;border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -12px 36px rgba(0,0,0,.16)}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.modal-head h2{font:800 18px Manrope;margin:0}.form-grid{display:grid;gap:12px}.field label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin:0 0 5px}.field input,.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 12px;background:#fff;color:var(--ink);font:500 13px Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;outline:none}.field textarea{min-height:78px;resize:vertical}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--navy-2);box-shadow:0 0 0 3px rgba(13,83,140,.1)}.modal-actions{display:grid;grid-template-columns:1fr 1.3fr;gap:9px;margin-top:16px}.vehicle-editor{padding:0;overflow:hidden;display:flex;flex-direction:column}.vehicle-editor .modal-head{padding:17px 16px 13px;margin:0;border-bottom:1px solid var(--line)}.vehicle-scroll{padding:15px 12px;overflow-y:auto;overscroll-behavior:contain}.vehicle-form-card{padding:13px;border:1px solid var(--line);border-radius:14px;background:#fbfcfe;margin-bottom:12px}.vehicle-form-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font:800 12px Manrope}.delete-vehicle{width:30px;height:30px;border:0;border-radius:8px;background:var(--red-bg);color:var(--red);display:grid;place-items:center}.delete-vehicle .material-symbols-rounded{font-size:17px}.vehicle-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px 10px}.add-vehicle{display:flex;align-items:center;gap:5px;border:0;background:transparent;color:var(--navy-2);font-size:12px;font-weight:800;padding:8px 4px}.add-vehicle .material-symbols-rounded{font-size:18px}.vehicle-footer{padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:#fff;display:flex;justify-content:flex-end;gap:9px}.vehicle-footer .action{padding:0 17px}.toast{position:fixed;left:50%;bottom:82px;transform:translate(-50%,20px);background:#17212b;color:#fff;padding:10px 14px;border-radius:10px;opacity:0;pointer-events:none;transition:.2s;z-index:80;white-space:nowrap;font-size:12px}.toast.show{opacity:1;transform:translate(-50%,0)}
+    @media(min-width:541px){body{padding:24px 0}.app{min-height:calc(100vh - 48px);border-radius:24px;overflow:clip}.bottom-nav{bottom:24px;border-radius:0 0 24px 24px}.topbar{border-radius:24px 24px 0 0}}
+  </style>
+
+<style id="form-control-local-safe">
+/* Local-file safe typography: never fall back to the browser's serif default. */
+html, body, button, input, select, textarea {
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+input, select, textarea {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+button, a {
+  font-family: inherit;
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <a class="icon-btn" href="customers.html" aria-label="Back to customers"><span class="material-symbols-rounded">arrow_back</span></a>
+    <div class="top-title">Customer details</div>
+    <div></div>
+  </header>
+
+  <main class="content">
+    <section class="profile">
+      <div class="profile-row">
+        <div class="avatar">VM</div>
+        <div>
+          <div class="eyebrow">File number</div>
+          <h1 id="customerFile">F126</h1>
+          <div class="customer-name" id="customerName">Vijayanathan S/o Murugan</div>
+          <div class="meta">1 loan · Customer since 05 Jul 2026</div>
+        </div>
+      </div>
+      <div class="quick-actions">
+        <button class="action" onclick="openModal('customerModal')"><span class="material-symbols-rounded">edit</span>Edit customer</button>
+        <button class="action primary" onclick="showToast('New loan preview')"><span class="material-symbols-rounded">add</span>New loan</button>
+      </div>
+    </section>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-panel="overview">Overview</button>
+      <button class="tab" data-panel="loans">Loans <span style="opacity:.65">(1)</span></button>
+    </div>
+
+    <section id="overview" class="panel active">
+      <div class="section">
+        <div class="section-head"><div><h2 class="section-title">Personal information</h2><div class="section-sub">Customer and contact details</div></div><button class="text-btn" onclick="openModal('customerModal')">Edit</button></div>
+        <div class="card">
+          <div class="info-row"><div class="info-icon"><span class="material-symbols-rounded">location_on</span></div><div><div class="label">Permanent address</div><div class="value" id="customerAddress">Nandan Ilai Street, 14/49D North Street, Kannankulam</div></div></div>
+          <div class="info-row"><div class="info-icon"><span class="material-symbols-rounded">phone_iphone</span></div><div><div class="label">Mobile number</div><div class="value" id="customerPhone">+91 88837 06144</div></div></div>
+          <div class="info-row"><div class="info-icon"><span class="material-symbols-rounded">home_work</span></div><div><div class="label">Temporary address</div><div class="value empty">Not provided</div></div></div>
+          <div class="info-row"><div class="info-icon"><span class="material-symbols-rounded">payments</span></div><div><div class="label">Monthly salary</div><div class="value empty">Not provided</div></div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-head"><div><h2 class="section-title">Documents & guarantor</h2><div class="section-sub">Verification details</div></div></div>
+        <div class="card">
+          <div class="info-row"><div class="info-icon"><span class="material-symbols-rounded">badge</span></div><div><div class="label">ID proof</div><div class="value empty">Not provided</div></div></div>
+          <div class="info-row"><div class="info-icon"><span class="material-symbols-rounded">verified</span></div><div><div class="label">ID status</div><div class="value empty">Not set</div></div></div>
+          <div class="info-row"><div class="info-icon"><span class="material-symbols-rounded">group</span></div><div><div class="label">Guarantor</div><div class="value empty">Not provided</div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="loans" class="panel">
+      <div class="section">
+        <div class="section-head"><div><h2 class="section-title">Loans</h2><div class="section-sub">1 loan associated with this customer</div></div></div>
+        <div class="loan-filter"><button class="filter active">All 1</button><button class="filter">Active 0</button><button class="filter">Closed 1</button></div>
+        <div class="card loan-card" style="margin-top:11px">
+          <div class="loan-main">
+            <div class="loan-top">
+              <div class="vehicle-icon"><img class="vehicle-svg" src="../bike-svgrepo-com.svg" alt="Bike"></div>
+              <div><h3 class="loan-name" id="loanName">Hero Splender</h3><div class="loan-id"><span id="loanReg">TN 69 AE 7764</span> · <span id="loanPeriod">15</span> months</div></div>
+              <div class="loan-actions"><button class="mini-edit" onclick="openModal('loanModal')" aria-label="Edit loan"><span class="material-symbols-rounded">edit</span></button><span class="badge closed">Closed</span></div>
+            </div>
+            <div class="money-grid">
+              <div class="metric"><div class="label">Total paid</div><strong>₹31,200</strong></div>
+              <div class="metric"><div class="label">Outstanding</div><strong class="zero">₹0</strong></div>
+            </div>
+          </div>
+          <div class="vehicles">
+            <div class="vehicles-head">Vehicles on this loan · 2</div>
+            <div id="customerVehicleList"></div>
+          </div>
+          <a class="loan-link" href="Loan Details - Mobile.html"><span>View loan details</span><span class="material-symbols-rounded">arrow_forward</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a class="nav-item" href="Dashboard.html"><span class="material-symbols-rounded">dashboard</span><span>Dashboard</span></a>
+    <a class="nav-item active" href="customers.html"><span class="material-symbols-rounded">group</span><span>Customers</span></a>
+    <a class="nav-item" href="pending dues.html"><span class="material-symbols-rounded">payments</span><span>Dues</span></a>
+    <a class="nav-item" href="payment report.html"><span class="material-symbols-rounded">assessment</span><span>Reports</span></a>
+  </nav>
+</div>
+<div class="modal-backdrop" id="customerModal" onclick="backdropClose(event)"><form class="modal" onsubmit="saveCustomer(event)"><div class="modal-head"><h2>Edit customer</h2><button class="icon-btn" type="button" onclick="closeModal('customerModal')"><span class="material-symbols-rounded">close</span></button></div><div class="form-grid"><div class="field"><label>File number</label><input id="editFile" value="F126" required></div><div class="field"><label>Customer name</label><input id="editName" value="Vijayanathan S/o Murugan" required></div><div class="field"><label>Mobile number</label><input id="editPhone" value="+91 88837 06144" inputmode="tel"></div><div class="field"><label>Permanent address</label><textarea id="editAddress">Nandan Ilai Street, 14/49D North Street, Kannankulam</textarea></div></div><div class="modal-actions"><button class="action" type="button" onclick="closeModal('customerModal')">Cancel</button><button class="action primary" type="submit">Save changes</button></div></form></div>
+<div class="modal-backdrop" id="loanModal" onclick="backdropClose(event)"><form class="modal vehicle-editor" onsubmit="saveLoan(event)"><div class="modal-head"><h2>Edit Vehicles</h2><button class="icon-btn" type="button" onclick="closeModal('loanModal')"><span class="material-symbols-rounded">close</span></button></div><div class="vehicle-scroll"><div id="customerVehicleForms"></div><button class="add-vehicle" type="button" onclick="addCustomerVehicle()"><span class="material-symbols-rounded">add</span>Add Vehicle</button></div><div class="vehicle-footer"><button class="action" type="button" onclick="closeModal('loanModal')">Cancel</button><button class="action primary" type="submit">Save</button></div></form></div>
+<div id="toast" class="toast">Preview action</div>
+<script>
+  const tabs=document.querySelectorAll('.tab'),panels=document.querySelectorAll('.panel');
+  tabs.forEach(tab=>tab.addEventListener('click',()=>{tabs.forEach(x=>x.classList.remove('active'));panels.forEach(x=>x.classList.remove('active'));tab.classList.add('active');document.getElementById(tab.dataset.panel).classList.add('active')}));
+  document.querySelectorAll('.filter').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));button.classList.add('active');if(button.textContent.includes('Active'))showToast('No active loans');}));
+  function showToast(message){const t=document.getElementById('toast');t.textContent=message;t.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.classList.remove('show'),1800)}
+  function openModal(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden'}
+  function closeModal(id){document.getElementById(id).classList.remove('open');document.body.style.overflow=''}
+  function backdropClose(event){if(event.target===event.currentTarget)closeModal(event.currentTarget.id)}
+  function saveCustomer(event){event.preventDefault();document.getElementById('customerFile').textContent=document.getElementById('editFile').value;document.getElementById('customerName').textContent=document.getElementById('editName').value;document.getElementById('customerPhone').textContent=document.getElementById('editPhone').value;document.getElementById('customerAddress').textContent=document.getElementById('editAddress').value;closeModal('customerModal');showToast('Customer preview updated')}
+  let customerVehicles=[{type:'Bike',reg:'TN 69 AE 7764',make:'Hero',model:'Splender',rc:'Yes',noc:'NA',insurance:'NA',key:'Not Given'},{type:'Bike',reg:'TN 72 BW 4447',make:'TVS',model:'Scooty Zest',rc:'Yes',noc:'Received',insurance:'NA',key:'Not Given'}];
+  function vehicleOptions(values,selected){return values.map(value=>`<option ${value===selected?'selected':''}>${value}</option>`).join('')}
+  function renderCustomerVehicles(){document.getElementById('customerVehicleForms').innerHTML=customerVehicles.map((v,i)=>`<section class="vehicle-form-card"><div class="vehicle-form-head"><span>Vehicle ${i+1}</span><button class="delete-vehicle" type="button" onclick="removeCustomerVehicle(${i})" aria-label="Delete vehicle ${i+1}"><span class="material-symbols-rounded">delete</span></button></div><div class="vehicle-form-grid"><div class="field"><label>Type</label><select data-field="type">${vehicleOptions(['Bike','Car','Auto'],v.type)}</select></div><div class="field"><label>Reg. No.</label><input data-field="reg" value="${v.reg}"></div><div class="field"><label>Make</label><input data-field="make" value="${v.make}"></div><div class="field"><label>Model</label><input data-field="model" value="${v.model}"></div><div class="field"><label>RC Status</label><input data-field="rc" value="${v.rc}"></div><div class="field"><label>NOC</label><select data-field="noc">${vehicleOptions(['Received','Not Received','NA'],v.noc)}</select></div><div class="field"><label>Insurance</label><select data-field="insurance">${vehicleOptions(['Expired','Not Expired','NA'],v.insurance)}</select></div><div class="field"><label>Key Status</label><select data-field="key">${vehicleOptions(['Given','Not Given'],v.key)}</select></div></div></section>`).join('')}
+  function readCustomerVehicles(){return [...document.querySelectorAll('#customerVehicleForms .vehicle-form-card')].map(card=>Object.fromEntries([...card.querySelectorAll('[data-field]')].map(field=>[field.dataset.field,field.value])))}
+  function renderCustomerVehicleList(){document.querySelector('.vehicles-head').textContent=`Vehicles on this loan · ${customerVehicles.length}`;document.getElementById('customerVehicleList').innerHTML=customerVehicles.map(v=>`<div class="vehicle-mini"><img class="vehicle-svg" src="../bike-svgrepo-com.svg" alt="${v.type}"><div><strong>${v.make} ${v.model}</strong><small>${v.reg||'No Reg. No.'} · RC ${v.rc||'not set'}</small></div><span class="status-dot"></span></div>`).join('')}
+  function addCustomerVehicle(){customerVehicles=readCustomerVehicles();customerVehicles.push({type:'Bike',reg:'',make:'',model:'',rc:'',noc:'NA',insurance:'NA',key:'Not Given'});renderCustomerVehicles();document.querySelector('.vehicle-scroll').scrollTop=document.querySelector('.vehicle-scroll').scrollHeight}
+  function removeCustomerVehicle(index){if(customerVehicles.length===1){showToast('At least one vehicle is required');return}customerVehicles=readCustomerVehicles();customerVehicles.splice(index,1);renderCustomerVehicles()}
+  function saveLoan(event){event.preventDefault();customerVehicles=readCustomerVehicles();const one=customerVehicles[0];document.getElementById('loanName').textContent=`${one.make} ${one.model}`.trim();document.getElementById('loanReg').textContent=one.reg;renderCustomerVehicleList();closeModal('loanModal');showToast(`${customerVehicles.length} vehicles updated`)}
+  renderCustomerVehicles();renderCustomerVehicleList();
+</script>
+</body>
+</html>

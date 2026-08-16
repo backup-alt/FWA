@@ -1,0 +1,442 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>Portfolio Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700&amp;family=JetBrains+Mono:wght@500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Hide scrollbar for horizontal scroll but keep functionality */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-container": "#7ec0ff",
+                    "on-secondary-fixed": "#071e24",
+                    "outline-variant": "#c2c7d1",
+                    "inverse-surface": "#2d3133",
+                    "on-primary": "#ffffff",
+                    "secondary-container": "#cce4ec",
+                    "surface": "#f7f9fb",
+                    "tertiary-fixed-dim": "#98cbff",
+                    "surface-variant": "#e0e3e5",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed-variant": "#07497d",
+                    "on-secondary-container": "#50666d",
+                    "surface-container": "#eceef0",
+                    "background": "#f7f9fb",
+                    "surface-bright": "#f7f9fb",
+                    "surface-dim": "#d8dadc",
+                    "on-primary-container": "#8ebdf9",
+                    "primary": "#0f4c81", /* Updated primary color */
+                    "secondary-fixed": "#cfe6ee",
+                    "secondary-fixed-dim": "#b3cad2",
+                    "on-surface-variant": "#42474f",
+                    "surface-tint": "#2d6197",
+                    "outline": "#727780",
+                    "on-tertiary-fixed-variant": "#004a77",
+                    "on-tertiary-fixed": "#001d33",
+                    "surface-container-high": "#e6e8ea",
+                    "secondary": "#4c6269",
+                    "surface-container-low": "#f2f4f6",
+                    "primary-container": "#0f4c81",
+                    "on-secondary-fixed-variant": "#344a51",
+                    "primary-fixed": "#d2e4ff",
+                    "tertiary-container": "#004e7d",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#a0c9ff",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed": "#cfe5ff",
+                    "surface-container-highest": "#e0e3e5",
+                    "on-background": "#191c1e",
+                    "error-container": "#ffdad6",
+                    "on-surface": "#191c1e",
+                    "tertiary": "#00365a",
+                    "on-primary-fixed": "#001c37",
+                    "primary-fixed-dim": "#a0c9ff",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "inverse-on-surface": "#eff1f3"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "0.75rem",
+                    "touch-target": "2.75rem",
+                    "stack-md": "0.5rem",
+                    "stack-sm": "0.25rem",
+                    "stack-lg": "1rem",
+                    "margin-page": "1rem"
+            },
+            "fontFamily": {
+                    "label-md": [
+                            "Inter"
+                    ],
+                    "body-sm": [
+                            "Inter"
+                    ],
+                    "headline-sm": [
+                            "Manrope"
+                    ],
+                    "data-mono": [
+                            "JetBrains Mono"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "headline-lg": [
+                            "Manrope"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "display-sm": [
+                            "Manrope"
+                    ]
+            },
+            "fontSize": {
+                    "label-md": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-sm": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "data-mono": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "body-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg": [
+                            "20px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-sm": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased md:max-w-md md:mx-auto md:border-x md:border-outline-variant min-h-screen relative pb-20">
+<!-- TopAppBar -->
+<header class="bg-surface sticky top-0 z-40 border-b border-outline-variant px-margin-page py-stack-md flex items-center justify-between">
+<h1 class="font-headline-lg text-headline-lg text-primary font-bold">Dashboard</h1>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors">
+</button>
+</header>
+<main class="p-margin-page space-y-stack-lg">
+<!-- Metrics Grid -->
+<section>
+<div class="grid grid-cols-2 gap-gutter">
+<!-- Outstanding -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md shadow-sm flex flex-col justify-between h-24 active:scale-95 transition-transform duration-100 cursor-pointer">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Total Outstanding</p>
+<p class="font-data-mono text-data-mono text-primary text-lg font-bold">₹1.25 Cr</p>
+</div>
+<!-- Overdue -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md shadow-sm flex flex-col justify-between h-24 active:scale-95 transition-transform duration-100 cursor-pointer">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Overdue Amount</p>
+<p class="font-data-mono text-data-mono text-primary text-lg font-bold">₹15.4L</p>
+</div>
+<!-- Collected -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md shadow-sm flex flex-col justify-between h-24 active:scale-95 transition-transform duration-100 cursor-pointer">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Total Collected</p>
+<p class="font-data-mono text-data-mono text-primary text-lg font-bold">₹28.2L</p>
+</div>
+<!-- Active Loans -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md shadow-sm flex flex-col justify-between h-24 active:scale-95 transition-transform duration-100 cursor-pointer">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Active Loans</p>
+<p class="font-data-mono text-data-mono text-primary text-lg font-bold">142</p>
+</div>
+<!-- Completed Loans -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md shadow-sm flex flex-col justify-between h-24 active:scale-95 transition-transform duration-100 cursor-pointer">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Completed Loans</p>
+<p class="font-data-mono text-data-mono text-primary text-lg font-bold">85</p>
+</div>
+<!-- Total Customers -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md shadow-sm flex flex-col justify-between h-24 active:scale-95 transition-transform duration-100 cursor-pointer">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Total Customers</p>
+<p class="font-data-mono text-data-mono text-primary text-lg font-bold">210</p>
+</div>
+</div>
+</section>
+<!-- Payments Report Section -->
+<section>
+<button class="w-full bg-primary text-on-primary rounded-lg py-3 px-4 font-headline-sm flex items-center justify-between shadow-sm hover:opacity-90 transition-opacity">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">assessment</span>
+<span class="">Payments Report</span>
+</div>
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</section>
+<!-- Charts Grid -->
+<section class="grid grid-cols-1 gap-gutter">
+<!-- Vehicle Distribution (Donut) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-md shadow-sm">
+<div class="flex justify-between items-center mb-stack-md">
+<h3 class="font-label-md text-label-md text-on-surface-variant">Vehicle Distribution</h3>
+</div>
+<div class="flex gap-2 overflow-x-auto hide-scrollbar mb-4 pb-1" id="loanFilters">
+<button class="shrink-0 font-label-md text-label-md bg-primary text-on-primary px-3 py-1 rounded-full filter-btn active" data-filter="all">All</button>
+<button class="shrink-0 font-label-md text-label-md bg-surface-container text-on-surface-variant px-3 py-1 rounded-full border border-outline-variant filter-btn" data-filter="bike">Bike Loan</button>
+<button class="shrink-0 font-label-md text-label-md bg-surface-container text-on-surface-variant px-3 py-1 rounded-full border border-outline-variant filter-btn" data-filter="car">Car Loan</button>
+<button class="shrink-0 font-label-md text-label-md bg-surface-container text-on-surface-variant px-3 py-1 rounded-full border border-outline-variant filter-btn" data-filter="auto">Auto Loan</button>
+</div>
+<div class="relative h-48 w-full flex items-center justify-center">
+<canvas height="216" id="vehicleDonut" style="display: block; box-sizing: border-box; height: 192px; width: 340.4px;" width="383"></canvas>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<span class="font-headline-sm text-headline-sm text-on-surface" id="chartCenterText">142</span>
+</div>
+</div>
+<div class="flex justify-center gap-4 mt-2">
+<div class="flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant"><span class="w-2 h-2 rounded-full bg-[#00529B] block"></span> Bikes: 91</div>
+<div class="flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant"><span class="w-2 h-2 rounded-full bg-[#00A99D] block"></span> Cars: 6</div>
+<div class="flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant"><span class="w-2 h-2 rounded-full bg-[#F7931E] block"></span> Auto: 1</div>
+</div>
+</div>
+<!-- Monthly Collections (Line) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-md shadow-sm">
+<div class="flex justify-between items-center mb-stack-md">
+<h3 class="font-label-md text-label-md text-on-surface-variant">Collections Trend</h3>
+</div>
+<div class="flex gap-2 mb-4"><button class="font-label-md text-label-md bg-primary text-on-primary px-3 py-1 rounded-full trend-filter active" data-range="6m">6 Months</button><button class="font-label-md text-label-md bg-surface-container text-on-surface-variant px-3 py-1 rounded-full border border-outline-variant trend-filter" data-range="1y">1 Year</button><button class="font-label-md text-label-md bg-surface-container text-on-surface-variant px-3 py-1 rounded-full border border-outline-variant trend-filter" data-range="max">Max</button></div>
+<div class="overflow-x-auto hide-scrollbar">
+<div class="h-64" style="width: 500px;">
+<canvas class="" height="288" id="collectionsLine" style="display: block; box-sizing: border-box; height: 256px; width: 500px;" width="562"></canvas>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed right-4 md:right-[calc(50%-13rem)] w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center hover:bg-opacity-90 transition-colors z-50 bottom-14">
+<span class="material-symbols-outlined text-[28px]">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 md:max-w-md md:mx-auto border-t border-outline-variant dark:border-on-secondary-container bg-surface dark:bg-on-background flex justify-around items-center h-[3.5rem] px-2 pb-safe">
+<!-- Dashboard (Active) -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim font-bold active:bg-secondary-container dark:active:bg-secondary-fixed-variant scale-95 active:scale-90 transition-transform duration-100 p-2 rounded-lg relative" href="#">
+<span class="absolute top-0 w-6 h-0.5 bg-primary rounded-b-sm"></span>
+<span class="material-symbols-outlined mb-0.5" data-icon="dashboard" data-weight="fill" style="font-variation-settings: &quot;FILL&quot; 1;">dashboard</span>
+<span class="font-label-md text-[10px]">Dashboard</span>
+</a>
+<!-- Customers -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant active:bg-secondary-container dark:active:bg-secondary-fixed-variant scale-95 active:scale-90 transition-transform duration-100 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-0.5" data-icon="group">group</span>
+<span class="font-label-md text-[10px] font-normal">Customers</span>
+</a>
+<!-- Dues -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant active:bg-secondary-container dark:active:bg-secondary-fixed-variant scale-95 active:scale-90 transition-transform duration-100 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-0.5" data-icon="payments">payments</span>
+<span class="font-label-md text-[10px] font-normal">Dues</span>
+</a>
+<!-- Reports -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant active:bg-secondary-container dark:active:bg-secondary-fixed-variant scale-95 active:scale-90 transition-transform duration-100 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-0.5" data-icon="assessment">assessment</span>
+<span class="font-label-md text-[10px] font-normal">Reports</span>
+</a>
+</nav>
+<script>
+        // Chart Configs
+        const themeColors = {
+            primary: '#0f4c81',
+            secondary: '#4c6269',
+            surfaceVariant: '#e0e3e5',
+            outline: '#727780',
+            grid: '#f2f4f6',
+            bike: '#00529B',
+            car: '#00A99D',
+            auto: '#F7931E'
+        };
+
+        const donutData = {
+            all: [91, 6, 1],
+            bike: [91, 0, 0],
+            car: [0, 6, 0],
+            auto: [0, 0, 1]
+        };
+
+        const totalLoans = {
+            all: 98,
+            bike: 91,
+            car: 6,
+            auto: 1
+        };
+
+        // Donut Chart
+        const ctxDonut = document.getElementById('vehicleDonut').getContext('2d');
+        let donutChart = new Chart(ctxDonut, {
+            type: 'doughnut',
+            data: {
+                labels: ['Bikes', 'Cars', 'Auto'],
+                datasets: [{
+                    data: donutData.all,
+                    backgroundColor: [themeColors.bike, themeColors.car, themeColors.auto],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) { return context.label + ': ' + context.parsed; }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Line Chart
+        const ctxLine = document.getElementById('collectionsLine').getContext('2d');
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Collections',
+                    data: [65000, 72000, 68000, 85000, 79000, 82000],
+                    borderColor: themeColors.primary,
+                    backgroundColor: '#0f4c8120', // primary with opacity
+                    borderWidth: 2,
+                    pointBackgroundColor: themeColors.primary,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: themeColors.grid, drawBorder: false },
+                        ticks: { 
+                            color: themeColors.outline, 
+                            font: { family: 'Inter', size: 10 },
+                            callback: function(value, index, values) {
+                                if (value === 0) return '₹0';
+                                return '₹' + (value / 1000) + 'k';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: themeColors.outline, font: { family: 'Inter', size: 10 } }
+                    }
+                }
+            }
+        });
+
+        // Filter Logic
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const chartCenterText = document.getElementById('chartCenterText');
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active state classes
+                filterBtns.forEach(b => {
+                    b.classList.remove('bg-primary', 'text-on-primary', 'active');
+                    b.classList.add('bg-surface-container', 'text-on-surface-variant', 'border', 'border-outline-variant');
+                });
+                
+                btn.classList.remove('bg-surface-container', 'text-on-surface-variant', 'border', 'border-outline-variant');
+                btn.classList.add('bg-primary', 'text-on-primary', 'active');
+
+                // Update chart data
+                const filter = btn.dataset.filter;
+                donutChart.data.datasets[0].data = donutData[filter];
+                donutChart.update();
+                chartCenterText.textContent = totalLoans[filter];
+            });
+        });
+    </script>
+<script class="">const trendData = { '6m': [65, 72, 68, 85, 79, 82], '1y': [45, 52, 48, 65, 59, 62, 70, 75, 80, 85, 82, 88], 'max': [30, 40, 35, 50, 45, 55, 60, 70, 85, 90] }; const trendFilters = document.querySelectorAll('.trend-filter'); trendFilters.forEach(btn => { btn.addEventListener('click', () => { trendFilters.forEach(b => { b.classList.remove('bg-primary', 'text-on-primary', 'active'); b.classList.add('bg-surface-container', 'text-on-surface-variant', 'border', 'border-outline-variant'); }); btn.classList.remove('bg-surface-container', 'text-on-surface-variant', 'border', 'border-outline-variant'); btn.classList.add('bg-primary', 'text-on-primary', 'active'); /* In a real app, you would call chart.update() here with trendData[btn.dataset.range] */ }); });</script>
+
+</body></html>

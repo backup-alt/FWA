@@ -1,332 +1,198 @@
-<ion-content class="ram-bg-surface ram-page" fullscreen>
-  <!-- Sticky Header -->
-  <ion-header collapse="condense">
-    <ion-toolbar class="ram-bg-card" mode="md">
-      <ion-title class="heading-font" style="font-size: 1.25rem; font-weight: 700; color: var(--ram-ink);">
-        {{ useExistingCustomer && selectedExistingCustomer ? 'Edit Customer' : 'Add Customer' }}
-      </ion-title>
-      <ion-buttons slot="start">
-        <ion-button (click)="onBack()" fill="clear" style="--color: var(--ram-ink);">
-          <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
-        </ion-button>
-      </ion-buttons>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="add-customer-page" fullscreen>
+  <header class="mobile-page-header">
+    <button type="button" class="icon-button" (click)="onBack()" aria-label="Go back">
+      <span class="material-symbols-rounded">arrow_back</span>
+    </button>
+    <h1>{{ isEditMode ? 'Edit Customer' : 'Add Customer' }}</h1>
+    <i aria-hidden="true"></i>
+  </header>
 
-  <!-- Step Progress Indicator -->
-  <div class="ram-step-progress ion-padding-horizontal ion-padding-top" style="background: var(--ram-background);">
-    <div class="ram-step-track">
-      <div class="ram-step-progress-bar" [style.width.%]="getOverallProgress()"></div>
-    </div>
-    <div class="ram-step-indicators">
-      <div *ngFor="let step of [1,2,3,4]; let i = index" class="ram-step-indicator" [class.active]="currentStep >= step" [class.completed]="currentStep > step">
-        <div class="ram-step-circle">
-          <span *ngIf="currentStep > step" class="ram-step-check">✓</span>
-          <span *ngIf="currentStep === step">{{ step }}</span>
-          <span *ngIf="currentStep < step">{{ step }}</span>
+  <main class="wizard-shell">
+    <div class="stepper" aria-label="Form progress">
+      <div *ngFor="let step of visibleSteps; let last = last" class="step" [class.active]="currentStep === step" [class.done]="currentStep > step">
+        <div class="step-marker">
+          <span class="material-symbols-rounded" *ngIf="currentStep > step">check</span>
+          <span *ngIf="currentStep <= step">{{ step === 4 && isEditMode ? 3 : step }}</span>
         </div>
-        <span class="ram-step-label">{{ getStepShortLabel(step) }}</span>
+        <span class="step-label">{{ getStepShortLabel(step) }}</span>
+        <i *ngIf="!last"></i>
       </div>
     </div>
-  </div>
 
-  <div class="ram-page-content ram-bottom-nav-offset">
-    <!-- Step Content -->
-    <div class="ram-step-content" [@slideAnimation]="currentStep">
+    <section *ngIf="currentStep === 1" class="step-panel">
+      <div class="page-intro">
+        <span class="eyebrow">Step 1</span>
+        <h2>Customer details</h2>
+        <p>Start with the file identity and primary contact.</p>
+      </div>
 
-      <!-- STEP 1: Customer Info -->
-      <div *ngIf="currentStep === 1" class="ram-step-panel">
-        <div class="ram-step-header ion-padding-horizontal ion-padding-top">
-          <h2 class="heading-font" style="font-size: 1.25rem; font-weight: 700; color: var(--ram-ink); margin: 0;">
-            Customer Information
-          </h2>
-          <p style="margin: 0.5rem 0 0; color: var(--ram-on-surface-variant); font-size: 0.875rem;">
-            Enter customer details and contact information
-          </p>
+      <div *ngIf="!isEditMode" class="mode-switch">
+        <button type="button" [class.active]="!useExistingCustomer" (click)="setCustomerMode(false)">New Customer</button>
+        <button type="button" [class.active]="useExistingCustomer" (click)="setCustomerMode(true)">Existing Customer</button>
+      </div>
+
+      <div *ngIf="useExistingCustomer && !isEditMode && !selectedExistingCustomer" class="form-card search-card">
+        <label>Find customer</label>
+        <div class="search-row">
+          <span class="material-symbols-rounded">search</span>
+          <input [(ngModel)]="existingCustomerSearch" [ngModelOptions]="{standalone: true}" (input)="searchExistingCustomers()" placeholder="Name, file ID or phone" />
+          <ion-spinner *ngIf="isSearching" name="crescent"></ion-spinner>
+        </div>
+        <button type="button" *ngFor="let customer of existingCustomerResults" class="search-result" (click)="selectExistingCustomer(customer)">
+          <span class="result-file">{{ customer.fileId || 'No file ID' }}</span>
+          <strong>{{ customer.name }}</strong>
+          <small>{{ customer.cellNumbers[0]?.number || 'No phone number' }}</small>
+        </button>
+        <p *ngIf="existingCustomerSearch.length >= 2 && !isSearching && !existingCustomerResults.length" class="empty-note">No matching customer found.</p>
+      </div>
+
+      <form [formGroup]="step1Form" class="form-card" *ngIf="!useExistingCustomer || selectedExistingCustomer || isEditMode">
+        <div class="profile-photo-field">
+          <button type="button" class="profile-preview" (click)="chooseProfileImage()" aria-label="Choose customer picture">
+            <img *ngIf="profileImagePreview" [src]="profileImagePreview" alt="Customer profile preview">
+            <span *ngIf="!profileImagePreview" class="profile-initials">{{ getInitials(step1Form.value.name) }}</span>
+            <span class="camera-badge material-symbols-rounded">photo_camera</span>
+          </button>
+          <div><strong>Customer picture</strong><p>JPG, PNG or WebP · maximum 5 MB</p><button type="button" (click)="chooseProfileImage()">{{ profileImagePreview ? 'Change picture' : 'Upload picture' }}</button><button *ngIf="profileImagePreview" type="button" class="remove-photo" (click)="removeProfileImage()">Remove</button></div>
+        </div>
+        <div *ngIf="selectedExistingCustomer && !isEditMode" class="selected-file">
+          <span class="material-symbols-rounded">verified</span>
+          <div><small>Selected file</small><strong>{{ selectedExistingCustomer.fileId || 'No file ID' }} · {{ selectedExistingCustomer.name }}</strong></div>
+        </div>
+        <div class="field-grid">
+          <label class="field file-priority">
+            <span>File ID</span>
+            <input formControlName="fileId" placeholder="e.g. RAM-1024" />
+          </label>
+          <label class="field">
+            <span>Customer Name *</span>
+            <input formControlName="name" placeholder="Full name" />
+          </label>
+          <label class="field full">
+            <span>Address</span>
+            <textarea formControlName="address" rows="2" placeholder="Permanent address"></textarea>
+          </label>
+          <label class="field full">
+            <span>Temporary Address</span>
+            <textarea formControlName="temporaryAddress" rows="2" placeholder="If different from permanent address"></textarea>
+          </label>
+          <label class="field">
+            <span>Monthly Salary</span>
+            <input formControlName="monthlySalary" inputmode="decimal" type="number" placeholder="₹ 0" />
+          </label>
+          <label class="field">
+            <span>ID Status</span>
+            <select formControlName="idStatus"><option value="Yes">Verified</option><option value="No">Pending verification</option><option value="">Not set</option></select>
+          </label>
+          <label class="field">
+            <span>ID Proof Type</span>
+            <select formControlName="idProofType"><option value="">Select</option><option>Aadhaar</option><option>PAN</option><option>Driving License</option><option>Voter ID</option><option>Passport</option></select>
+          </label>
+          <label class="field">
+            <span>ID Number</span>
+            <input formControlName="idProofNumber" placeholder="Proof number" />
+          </label>
         </div>
 
-        <form [formGroup]="step1Form" class="ion-padding-horizontal ion-padding-top">
-          <!-- Existing Customer Search -->
-          <div class="ram-section" *ngIf="!useExistingCustomer && !selectedExistingCustomer">
-            <h3 class="ram-section-title">Find Existing Customer</h3>
-            <p class="ram-section-subtitle">Search by name to link an existing customer</p>
+        <div class="section-divider"><span>Contact Numbers *</span><small>At least one required</small></div>
+        <div *ngFor="let cell of cellNumbers; let i = index" class="repeat-row">
+          <label class="field grow"><span>Mobile {{ i + 1 }}</span><input [(ngModel)]="cell.number" [ngModelOptions]="{standalone: true}" type="tel" inputmode="tel" maxlength="10" placeholder="10-digit number" /></label>
+          <button *ngIf="cellNumbers.length > 1" type="button" class="remove-button" (click)="removeCellNumber(i)" aria-label="Remove phone"><span class="material-symbols-rounded">delete</span></button>
+        </div>
+        <button type="button" class="add-button" (click)="addCellNumber()" [disabled]="cellNumbers.length >= 5"><span class="material-symbols-rounded">add</span>Add another number</button>
+      </form>
+    </section>
 
-            <ion-searchbar
-              [(ngModel)]="existingCustomerSearch"
-              (ionInput)="searchExistingCustomers()"
-              placeholder="Search existing customers by name..."
-              animated="true"
-              style="--background: var(--ram-background); --box-shadow: none; --border-radius: var(--ram-radius-md);"
-              [debounce]="300">
-            </ion-searchbar>
+    <section *ngIf="currentStep === 2" class="step-panel">
+      <div class="page-intro"><span class="eyebrow">Step 2</span><h2>Guarantor details</h2><p>Add the ledger guarantor information, or continue if it is unavailable.</p></div>
+      <form [formGroup]="step2Form" class="form-card">
+        <div class="section-heading"><span class="material-symbols-rounded">shield_person</span><div><h3>Guarantor Details</h3><p>Optional supporting contact</p></div></div>
+        <div class="field-grid">
+          <label class="field"><span>Guarantor Name</span><input formControlName="guarantorName" placeholder="Full name" /></label>
+          <label class="field"><span>Guarantor Mobile</span><input formControlName="guarantorMobile" type="tel" inputmode="tel" maxlength="10" placeholder="Phone number" /></label>
+          <label class="field full"><span>Guarantor Address</span><textarea formControlName="guarantorAddress" rows="3" placeholder="Complete address"></textarea></label>
+        </div>
+        <div class="info-note"><span class="material-symbols-rounded">info</span><p>Guarantor details are optional and can be updated later.</p></div>
+      </form>
+    </section>
 
-            <div *ngIf="isSearching" class="ram-search-loading ion-padding-top">
-              <ion-spinner name="crescent" color="primary" style="margin: 0 auto;"></ion-spinner>
+    <section *ngIf="currentStep === 3" class="step-panel">
+      <div class="page-intro"><span class="eyebrow">Step 3</span><h2>Vehicle &amp; finance</h2><p>Add every vehicle first, then enter the values used to generate the schedule.</p></div>
+      <form [formGroup]="step3Form">
+        <div formArrayName="vehicles">
+          <article *ngFor="let vehicle of vehicles.controls; let i = index" [formGroupName]="i" class="form-card vehicle-card">
+            <div class="card-title-row"><div class="section-heading"><span class="material-symbols-rounded">directions_car</span><div><h3>Vehicle {{ i + 1 }}</h3><p>Registration and document status</p></div></div><button *ngIf="vehicles.length > 1" type="button" class="remove-button" (click)="removeVehicle(i)" aria-label="Remove vehicle"><span class="material-symbols-rounded">delete</span></button></div>
+            <div class="field-grid">
+              <label class="field"><span>Vehicle Type *</span><select formControlName="vehicleType"><option>Bike</option><option>Car</option><option>Auto</option></select></label>
+              <label class="field"><span>Make *</span><input formControlName="make" placeholder="e.g. Honda" /></label>
+              <label class="field"><span>Model *</span><input formControlName="model" placeholder="Vehicle model" /></label>
+              <label class="field"><span>Reg. No. *</span><input class="mono uppercase" formControlName="regNo" placeholder="TN 00 AA 0000" /></label>
+              <label class="field"><span>RC Status</span><select formControlName="rcStatus"><option value="">Select</option><option>Yes</option><option>No</option></select></label>
+              <label class="field"><span>NOC</span><select formControlName="noc"><option>NA</option><option>Received</option><option>Not Received</option></select></label>
+              <label class="field"><span>Insurance</span><select formControlName="insurance"><option>NA</option><option>Active</option><option>Expired</option></select></label>
+              <label class="field"><span>Key Status</span><select formControlName="keyStatus"><option>Not Given</option><option>Given</option><option>Original</option><option>Duplicate</option></select></label>
+              <label class="field"><span>ID Proof</span><select formControlName="idProofType"><option value="">Select</option><option>Aadhaar</option><option>PAN</option></select></label>
+              <label class="field"><span>ID Number</span><input formControlName="idProofNumber" placeholder="Proof number" /></label>
             </div>
-
-            <ion-list *ngIf="existingCustomerResults.length > 0 && !isSearching" lines="none" class="ion-no-padding ram-search-results">
-              <ion-item *ngFor="let customer of existingCustomerResults" class="ram-search-result-item" (click)="selectExistingCustomer(customer)" lines="none" detail="true">
-                <div class="ram-search-result-avatar" slot="start">
-                  <div class="ram-avatar-circle" [style.background]="getAvatarColor(customer._id)">
-                    {{ getInitials(customer.name) }}
-                  </div>
-                </div>
-                <div class="ram-search-result-info">
-                  <h4 class="ram-search-result-name">{{ customer.name }}</h4>
-                  <p class="ram-search-result-meta" *ngIf="customer.fileId">
-                    <ion-icon name="id-card-outline" slot="start" style="font-size: 12px;"></ion-icon>
-                    File ID: {{ customer.fileId }}
-                  </p>
-                  <p class="ram-search-result-meta" *ngIf="customer.cellNumbers?.length">
-                    <ion-icon name="call-outline" slot="start" style="font-size: 12px;"></ion-icon>
-                    {{ customer.cellNumbers[0].number }}
-                  </p>
-                </div>
-              </ion-item>
-            </ion-list>
-
-            <ion-button fill="outline" (click)="useNewCustomer()" class="ram-use-new-btn ion-padding-top" expand="block">
-              <ion-icon name="person-add-outline" slot="start"></ion-icon>
-              Create New Customer
-            </ion-button>
-          </div>
-
-          <!-- New Customer Form / Edit Form -->
-          <div class="ram-section" *ngIf="useExistingCustomer || !existingCustomerSearch">
-            <h3 class="ram-section-title">{{ useExistingCustomer ? 'Edit Customer' : 'New Customer Details' }}</h3>
-
-            <ion-item lines="none" class="ram-form-item">
-              <ion-label position="stacked" class="ram-label-required">Full Name *</ion-label>
-              <ion-input formControlName="name" placeholder="Enter full name" type="text" autocapitalize="words"></ion-input>
-            </ion-item>
-
-            <ion-item lines="none" class="ram-form-item">
-              <ion-label position="stacked">File ID</ion-label>
-              <ion-input formControlName="fileId" placeholder="Auto-generated or enter manually" type="text"></ion-input>
-            </ion-item>
-
-            <ion-item lines="none" class="ram-form-item">
-              <ion-label position="stacked">Permanent Address</ion-label>
-              <ion-textarea formControlName="address" placeholder="Enter permanent address" rows="2" auto-grow="true"></ion-textarea>
-            </ion-item>
-
-            <ion-item lines="none" class="ram-form-item">
-              <ion-label position="stacked">Temporary Address</ion-label>
-              <ion-textarea formControlName="temporaryAddress" placeholder="Enter temporary address (if different)" rows="2" auto-grow="true"></ion-textarea>
-            </ion-item>
-
-            <ion-item lines="none" class="ram-form-item">
-              <ion-label position="stacked">Monthly Salary</ion-label>
-              <ion-input formControlName="monthlySalary" placeholder="0" type="number" inputmode="decimal"></ion-input>
-            </ion-item>
-
-            <!-- Cell Numbers -->
-            <div class="ram-form-group">
-              <div class="ram-form-group-header">
-                <ion-label class="ram-label-required">Phone Numbers *</ion-label>
-                <ion-button fill="clear" size="small" (click)="addCellNumber()" *ngIf="cellNumbers.length < 5" style="--color: var(--ram-primary); --padding-start: 0;">
-                  <ion-icon name="add-outline" slot="start"></ion-icon>
-                  Add
-                </ion-button>
-              </div>
-
-              <div class="ram-cell-numbers-list">
-                <div *ngFor="let cell of cellNumbers; let i = index" class="ram-cell-number-row">
-                  <ion-input
-                    [(ngModel)]="cell.number"
-                    [ngModelOptions]="{standalone: true}"
-                    placeholder="Enter 10-digit mobile number"
-                    type="tel"
-                    inputmode="tel"
-                    maxlength="10"
-                    (ionBlur)="step1Form.updateValueAndValidity()"
-                    style="flex: 1;">
-                  </ion-input>
-                  <ion-button
-                    *ngIf="cellNumbers.length > 1"
-                    fill="clear"
-                    color="danger"
-                    (click)="removeCellNumber(i)"
-                    style="--padding-start: 0.5rem; --padding-end: 0.5rem;"
-                    aria-label="Remove phone number">
-                    <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-                  </ion-button>
-                </div>
-              </div>
-
-              <p *ngIf="!hasPhoneNumber()" class="ram-field-error">
-                At least one phone number is required
-              </p>
-            </div>
-
-            <!-- ID Proof -->
-            <ion-item lines="none" class="ram-form-item" style="margin-top: var(--ram-stack-md);">
-              <ion-label position="stacked">ID Proof Type</ion-label>
-              <ion-select formControlName="idProofType" interface="action-sheet" placeholder="Select ID type">
-                <ion-select-option value="Aadhaar">Aadhaar</ion-select-option>
-                <ion-select-option value="PAN">PAN</ion-select-option>
-                <ion-select-option value="Driving License">Driving License</ion-select-option>
-                <ion-select-option value="Voter ID">Voter ID</ion-select-option>
-                <ion-select-option value="Passport">Passport</ion-select-option>
-                <ion-select-option value="Other">Other</ion-select-option>
-              </ion-select>
-            </ion-item>
-
-            <ion-item lines="none" class="ram-form-item">
-              <ion-label position="stacked">ID Proof Number</ion-label>
-              <ion-input formControlName="idProofNumber" placeholder="Enter ID number" type="text"></ion-input>
-            </ion-item>
-
-            <ion-item lines="none" class="ram-form-item">
-              <ion-label position="stacked">ID Status</ion-label>
-              <ion-select formControlName="idStatus" interface="action-sheet" placeholder="Select status">
-                <ion-select-option value="Yes">Yes (Verified)</ion-select-option>
-                <ion-select-option value="No">No (Pending)</ion-select-option>
-              </ion-select>
-            </ion-item>
-          </div>
-        </form>
-      </div>
-
-      <!-- STEP 2: Guarantor -->
-      <div *ngIf="currentStep === 2" class="ram-step-panel">
-        <div class="ram-step-header ion-padding-horizontal ion-padding-top">
-          <h2 class="heading-font" style="font-size: 1.25rem; font-weight: 700; color: var(--ram-ink); margin: 0;">
-            Guarantor Details
-          </h2>
-          <p style="margin: 0.5rem 0 0; color: var(--ram-on-surface-variant); font-size: 0.875rem;">
-            Add guarantor information (optional)
-          </p>
+          </article>
         </div>
+        <button type="button" class="add-button wide" (click)="addVehicle()"><span class="material-symbols-rounded">add</span>Add Another Vehicle</button>
 
-        <form [formGroup]="step2Form" class="ion-padding-horizontal ion-padding-top">
-          <div class="ram-section">
-            <ion-item lines="none" class="ram-form-item">
-              <ion-label position="stacked">Guarantor Name</ion-label>
-              <ion-input formControlName="guarantorName" placeholder="Enter guarantor full name" type="text" autocapitalize="words"></ion-input>
-            </ion-item>
-
-            <ion-item lines="none" class="ram-form-item">
-              <ion-label position="stacked">Guarantor Address</ion-label>
-              <ion-textarea formControlName="guarantorAddress" placeholder="Enter guarantor address" rows="2" auto-grow="true"></ion-textarea>
-            </ion-item>
-
-            <ion-item lines="none" class="ram-form-item">
-              <ion-label position="stacked">Guarantor Mobile</ion-label>
-              <ion-input formControlName="guarantorMobile" placeholder="Enter 10-digit mobile number" type="tel" inputmode="tel" maxlength="10"></ion-input>
-            </ion-item>
-
-            <p class="ram-optional-note ion-padding-top">
-              <ion-icon name="information-circle-outline" slot="start" style="font-size: 14px;"></ion-icon>
-              Guarantor details are optional but recommended for loan applications.
-            </p>
+        <article class="form-card finance-card">
+          <div class="section-heading"><span class="material-symbols-rounded">payments</span><div><h3>Finance Details</h3><p>Schedule setup and disbursal values</p></div></div>
+          <div class="field-grid">
+            <label class="field full"><span>Loan Account Number</span><input class="mono" formControlName="loanAccountNumber" placeholder="Optional account number" /></label>
+            <label class="field"><span>Loan Amount (L.AMT) *</span><input formControlName="loanAmount" type="number" inputmode="decimal" placeholder="₹ 0" /></label>
+            <label class="field"><span>Finance Amount (F.AMT) *</span><input formControlName="financeAmount" type="number" inputmode="decimal" placeholder="₹ 0" /></label>
+            <label class="field"><span>Interest Rate (%) *</span><input formControlName="interestRate" type="number" inputmode="decimal" placeholder="Per period" /></label>
+            <label class="field"><span>Installment Period *</span><input formControlName="installmentPeriod" type="number" inputmode="numeric" placeholder="e.g. 12" /></label>
+            <label class="field"><span>Unit *</span><select formControlName="installmentPeriodUnit"><option>Months</option><option>Weeks</option><option>Days</option></select></label>
+            <label class="field"><span>Start Date *</span><input formControlName="loanStartDate" type="date" /></label>
+            <label class="field full"><span>Sales Done By</span><input formControlName="salesDoneBy" placeholder="Agent or reference" /></label>
           </div>
-        </form>
-      </div>
+        </article>
+      </form>
+    </section>
 
-      <!-- STEP 3: Vehicle & Finance -->
-      <div *ngIf="currentStep === 3" class="ram-step-panel">
-        <div class="ram-step-header ion-padding-horizontal ion-padding-top">
-          <h2 class="heading-font" style="font-size: 1.25rem; font-weight: 700; color: var(--ram-ink); margin: 0;">
-            Vehicle & Finance
-          </h2>
-          <p style="margin: 0.5rem 0 0; color: var(--ram-on-surface-variant); font-size: 0.875rem;">
-            Add vehicle and financing details (optional - can be added later)
-          </p>
+    <section *ngIf="currentStep === 4" class="step-panel">
+      <div class="page-intro"><span class="eyebrow">Final step</span><h2>{{ isEditMode ? 'Review customer' : 'Cheques & final summary' }}</h2><p>{{ isEditMode ? 'Confirm the customer profile changes.' : 'Review the customer and loan before generating the schedule.' }}</p></div>
+
+      <form *ngIf="!isEditMode" [formGroup]="step4Form" class="summary-section">
+        <div class="section-title"><span class="material-symbols-rounded">account_balance</span><h3>Cheques Received</h3><small>Optional</small></div>
+        <div formArrayName="cheques">
+          <article *ngFor="let cheque of cheques.controls; let i = index" [formGroupName]="i" class="form-card cheque-card">
+            <div class="card-title-row"><strong>Cheque #{{ i + 1 }}</strong><button type="button" class="remove-button" (click)="removeCheque(i)" aria-label="Remove cheque"><span class="material-symbols-rounded">delete</span></button></div>
+            <div class="field-grid"><label class="field full"><span>Cheque Number *</span><input class="mono" formControlName="chequeNumber" placeholder="Enter cheque number" /></label><label class="field"><span>Bank</span><input formControlName="bank" placeholder="Bank name" /></label><label class="field"><span>Amount</span><input formControlName="amount" type="number" inputmode="decimal" placeholder="₹ 0" /></label></div>
+          </article>
         </div>
+        <button type="button" class="add-button wide" (click)="addCheque()"><span class="material-symbols-rounded">add</span>Add another cheque</button>
+      </form>
 
-        <div class="ion-padding-horizontal ion-padding-top">
-          <div class="ram-section">
-            <ion-card class="ram-info-card">
-              <ion-card-content class="ion-padding">
-                <div class="ram-info-card-content">
-                  <ion-icon name="information-circle-outline" slot="start" class="ram-info-icon"></ion-icon>
-                  <div>
-                    <p style="margin: 0; color: var(--ram-on-surface-variant); font-size: 0.875rem;">
-                      Vehicle and loan details can be added after creating the customer from the Customer Details page.
-                    </p>
-                  </div>
-                </div>
-              </ion-card-content>
-            </ion-card>
-
-            <ion-button fill="outline" expand="block" (click)="nextStep()" style="margin-top: var(--ram-stack-md); --border-color: var(--ram-primary); --color: var(--ram-primary);">
-              <ion-icon name="skip-forward-outline" slot="start"></ion-icon>
-              Skip to Summary
-            </ion-button>
-          </div>
+      <div *ngIf="!isEditMode" class="summary-section">
+        <div class="section-title"><span class="material-symbols-rounded">monitoring</span><h3>Loan Summary</h3></div>
+        <div class="metric-grid">
+          <article><small>Loan Amount</small><strong>{{ formatCurrency(loanAmount) }}</strong><span>Schedule principal</span></article>
+          <article><small>Installment Due</small><strong>{{ formatCurrency(emiAmount) }}</strong><span>Flat interest included</span></article>
+          <article><small>Total Interest</small><strong>{{ formatCurrency(totalInterest) }}</strong><span>{{ step3Form.value.interestRate || 0 }}% per period</span></article>
+          <article><small>Installment Period</small><strong>{{ period }} {{ step3Form.value.installmentPeriodUnit }}</strong><span>{{ vehicles.length }} vehicle{{ vehicles.length === 1 ? '' : 's' }}</span></article>
         </div>
       </div>
 
-      <!-- STEP 4: Summary -->
-      <div *ngIf="currentStep === 4" class="ram-step-panel">
-        <div class="ram-step-header ion-padding-horizontal ion-padding-top">
-          <h2 class="heading-font" style="font-size: 1.25rem; font-weight: 700; color: var(--ram-ink); margin: 0;">
-            Review & Confirm
-          </h2>
-          <p style="margin: 0.5rem 0 0; color: var(--ram-on-surface-variant); font-size: 0.875rem;">
-            Please review the information before saving
-          </p>
-        </div>
-
-        <div class="ion-padding-horizontal ion-padding-top">
-          <ion-card class="ram-summary-card">
-            <ion-card-content class="ion-padding">
-              <div *ngFor="let section of getSummarySections()" class="ram-summary-section">
-                <h4 class="ram-summary-section-title">{{ section.title }}</h4>
-                <div class="ram-summary-fields">
-                  <ng-container *ngFor="let field of section.fields">
-                    <div class="ram-summary-field" *ngIf="field.value">
-                      <span class="ram-summary-label">{{ field.label }}</span>
-                      <span class="ram-summary-value">{{ field.value }}</span>
-                    </div>
-                  </ng-container>
-                </div>
-              </div>
-            </ion-card-content>
-          </ion-card>
-
-          <div class="ram-summary-actions ion-padding-top">
-            <ion-button fill="outline" (click)="previousStep()" expand="block" style="--border-color: var(--ram-outline); --color: var(--ram-ink);">
-              <ion-icon name="chevron-back-outline" slot="start"></ion-icon>
-              Back to Edit
-            </ion-button>
-            <ion-button fill="solid" (click)="submit()" expand="block" [disabled]="isSubmitting" style="--background: var(--ram-primary); --color: white; margin-top: var(--ram-gutter); height: var(--ram-touch-target);">
-              <ion-spinner *ngIf="isSubmitting" name="crescent" slot="start" style="margin-right: 0.5rem;"></ion-spinner>
-              <ion-icon *ngIf="!isSubmitting" name="checkmark-outline" slot="start"></ion-icon>
-              {{ useExistingCustomer ? 'Update Customer' : 'Create Customer' }}
-            </ion-button>
-          </div>
-        </div>
+      <div class="summary-section">
+        <div class="section-title"><span class="material-symbols-rounded">fact_check</span><h3>Customer Overview</h3></div>
+        <article class="overview-card">
+          <div><span class="material-symbols-rounded">badge</span><p><small>File ID</small><strong class="file-value">{{ step1Form.value.fileId || 'Not assigned' }}</strong></p></div>
+          <div><span class="material-symbols-rounded">person</span><p><small>Customer Name</small><strong>{{ step1Form.value.name }}</strong></p></div>
+          <div><span class="material-symbols-rounded">phone</span><p><small>Primary Contact</small><strong>{{ cellNumbers[0].number || 'Not provided' }}</strong></p></div>
+          <div *ngIf="!isEditMode"><span class="material-symbols-rounded">two_wheeler</span><p><small>Vehicle</small><strong>{{ primaryVehicle?.vehicleType }} · {{ primaryVehicle?.make }} {{ primaryVehicle?.model }}</strong></p></div>
+        </article>
       </div>
+    </section>
+  </main>
 
-    </div>
-
-    <!-- Navigation Buttons (Steps 1-3) -->
-    <div *ngIf="currentStep < 4" class="ram-step-nav ion-padding-horizontal ion-padding-bottom" style="background: var(--ram-background); position: sticky; bottom: 0; z-index: 10; box-shadow: 0 -4px 12px rgba(0,0,0,0.04);">
-      <div class="ram-nav-buttons">
-        <ion-button
-          *ngIf="currentStep > 1"
-          fill="outline"
-          (click)="previousStep()"
-          style="--border-color: var(--ram-outline); --color: var(--ram-ink); min-width: 80px;"
-        >
-          <ion-icon name="chevron-back-outline" slot="start"></ion-icon>
-          Back
-        </ion-button>
-
-        <div style="flex: 1;"></div>
-
-        <ion-button
-          fill="solid"
-          (click)="nextStep()"
-          [disabled]="!canProceed()"
-          style="--background: var(--ram-primary); --color: white; min-width: 100px;"
-        >
-          Next
-          <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
-        </ion-button>
-      </div>
-    </div>
-  </div>
+  <footer class="wizard-actions">
+    <button type="button" class="secondary-action" (click)="currentStep === 1 ? onBack() : previousStep()">{{ currentStep === 1 ? 'Cancel' : 'Back' }}</button>
+    <button *ngIf="currentStep < 4" type="button" class="primary-action" (click)="nextStep()" [disabled]="!canProceed()">Next Step<span class="material-symbols-rounded">arrow_forward</span></button>
+    <button *ngIf="currentStep === 4" type="button" class="primary-action create-action" (click)="submit()" [disabled]="isSubmitting || cheques.invalid"><ion-spinner *ngIf="isSubmitting" name="crescent"></ion-spinner><span class="material-symbols-rounded" *ngIf="!isSubmitting">task_alt</span>{{ isEditMode ? 'Save Changes' : 'Create Loan & Schedule' }}</button>
+  </footer>
 </ion-content>

@@ -90,6 +90,71 @@ export class DashboardPage implements OnInit {
     return Math.max(3, (value / max) * 100);
   }
 
+  collectionPolyline(): string {
+    const values = this.visibleCollections().map(item => Number(item.collected || 0));
+    if (!values.length) return '';
+    const left = 54;
+    const right = 350;
+    const top = 16;
+    const bottom = 126;
+    const max = this.collectionChartMax();
+    const step = values.length > 1 ? (right - left) / (values.length - 1) : 0;
+    return values.map((value, index) => {
+      const x = values.length > 1 ? left + index * step : (left + right) / 2;
+      const y = bottom - (value / max) * (bottom - top);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+  }
+
+  collectionArea(): string {
+    const line = this.collectionPolyline();
+    return line ? `54,126 ${line} 350,126` : '';
+  }
+
+  collectionDots(): Array<{ x: number; y: number; label: string; value: number; showLabel: boolean }> {
+    const rows = this.visibleCollections();
+    const max = this.collectionChartMax();
+    const step = rows.length > 1 ? 296 / (rows.length - 1) : 0;
+    const labelInterval = Math.max(1, Math.ceil(rows.length / 6));
+    return rows.map((item, index) => ({
+      x: rows.length > 1 ? 54 + index * step : 202,
+      y: 126 - (Number(item.collected || 0) / max) * 110,
+      label: this.formatGraphMonth(item.month),
+      value: Number(item.collected || 0),
+      showLabel: index === 0 || index === rows.length - 1 || index % labelInterval === 0
+    }));
+  }
+
+  collectionYAxisTicks(): Array<{ y: number; label: string }> {
+    const max = this.collectionChartMax();
+    return [0, 0.25, 0.5, 0.75, 1].map(ratio => ({
+      y: 126 - ratio * 110,
+      label: this.compactCurrency(max * ratio)
+    }));
+  }
+
+  private collectionChartMax(): number {
+    const rawMax = Math.max(...this.visibleCollections().map(item => Number(item.collected || 0)), 1);
+    const magnitude = 10 ** Math.floor(Math.log10(rawMax));
+    return Math.ceil(rawMax / magnitude) * magnitude;
+  }
+
+  private compactCurrency(value: number): string {
+    if (value >= 10_000_000) return `₹${(value / 10_000_000).toFixed(value % 10_000_000 ? 1 : 0)}Cr`;
+    if (value >= 100_000) return `₹${(value / 100_000).toFixed(value % 100_000 ? 1 : 0)}L`;
+    if (value >= 1_000) return `₹${(value / 1_000).toFixed(value % 1_000 ? 1 : 0)}K`;
+    return `₹${Math.round(value)}`;
+  }
+
+  private formatGraphMonth(value: string): string {
+    const match = String(value || '').match(/^(\d{4})-(\d{1,2})/);
+    if (match) {
+      return new Date(Number(match[1]), Number(match[2]) - 1, 1)
+        .toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
+    }
+    return String(value || '').replace(/\s+/g, ' ').slice(0, 8);
+  }
+
   onPaymentsReport(): void {
     void this.router.navigate(['/reports']);
   }

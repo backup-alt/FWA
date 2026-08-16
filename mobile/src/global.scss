@@ -23,31 +23,31 @@
 /* Design tokens from Mobile UI reference */
 :root {
   /* Colors */
-  --ram-primary: #00355f;
-  --ram-primary-light: #0f4c81;
-  --ram-primary-container: #0f4c81;
-  --ram-on-primary-container: #8ebdf9;
-  --ram-primary-fixed: #d2e4ff;
+  --ram-primary: #0a2a66;
+  --ram-primary-light: #1e5aa8;
+  --ram-primary-container: #e7eef9;
+  --ram-on-primary-container: #123f8c;
+  --ram-primary-fixed: #cbdaf0;
   --ram-secondary: #4c6269;
   --ram-secondary-container: #cce4ec;
   --ram-on-secondary-container: #50666d;
 
-  --ram-background: #f7f9fb;
-  --ram-surface: #f7f9fb;
+  --ram-background: #f9fafb;
+  --ram-surface: #f9fafb;
   --ram-surface-container: #eceef0;
   --ram-surface-container-high: #e6e8ea;
   --ram-surface-container-low: #f2f4f6;
   --ram-surface-container-lowest: #ffffff;
   --ram-surface-variant: #e0e3e5;
 
-  --ram-on-surface: #191c1e;
-  --ram-on-surface-variant: #42474f;
-  --ram-outline: #727780;
-  --ram-outline-variant: #c2c7d1;
+  --ram-on-surface: #111827;
+  --ram-on-surface-variant: #4b5563;
+  --ram-outline: #9ca3af;
+  --ram-outline-variant: #e5e7eb;
 
-  --ram-error: #ba1a1a;
-  --ram-error-container: #ffdad6;
-  --ram-on-error-container: #93000a;
+  --ram-error: #ef4444;
+  --ram-error-container: #fee2e2;
+  --ram-on-error-container: #991b1b;
 
   --ram-green: #18784d;
   --ram-green-bg: #e2f5ea;
@@ -55,8 +55,8 @@
   --ram-orange-bg: #fff0dc;
   --ram-red: #a52a25;
   --ram-red-bg: #fde9e7;
-  --ram-navy: #073b66;
-  --ram-navy-2: #0d538c;
+  --ram-navy: #071f4d;
+  --ram-navy-2: #123f8c;
   --ram-ink: #17212b;
   --ram-muted: #64717f;
   --ram-line: #dfe5eb;
@@ -106,9 +106,93 @@
   --ram-shadow-fab: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
+/* Original RAM mobile product palette. */
+:root {
+  --mobile-ink: #111827;
+  --mobile-muted: #6b7280;
+  --mobile-canvas: #f9fafb;
+  --mobile-card: #ffffff;
+  --mobile-primary: #0a2a66;
+  --mobile-primary-2: #123f8c;
+  --mobile-accent: #1e5aa8;
+  --mobile-accent-soft: #e7eef9;
+  --mobile-warm: #f59e0b;
+  --mobile-warm-soft: #fef3c7;
+  --mobile-danger: #ef4444;
+  --mobile-shadow: 0 10px 15px -3px rgb(0 0 0 / .10), 0 4px 6px -4px rgb(0 0 0 / .10);
+  --mobile-shadow-soft: 0 1px 3px 0 rgb(0 0 0 / .10), 0 1px 2px -1px rgb(0 0 0 / .10);
+  --mobile-radius: 4px;
+  --ion-border-radius: 4px;
+}
+
+/* Product-wide corner rule requested for the mobile app. */
+*, *::before, *::after {
+  border-radius: var(--mobile-radius) !important;
+}
+
+ion-button,
+ion-card,
+ion-input,
+ion-searchbar,
+ion-select,
+ion-textarea,
+ion-item,
+ion-modal,
+ion-alert,
+ion-action-sheet,
+ion-toast {
+  --border-radius: var(--mobile-radius) !important;
+}
+
+/* Circular geometry is retained only where it represents chart data. */
+.mini-donut,
+.mini-donut i {
+  border-radius: 50% !important;
+}
+
+/* Royal deep-blue product theme. */
+.balance-card,
+.identity-card,
+.loan-hero,
+.queue-hero,
+.modal-head,
+.ram-info-card {
+  background: linear-gradient(145deg, #1e5aa8, #071f4d) !important;
+  box-shadow: var(--mobile-shadow) !important;
+}
+
+.file-chip,
+.file,
+.file-number {
+  color: #0a2a66 !important;
+  background: #e7eef9 !important;
+}
+
+.collection-graph { margin-top: 14px; padding-top: 6px; }
+.collection-graph svg { display: block; width: 100%; height: auto; overflow: visible; }
+.collection-graph .grid-line { stroke: #e5e7eb; stroke-width: 1; stroke-dasharray: 3 4; }
+.collection-graph .axis-line { stroke: #d1d5db; stroke-width: 1; }
+.collection-graph .trend-line { fill: none; stroke: #0a2a66; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.collection-graph .trend-dot { fill: #fff; stroke: #0a2a66; stroke-width: 2.5; }
+.collection-graph text { fill: #6b7280; font: 500 7px Inter, sans-serif; }
+
+.form-section-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.form-section-heading > span { width: 34px; height: 34px; display: grid; place-items: center; background: #e7eef9; color: #0a2a66; font-size: 18px; }
+.form-section-heading h3 { margin: 0; }
+.form-section-heading p { margin: 2px 0 0; color: #6b7280; font-size: 9px; }
+.form-divider { display: flex; align-items: center; justify-content: space-between; margin: 17px 1px 8px; padding-top: 13px; border-top: 1px solid #e5e7eb; }
+.form-divider span { color: #374151; font-size: 10px; font-weight: 700; }
+.form-divider small { color: #9ca3af; font-size: 8px; }
+
 * {
+  box-sizing: border-box;
   font-family: var(--ram-font-body);
 }
+
+html { background: #e8edf2; }
+body { margin: 0; background: var(--ram-background); color: var(--ram-on-surface); -webkit-tap-highlight-color: transparent; }
+.material-symbols-rounded,.material-symbols-outlined { font-family: 'Material Symbols Rounded'; font-size: 22px; line-height: 1; font-weight: normal; font-style: normal; letter-spacing: normal; text-transform: none; white-space: nowrap; word-wrap: normal; direction: ltr; -webkit-font-feature-settings: 'liga'; -webkit-font-smoothing: antialiased; font-variation-settings: 'FILL' 0,'wght' 450; }
+.material-symbols-outlined { font-family: 'Material Symbols Outlined'; }
 
 h1, h2, h3, h4, h5, h6,
 .heading-font,
@@ -124,12 +208,12 @@ h1, h2, h3, h4, h5, h6,
   --ion-text-color-rgb: 25, 28, 30;
   --ion-toolbar-background: #ffffff;
   --ion-toolbar-color: var(--ram-on-surface);
-  --ion-color-primary: #00355f;
-  --ion-color-primary-rgb: 0, 53, 95;
+  --ion-color-primary: #0a2a66;
+  --ion-color-primary-rgb: 10, 42, 102;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #002e53;
-  --ion-color-primary-tint: #1a496f;
+  --ion-color-primary-shade: #09255a;
+  --ion-color-primary-tint: #234079;
   --ion-font-family: var(--ram-font-body);
 }
 

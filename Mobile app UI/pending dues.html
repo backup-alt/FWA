@@ -1,0 +1,268 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>RAM Finance - Pending Dues</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#42474f",
+                        "on-tertiary-fixed-variant": "#004a77",
+                        "on-tertiary-container": "#7ec0ff",
+                        "surface-container-high": "#e6e8ea",
+                        "inverse-primary": "#a0c9ff",
+                        "tertiary-container": "#004e7d",
+                        "on-background": "#191c1e",
+                        "on-primary-fixed": "#001c37",
+                        "on-secondary": "#ffffff",
+                        "primary": "#00355f",
+                        "inverse-surface": "#2d3133",
+                        "on-error": "#ffffff",
+                        "outline": "#727780",
+                        "tertiary": "#00365a",
+                        "secondary": "#4c6269",
+                        "on-secondary-container": "#50666d",
+                        "on-primary-container": "#8ebdf9",
+                        "tertiary-fixed": "#cfe5ff",
+                        "secondary-fixed-dim": "#b3cad2",
+                        "surface": "#f7f9fb",
+                        "on-tertiary-fixed": "#001d33",
+                        "error-container": "#ffdad6",
+                        "on-tertiary": "#ffffff",
+                        "secondary-container": "#cce4ec",
+                        "surface-dim": "#d8dadc",
+                        "primary-container": "#0f4c81",
+                        "error": "#ba1a1a",
+                        "on-surface": "#191c1e",
+                        "on-primary-fixed-variant": "#07497d",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-secondary-fixed": "#071e24",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#98cbff",
+                        "outline-variant": "#c2c7d1",
+                        "inverse-on-surface": "#eff1f3",
+                        "primary-fixed-dim": "#a0c9ff",
+                        "surface-tint": "#2d6197",
+                        "surface-variant": "#e0e3e5",
+                        "surface-container-low": "#f2f4f6",
+                        "secondary-fixed": "#cfe6ee",
+                        "surface-container": "#eceef0",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#d2e4ff",
+                        "background": "#f7f9fb",
+                        "on-secondary-fixed-variant": "#344a51",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#f7f9fb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "touch-target": "2.75rem",
+                        "margin-page": "1rem",
+                        "stack-md": "0.5rem",
+                        "stack-lg": "1rem",
+                        "gutter": "0.75rem",
+                        "stack-sm": "0.25rem"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "display-sm": ["Manrope"],
+                        "body-sm": ["Inter"],
+                        "headline-lg": ["Manrope"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Manrope"],
+                        "data-mono": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "display-sm": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "headline-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-sm": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+        /* Hide scrollbar for clean mobile look */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col md:hidden">
+<!-- TopAppBar (From JSON) -->
+<header class="bg-surface-container-lowest dark:bg-surface-container-lowest border-b border-outline-variant docked full-width top-0 z-40 sticky">
+<div class="flex justify-between items-center px-margin-page h-touch-target w-full">
+<div class="flex items-center gap-3">
+<button aria-label="Menu" class="text-primary dark:text-inverse-primary hover:bg-surface-container dark:hover:bg-surface-container p-2 -ml-2 rounded-full flex items-center justify-center transition-opacity">
+
+</button>
+<h1 class="text-headline-sm font-headline-sm font-bold text-primary dark:text-inverse-primary">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Pending Dues</h1>
+</div>
+<button aria-label="Notifications" class="text-primary dark:text-inverse-primary hover:bg-surface-container dark:hover:bg-surface-container p-2 -mr-2 rounded-full flex items-center justify-center transition-opacity">
+
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 overflow-y-auto pb-[72px]">
+<!-- Page Header & Summary -->
+<div class="px-margin-page pt-4 pb-2 flex justify-between items-end">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Pending Dues</h2>
+<span class="bg-secondary-container text-on-secondary-container font-label-md text-[10px] px-2 py-1 rounded-full whitespace-nowrap">
+                92 overdue installments
+            </span>
+</div>
+<!-- Filters Section -->
+<div class="px-margin-page py-3">
+<div class="flex gap-2">
+<div class="relative flex-1">
+<select class="w-full h-10 pl-3 pr-8 rounded border border-outline-variant bg-surface-container-lowest text-body-md text-on-surface appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+<option>All Types</option>
+<option>Bike</option>
+<option>Car</option>
+<option>Auto</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[20px]" data-icon="unfold_more">unfold_more</span>
+</div>
+<div class="relative flex-1">
+<input class="w-full h-10 pl-3 pr-3 rounded border border-outline-variant bg-surface-container-lowest text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-outline" placeholder="Search File ID" type="text">
+</div>
+<button class="h-10 px-3 rounded border border-outline-variant bg-surface-container-lowest text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" data-icon="filter_alt">filter_alt</span>
+</button>
+</div>
+</div>
+<!-- Cards List -->
+<div class="px-margin-page flex flex-col gap-3 pb-6">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-4">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-label-md text-primary truncate pr-2">Sowmia, D/o David</h3>
+<span class="font-data-mono text-data-mono text-outline shrink-0">F150</span>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Bike</span>
+<span class="bg-error-container text-error text-[10px] font-bold px-2 py-0.5 rounded-full">20675 days overdue</span>
+</div>
+<div class="grid grid-cols-2 gap-y-3 gap-x-4 border-t border-surface-variant pt-3">
+<div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Due Date</p>
+<p class="font-body-md text-body-md text-on-surface">-</p>
+</div>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Carried Pending</p>
+<p class="font-body-md text-body-md text-on-surface">₹8,240</p>
+</div>
+<div class="col-span-2 flex justify-between items-end bg-error-container/20 p-2 rounded-lg -mx-2 -mb-2 mt-1">
+<p class="font-body-sm text-body-sm text-on-surface-variant">Outstanding</p>
+<p class="font-headline-lg text-headline-lg text-error font-bold">₹10,280</p>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-4">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-label-md text-primary truncate pr-2">Mani (Akar Kanyakumari) S/o Kumar</h3>
+<span class="font-data-mono text-data-mono text-outline shrink-0">F59</span>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Bike</span>
+<span class="bg-error-container text-error text-[10px] font-bold px-2 py-0.5 rounded-full">550 days overdue</span>
+</div>
+<div class="grid grid-cols-2 gap-y-3 gap-x-4 border-t border-surface-variant pt-3">
+<div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Due Date</p>
+<p class="font-body-md text-body-md text-on-surface">06 Feb 2025</p>
+</div>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Carried Pending</p>
+<p class="font-body-md text-body-md text-on-surface">-</p>
+</div>
+<div class="col-span-2 flex justify-between items-end bg-error-container/20 p-2 rounded-lg -mx-2 -mb-2 mt-1">
+<p class="font-body-sm text-body-sm text-on-surface-variant">Outstanding</p>
+<p class="font-headline-lg text-headline-lg text-error font-bold">₹9,970</p>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-4">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-label-md text-primary truncate pr-2">Anish Kumar (Wales Hotel) S/o Velu</h3>
+<span class="font-data-mono text-data-mono text-outline shrink-0">F94</span>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Bike</span>
+<span class="bg-error-container text-error text-[10px] font-bold px-2 py-0.5 rounded-full">429 days overdue</span>
+</div>
+<div class="grid grid-cols-2 gap-y-3 gap-x-4 border-t border-surface-variant pt-3">
+<div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Due Date</p>
+<p class="font-body-md text-body-md text-on-surface">07 Jun 2025</p>
+</div>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Carried Pending</p>
+<p class="font-body-md text-body-md text-on-surface">₹300</p>
+</div>
+<div class="col-span-2 flex justify-between items-end bg-error-container/20 p-2 rounded-lg -mx-2 -mb-2 mt-1">
+<p class="font-body-sm text-body-sm text-on-surface-variant">Outstanding</p>
+<p class="font-headline-lg text-headline-lg text-error font-bold">₹2,990</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (From JSON) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-[56px] px-2 bg-surface-container-lowest border-t border-outline-variant z-50 shadow-lg">
+<a aria-label="Dashboard" class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low w-full h-full" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a aria-label="Customers" class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low w-full h-full" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]" data-icon="group">group</span>
+<span class="font-label-md text-label-md">Customers</span>
+</a>
+<!-- Active Tab: Dues -->
+<a aria-current="page" aria-label="Dues" class="flex flex-col items-center justify-center text-primary dark:text-inverse-primary font-bold hover:bg-surface-container-low w-full h-full scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]" data-icon="account_balance_wallet" data-weight="fill" style="font-variation-settings: &quot;FILL&quot; 1;">account_balance_wallet</span>
+<span class="font-label-md text-label-md">Dues</span>
+</a>
+<a aria-label="Reports" class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low w-full h-full" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]" data-icon="analytics">analytics</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+</nav>
+
+
+</body></html>

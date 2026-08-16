@@ -1,0 +1,288 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Add Customer - Search</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#004a77",
+                      "primary": "#00355f",
+                      "surface-container-low": "#f2f4f6",
+                      "on-secondary-container": "#50666d",
+                      "secondary-container": "#cce4ec",
+                      "surface-tint": "#2d6197",
+                      "on-background": "#191c1e",
+                      "outline": "#727780",
+                      "primary-fixed": "#d2e4ff",
+                      "error-container": "#ffdad6",
+                      "on-surface": "#191c1e",
+                      "secondary": "#4c6269",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-container": "#7ec0ff",
+                      "tertiary-fixed-dim": "#98cbff",
+                      "error": "#ba1a1a",
+                      "on-error-container": "#93000a",
+                      "on-surface-variant": "#42474f",
+                      "secondary-fixed": "#cfe6ee",
+                      "secondary-fixed-dim": "#b3cad2",
+                      "on-error": "#ffffff",
+                      "tertiary-container": "#004e7d",
+                      "background": "#f7f9fb",
+                      "inverse-primary": "#a0c9ff",
+                      "on-secondary-fixed-variant": "#344a51",
+                      "tertiary-fixed": "#cfe5ff",
+                      "surface": "#f7f9fb",
+                      "on-secondary-fixed": "#071e24",
+                      "on-primary-container": "#8ebdf9",
+                      "surface-container": "#eceef0",
+                      "primary-container": "#0f4c81",
+                      "surface-container-high": "#e6e8ea",
+                      "on-primary-fixed-variant": "#07497d",
+                      "on-primary-fixed": "#001c37",
+                      "tertiary": "#00365a",
+                      "inverse-on-surface": "#eff1f3",
+                      "on-secondary": "#ffffff",
+                      "surface-container-highest": "#e0e3e5",
+                      "surface-variant": "#e0e3e5",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-dim": "#d8dadc",
+                      "primary-fixed-dim": "#a0c9ff",
+                      "outline-variant": "#c2c7d1",
+                      "surface-bright": "#f7f9fb",
+                      "on-tertiary-fixed": "#001d33",
+                      "inverse-surface": "#2d3133"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-sm": "0.25rem",
+                      "touch-target": "2.75rem",
+                      "gutter": "0.75rem",
+                      "stack-md": "0.5rem",
+                      "stack-lg": "1rem",
+                      "margin-page": "1rem"
+              },
+              "fontFamily": {
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Manrope"
+                      ],
+                      "data-mono": [
+                              "JetBrains Mono"
+                      ],
+                      "display-sm": [
+                              "Manrope"
+                      ],
+                      "headline-sm": [
+                              "Manrope"
+                      ]
+              },
+              "fontSize": {
+                      "body-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "data-mono": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-sm": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-sm": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+            },
+          }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased pb-[4.75rem]">
+<!-- Top App Bar - Overridden for Sub-page -->
+<header class="w-full sticky top-0 z-50 bg-surface-container border-b border-outline-variant/30 flex items-center justify-between px-margin-page h-14"><div class="flex items-center gap-1"><button class="w-10 h-10 -ml-2 rounded-full hover:bg-surface-container-highest active:scale-90 transition-all text-on-surface-variant flex items-center justify-center"><span class="material-symbols-outlined" data-icon="arrow_back" style="font-variation-settings: 'FILL' 0;">arrow_back</span></button><h1 class="font-headline-lg text-headline-lg text-on-surface">Add Customer</h1></div><button class="w-10 h-10 -mr-2 rounded-full hover:bg-surface-container-highest active:scale-90 transition-all text-on-surface-variant flex items-center justify-center"><span class="material-symbols-outlined" data-icon="close" style="font-variation-settings: 'FILL' 0;">close</span></button></header>
+<main class="px-margin-page py-stack-lg max-w-md mx-auto">
+<!-- Step Indicator -->
+<div class="flex items-start justify-between mb-stack-lg relative px-1">
+<div class="absolute top-4 left-4 right-4 h-[2px] bg-surface-container -z-10 -translate-y-1/2"></div>
+<div class="flex flex-col items-center gap-1 z-10 bg-background px-1 w-16">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-md text-label-md shadow-sm">1</div>
+<span class="font-label-md text-[10px] text-primary text-center">Customer</span>
+</div>
+<div class="flex flex-col items-center gap-1 z-10 bg-background px-1 w-16">
+<div class="w-8 h-8 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant flex items-center justify-center font-label-md text-label-md">2</div>
+<span class="font-label-md text-[10px] text-on-surface-variant text-center">Guarantor</span>
+</div>
+<div class="flex flex-col items-center gap-1 z-10 bg-background px-1 w-16">
+<div class="w-8 h-8 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant flex items-center justify-center font-label-md text-label-md">3</div>
+<span class="font-label-md text-[10px] text-on-surface-variant text-center leading-tight">Vehicle &amp;<br>Finance</span>
+</div>
+<div class="flex flex-col items-center gap-1 z-10 bg-background px-1 w-16">
+<div class="w-8 h-8 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant flex items-center justify-center font-label-md text-label-md">4</div>
+<span class="font-label-md text-[10px] text-on-surface-variant text-center">Cheques</span>
+</div>
+</div>
+<!-- Top Toggle -->
+<div class="flex bg-surface-container rounded-lg p-1 mb-stack-lg border border-outline-variant/30">
+<button class="flex-1 py-2 px-4 rounded-md font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all">New Customer</button>
+<button class="flex-1 py-2 px-4 rounded-md bg-surface shadow-sm font-label-md text-label-md text-primary transition-all">Existing Customer</button>
+</div>
+<!-- Search Area -->
+<div class="mb-stack-lg">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-stack-sm">Search Existing Customer</h2>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline" data-icon="search" style="font-variation-settings: 'FILL' 0;">search</span>
+</div>
+<input class="block w-full pl-10 pr-10 py-3.5 border-b-2 border-outline-variant bg-surface-container-lowest rounded-t-md focus:outline-none focus:border-primary font-body-lg text-body-lg transition-colors h-14" placeholder="Search by name, File ID or phone number" type="text" value="Joh">
+<div class="absolute inset-y-0 right-0 pr-2 flex items-center">
+<button class="p-1 text-on-surface-variant hover:text-on-surface rounded-full">
+<span class="material-symbols-outlined text-[20px]" data-icon="cancel" style="font-variation-settings: 'FILL' 0;">cancel</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Results List -->
+<div class="space-y-gutter">
+<!-- Card 1 -->
+<button class="w-full text-left bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-3 flex items-center gap-3 shadow-[0_2px_4px_rgba(0,0,0,0.02)] hover:bg-surface-container-low hover:border-primary/30 transition-all active:scale-[0.98]">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center flex-shrink-0 font-headline-sm text-headline-sm">
+                    JD
+                </div>
+<div class="flex-1 min-w-0">
+<p class="font-data-mono text-headline-sm font-bold text-primary truncate">CUS-1024</p>
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm mt-0.5">
+<span>John Doe</span>
+</div>
+</div>
+<div class="text-primary flex-shrink-0">
+<span class="material-symbols-outlined" data-icon="chevron_right" style="font-variation-settings: 'FILL' 0;">chevron_right</span>
+</div>
+</button>
+<!-- Card 2 -->
+<button class="w-full text-left bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-3 flex items-center gap-3 shadow-[0_2px_4px_rgba(0,0,0,0.02)] hover:bg-surface-container-low hover:border-primary/30 transition-all active:scale-[0.98]">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center flex-shrink-0 font-headline-sm text-headline-sm">
+                    SS
+                </div>
+<div class="flex-1 min-w-0">
+<p class="font-data-mono text-headline-sm font-bold text-primary truncate">CUS-1025</p>
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm mt-0.5">
+<span>Sarah Smith</span>
+</div>
+</div>
+<div class="text-primary flex-shrink-0">
+<span class="material-symbols-outlined" data-icon="chevron_right" style="font-variation-settings: 'FILL' 0;">chevron_right</span>
+</div>
+</button>
+<!-- Card 3 -->
+<button class="w-full text-left bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-3 flex items-center gap-3 shadow-[0_2px_4px_rgba(0,0,0,0.02)] hover:bg-surface-container-low hover:border-primary/30 transition-all active:scale-[0.98]">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center flex-shrink-0 font-headline-sm text-headline-sm">
+                    MJ
+                </div>
+<div class="flex-1 min-w-0">
+<p class="font-data-mono text-headline-sm font-bold text-primary truncate">CUS-1026</p>
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm mt-0.5">
+<span>Mike Johnson</span>
+</div>
+</div>
+<div class="text-primary flex-shrink-0">
+<span class="material-symbols-outlined" data-icon="chevron_right" style="font-variation-settings: 'FILL' 0;">chevron_right</span>
+</div>
+</button>
+</div>
+</main>
+<!-- BottomNavBar - Suppressed structurally on Sub-pages usually, but explicitly requested in prompt to include and set active -->
+<nav class="fixed bottom-0 w-full z-50 border-t border-outline-variant bg-surface flex justify-around items-center h-[3.5rem] px-2 pb-safe md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant w-full h-full scale-95 active:scale-90 transition-transform duration-100 group" href="#">
+<span class="material-symbols-outlined mb-0.5 group-hover:text-primary transition-colors" data-icon="dashboard" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+<span class="font-label-md text-[10px] leading-tight">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary font-bold w-full h-full relative" href="#">
+<div class="absolute top-0 w-8 h-[3px] bg-primary rounded-b-full"></div>
+<span class="material-symbols-outlined mb-0.5" data-icon="group" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-label-md text-[10px] leading-tight">Customers</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant w-full h-full scale-95 active:scale-90 transition-transform duration-100 group" href="#">
+<span class="material-symbols-outlined mb-0.5 group-hover:text-primary transition-colors" data-icon="payments" style="font-variation-settings: 'FILL' 0;">payments</span>
+<span class="font-label-md text-[10px] leading-tight">Dues</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant w-full h-full scale-95 active:scale-90 transition-transform duration-100 group" href="#">
+<span class="material-symbols-outlined mb-0.5 group-hover:text-primary transition-colors" data-icon="assessment" style="font-variation-settings: 'FILL' 0;">assessment</span>
+<span class="font-label-md text-[10px] leading-tight">Reports</span>
+</a>
+</nav>
+
+
+</body></html>

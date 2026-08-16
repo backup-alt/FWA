@@ -1,24 +1,32 @@
-<ion-header><ion-toolbar class="ram-bg-card"><ion-title class="heading-font">Reports</ion-title></ion-toolbar></ion-header>
-<ion-content class="ram-bg-surface ram-page" fullscreen>
-  <ion-refresher slot="fixed" (ionRefresh)="loadReport($event)"><ion-refresher-content></ion-refresher-content></ion-refresher>
-  <div class="ram-page-content ram-bottom-nav-offset">
-    <ion-card class="ram-card-2 report-filters"><ion-card-content>
-      <div class="date-grid"><label>From<input type="date" [(ngModel)]="startDate"></label><label>To<input type="date" [(ngModel)]="endDate"></label></div>
-      <div class="date-grid"><ion-select [(ngModel)]="vehicleType" interface="popover" placeholder="All vehicles"><ion-select-option value="">All vehicles</ion-select-option><ion-select-option value="Bike">Bike</ion-select-option><ion-select-option value="Car">Car</ion-select-option><ion-select-option value="Auto">Auto</ion-select-option></ion-select><ion-input [(ngModel)]="customerSearch" placeholder="Customer or file number"></ion-input></div>
-      <ion-button expand="block" (click)="loadReport()">Apply filters</ion-button>
-    </ion-card-content></ion-card>
+<ion-content fullscreen class="reports-content">
+  <div class="screen">
+    <header class="page-head"><div><span class="kicker">{{ reportKicker }}</span><h1>{{ reportHeading }}</h1><p>{{ reportDescription }}</p></div><button type="button" class="filter-toggle" [class.active]="showFilters" (click)="showFilters=!showFilters"><span class="material-symbols-rounded">tune</span>{{ showFilters ? 'Hide filters' : 'Show filters' }}</button></header>
+    <ion-refresher slot="fixed" (ionRefresh)="loadReport($event)"><ion-refresher-content></ion-refresher-content></ion-refresher>
+    <main>
+      <section class="filter-card" *ngIf="showFilters">
+        <div class="date-mode"><button [class.active]="dateMode==='single'" (click)="setDateMode('single')">Single Day</button><button [class.active]="dateMode==='range'" (click)="setDateMode('range')">Date Range</button></div>
+        <label class="filter-field full" *ngIf="dateMode==='single'"><span>Date</span><input type="date" [(ngModel)]="selectedDate" (change)="loadReport()"></label>
+        <div class="date-range" *ngIf="dateMode==='range'"><label class="filter-field"><span>From</span><input type="date" [(ngModel)]="fromDate" (change)="loadReport()"></label><label class="filter-field"><span>To</span><input type="date" [(ngModel)]="toDate" (change)="loadReport()"></label></div>
+        <div class="filter-grid">
+          <label class="filter-field"><span>Status</span><select [(ngModel)]="status" (change)="loadReport()"><option value="">All Statuses</option><option>Pending</option><option>Overdue</option><option>Partial</option><option>Paid</option><option>Cancelled</option></select></label>
+          <label class="filter-field"><span>Vehicle</span><select [(ngModel)]="vehicleType" (change)="loadReport()"><option value="">All Vehicles</option><option>Bike</option><option>Car</option><option>Auto</option></select></label>
+          <label class="filter-field full"><span>Customer Name</span><input [(ngModel)]="customerSearch" (input)="scheduleFilter()" placeholder="Search by name..."></label>
+          <label class="filter-field"><span>Reg. Number</span><input [(ngModel)]="regNo" (input)="scheduleFilter()" placeholder="Search by reg no..."></label>
+          <label class="filter-field"><span>File ID</span><input [(ngModel)]="fileId" (input)="scheduleFilter()" placeholder="Search by file ID..."></label>
+        </div>
+        <button type="button" class="clear-filters" (click)="clearFilters()"><span class="material-symbols-rounded">filter_alt_off</span>Clear filters</button>
+      </section>
 
-    <section class="report-summary"><div><span>Total payments</span><strong>{{ formatCurrency(paidTotal) }}</strong><small>{{ paidCount }} records</small></div><div><span>Total dues</span><strong>{{ formatCurrency(dueTotal) }}</strong><small>{{ dueCount }} records</small></div></section>
-    <div class="report-tabs"><button [class.active]="activeTab === 'paid'" (click)="setTab('paid')">Payments</button><button [class.active]="activeTab === 'due'" (click)="setTab('due')">Pending dues</button></div>
-    <div class="ram-loading-state" *ngIf="isLoading"><ion-spinner name="crescent"></ion-spinner><p>Loading report...</p></div>
-    <div class="ram-empty-state" *ngIf="!isLoading && ((activeTab === 'paid' && !paidRows.length) || (activeTab === 'due' && !dueRows.length))"><ion-icon name="document-text-outline"></ion-icon><h3>No report records</h3><p>Try a different date range or filter.</p></div>
+      <section class="today-cards"><article class="due"><span>Due ({{ periodLabel }})</span><strong>{{ dueCount }}</strong><p>Total: {{ formatCurrency(dueTotal) }}</p></article><article class="paid"><span>Paid ({{ periodLabel }})</span><strong>{{ paidCount }}</strong><p>Total: {{ formatCurrency(paidTotal) }}</p></article></section>
+      <button type="button" class="download-centre" (click)="openDownloads()"><span class="material-symbols-rounded">download_for_offline</span><span><strong>Download reports</strong><small>PDF and Android-ready Excel files</small></span><span class="material-symbols-rounded">arrow_forward</span></button>
 
-    <section class="report-list" *ngIf="!isLoading && activeTab === 'paid'">
-      <button class="report-row" *ngFor="let row of paidRows" (click)="openLoan(row.loanId)"><div><span class="file">{{ row.customerFileId || 'No file number' }}</span><h2>{{ row.customerName }}</h2><p>{{ row.regNo }} · Installment #{{ row.sNo }}</p></div><div class="row-amount"><strong>{{ formatCurrency(row.amountReceived) }}</strong><small>{{ formatDate(row.dateReceived) }}</small></div></button>
-    </section>
-    <section class="report-list" *ngIf="!isLoading && activeTab === 'due'">
-      <button class="report-row" *ngFor="let row of dueRows" (click)="openLoan(row.loanId)"><div><span class="file">{{ row.customerFileId || 'No file number' }}</span><h2>{{ row.customerName }}</h2><p>{{ row.regNo }} · Due {{ formatDate(row.dueDate) }}</p></div><div class="row-amount overdue"><strong>{{ formatCurrency(row.carryingOutstanding || row.dueAmount) }}</strong><small>{{ row.daysOverdue }} days overdue</small></div></button>
-    </section>
-    <ion-infinite-scroll (ionInfinite)="loadMore($event)" *ngIf="(activeTab === 'paid' ? hasMorePaid : hasMoreDue)"><ion-infinite-scroll-content loadingText="Loading more records..."></ion-infinite-scroll-content></ion-infinite-scroll>
+      <div class="tab-switch"><button [class.active]="activeTab==='due'" (click)="setTab('due')">Pending Dues <span>{{ dueCount }}</span></button><button [class.active]="activeTab==='paid'" (click)="setTab('paid')">Payments Received <span>{{ paidCount }}</span></button></div>
+      <section *ngIf="!isLoading&&activeTab==='paid'"><button class="report-row" *ngFor="let row of paidRows" (click)="openLoan(row.loanId)"><span class="row-icon paid"><span class="material-symbols-rounded">payments</span></span><div><span class="file">{{ row.customerFileId||'UNFILED' }}</span><h3>{{ row.customerName }}</h3><p>{{ row.regNo }} · EMI {{ row.sNo }} · {{ formatDate(row.dateReceived) }}</p></div><div class="amount"><strong>{{ formatCurrency(row.amountReceived) }}</strong><span class="material-symbols-rounded">chevron_right</span></div></button></section>
+      <section *ngIf="!isLoading&&activeTab==='due'"><button class="report-row" *ngFor="let row of dueRows" (click)="openLoan(row.loanId)"><span class="row-icon late"><span class="material-symbols-rounded">schedule</span></span><div><span class="file">{{ row.customerFileId||'UNFILED' }}</span><h3>{{ row.customerName }}</h3><p>{{ row.regNo }} · {{ row.daysOverdue }} days late</p></div><div class="amount overdue"><strong>{{ formatCurrency(row.carryingOutstanding||row.dueAmount) }}</strong><span class="material-symbols-rounded">chevron_right</span></div></button></section>
+      <div class="state" *ngIf="isLoading"><ion-spinner name="crescent"></ion-spinner><p>Calculating report...</p></div>
+      <div class="state" *ngIf="!isLoading&&((activeTab==='paid'&&!paidRows.length)||(activeTab==='due'&&!dueRows.length))"><span class="material-symbols-rounded">query_stats</span><h2>No activity found</h2><p>Adjust the date or report filters.</p></div>
+      <div class="append-loader" *ngIf="isLoadingMore"><ion-spinner name="dots"></ion-spinner><span>Loading more records...</span></div>
+      <ion-infinite-scroll (ionInfinite)="loadMore($event)" [disabled]="activeTab==='paid'?!hasMorePaid:!hasMoreDue"><ion-infinite-scroll-content></ion-infinite-scroll-content></ion-infinite-scroll>
+    </main>
   </div>
 </ion-content>

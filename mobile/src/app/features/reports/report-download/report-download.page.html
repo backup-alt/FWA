@@ -1,0 +1,23 @@
+<ion-content fullscreen class="download-content">
+  <div class="screen">
+    <header class="mobile-page-header"><button type="button" (click)="onBack()" aria-label="Go back"><span class="material-symbols-rounded">arrow_back</span></button><h1>Report Downloads</h1><i aria-hidden="true"></i></header>
+    <main *ngIf="!isLoading&&report">
+      <section class="report-intro"><span>READY TO EXPORT</span><h2>{{ title }}</h2><p>Choose a section and file type. Android will open the system app picker after the file is generated.</p></section>
+      <section class="summary"><article class="due"><small>Pending Dues</small><strong>{{ report.due.count }}</strong><span>{{ formatCurrency(report.due.total) }}</span></article><article class="paid"><small>Payments Received</small><strong>{{ report.paid.count }}</strong><span>{{ formatCurrency(report.paid.total) }}</span></article></section>
+      <section class="format-panel">
+        <div class="format-heading"><span class="material-symbols-rounded">picture_as_pdf</span><div><strong>Print / PDF</strong><small>Compact A4 report matching the web template</small></div></div>
+        <div class="download-grid"><button type="button" (click)="download('due','pdf')" [disabled]="!!exporting">Pending Dues</button><button type="button" (click)="download('paid','pdf')" [disabled]="!!exporting">Payments Received</button><button type="button" class="primary" (click)="download('all','pdf')" [disabled]="!!exporting">Complete Report</button></div>
+      </section>
+      <section class="format-panel">
+        <div class="format-heading"><span class="material-symbols-rounded">table_view</span><div><strong>Excel Workbook</strong><small>Native .xlsx file compatible with Android office apps</small></div></div>
+        <div class="download-grid"><button type="button" (click)="download('due','xlsx')" [disabled]="!!exporting">Pending Dues</button><button type="button" (click)="download('paid','xlsx')" [disabled]="!!exporting">Payments Received</button><button type="button" class="primary" (click)="download('all','xlsx')" [disabled]="!!exporting">Complete Report</button></div>
+      </section>
+      <div class="export-state" *ngIf="exporting"><ion-spinner name="crescent"></ion-spinner><span>Creating your report...</span></div>
+      <div class="preview-head"><div><span>REPORT PREVIEW</span><h3>{{ selectedCount }} records</h3></div><small>First 30 shown</small></div>
+      <div class="tab-switch"><button [class.active]="activeTab==='all'" (click)="setTab('all')">All</button><button [class.active]="activeTab==='due'" (click)="setTab('due')">Pending Dues <span>{{ report.due.count }}</span></button><button [class.active]="activeTab==='paid'" (click)="setTab('paid')">Payments <span>{{ report.paid.count }}</span></button></div>
+      <article class="preview-row" *ngFor="let row of previewRows"><div><span>{{ row.customerFileId || 'UNFILED' }}</span><h4>{{ row.customerName }}</h4><p>{{ row.regNo || 'No registration' }} · EMI {{ row.sNo }}</p></div><strong>{{ formatCurrency(activeTab==='paid' ? row.amountReceived : row.dueAmount) }}</strong></article>
+    </main>
+    <div class="state" *ngIf="isLoading"><ion-spinner name="crescent"></ion-spinner><p>Preparing complete report...</p></div>
+    <div class="state" *ngIf="!isLoading&&!report"><span class="material-symbols-rounded">error</span><h2>Report unavailable</h2><button (click)="onBack()">Back to reports</button></div>
+  </div>
+</ion-content>

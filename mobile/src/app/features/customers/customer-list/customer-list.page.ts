@@ -19,6 +19,7 @@ export class CustomerListPage implements OnInit, OnDestroy {
   hasMore = true;
   searchTerm = '';
   searchType: CustomerSearchParams['searchType'] = 'name';
+  searchTouched = false;
   currentPage = 1;
   pageSize = 20;
   totalCustomers = 0;
@@ -101,6 +102,10 @@ export class CustomerListPage implements OnInit, OnDestroy {
   onSearchInput(event: any) {
     this.searchTerm = event.detail.value || '';
     this.loadCustomers(true);
+  }
+
+  onSearchFocus(): void {
+    this.searchTouched = true;
   }
 
   onSearchTypeChange(type: unknown) {

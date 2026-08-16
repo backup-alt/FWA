@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { Keyboard } from '@capacitor/keyboard';
+import type { PluginListenerHandle } from '@capacitor/core';
 import { AuthService } from './core/services/auth.service';
 
 @Component({
@@ -9,8 +11,10 @@ import { AuthService } from './core/services/auth.service';
   styleUrls: ['app.component.scss'],
   standalone: false,
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   showBottomNav = false;
+  keyboardOpen = false;
+  private keyboardListeners: PluginListenerHandle[] = [];
 
   constructor(
     private router: Router,
@@ -36,5 +40,14 @@ export class AppComponent implements OnInit {
 
     // Warm up backend on app start
     this.authService.warmupBackend().subscribe();
+
+    void Keyboard.addListener('keyboardWillShow', () => { this.keyboardOpen = true; })
+      .then(listener => this.keyboardListeners.push(listener));
+    void Keyboard.addListener('keyboardWillHide', () => { this.keyboardOpen = false; })
+      .then(listener => this.keyboardListeners.push(listener));
+  }
+
+  ngOnDestroy(): void {
+    this.keyboardListeners.forEach(listener => void listener.remove());
   }
 }

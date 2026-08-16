@@ -334,8 +334,9 @@ export function LoanDetailPage() {
   }
 
   const installments = loan.installments || [];
-  const pendingStatuses = new Set(['Pending', 'Overdue', 'Partial']);
-  const pendingInstallments = installments.filter(inst => pendingStatuses.has(inst.status));
+  const pendingInstallments = installments.filter(
+    inst => inst.status !== 'Paid' && inst.status !== 'Cancelled'
+  );
   const scheduleLoan = { ...loan, installments };
 
   const tabs = [

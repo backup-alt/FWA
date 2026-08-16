@@ -334,9 +334,12 @@ export function LoanDetailPage() {
   }
 
   const installments = loan.installments || [];
-  const pendingInstallments = installments.filter(
-    inst => inst.status !== 'Paid' && inst.status !== 'Cancelled'
-  );
+  const pendingInstallments = installments.filter(inst => {
+    if (inst.status === 'Cancelled') return false;
+    const dueAmount = Number(inst.dueAmount || 0);
+    const amountReceived = Number(inst.amountReceived || 0);
+    return dueAmount > 0 ? amountReceived < dueAmount : inst.status !== 'Paid';
+  });
   const scheduleLoan = { ...loan, installments };
 
   const tabs = [
